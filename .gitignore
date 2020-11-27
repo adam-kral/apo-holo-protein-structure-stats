@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+######################
+
+scratch_files/
+todo.txt
+.idea/
