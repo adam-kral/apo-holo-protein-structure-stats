@@ -10,7 +10,7 @@ get_domain. Zrovna domény ale nejsou na té zajímavé úrovni.
 
 RMSD -- ty získám pro jednotlivé domény (úroveň analýz -- jednotlivé domény). Když ale budu analyzovat páry domén, budou mi stačit výsledky z těch jednotlivých: rotační matrix první domény (R1) a druhý (R2). Obojí získané z nezměněných struktur. Tak zarovnání páru na tu první -- otočení R1. Pak je neznámá R otočení druhé domény tak, že R2 = R1*R; R = R1^(-1)*R2
 
-[Oni ty domény ještě snad averagovali (to mělo možná smysl u principal axes metody, ale tady by to nic neměnilo -- musel bych je otočit zas zpět, ze zarovnané polohy a úhel by byl tedy stejný, šlo by o stejné otočení))]
+{Oni ty domény ještě snad averagovali (to mělo možná smysl u principal axes metody, ale tady by to nic neměnilo -- musel bych je otočit zas zpět, ze zarovnané polohy a úhel by byl tedy stejný, šlo by o stejné otočení))}
 
 Taky určit, co bude output a co ne (může mě zajímat jen RMSD, ale budu cachovat všechno, i rotation matrix).
 
@@ -51,6 +51,7 @@ BinaryCIF
 - neni pro pdbe data
 - parsovani neni o tolik rychlejsi (ale js, ne python, ten ma c-extension)
 - je asi 3-4x mensi, pri komprimaci deflate 5x nez text cif
+- podobně mmtf, to je o neco starsi pry
 
 
 # Pipeline
@@ -69,7 +70,7 @@ make pairs (apo-holo, holo-holo)
 
 
 
-analyzers - filter uses them, a classifier is one, bistructure analysis, bistructure-bifragment analysis
+analyzers - filter uses them, a classifier apo-holo is one, bistructure analysis, bistructure-bifragment analysis
     should be somehow cached (probably only when processing th
 feeders
     take list of structures (potentially classified etc.)
@@ -77,6 +78,7 @@ feeders
 
 cache is always for a pdb structure (and it's fragments). Will be a structure used in analysis multiple times?
     yes, in the uniprot-chain_id-class, only the chain
+    examples, what could be cached -- centroids of structure and domains, partitioning in domains, ligand object,...
     if I wanted also multimer (as whole) analysis, I would have to detect which structures are of the same multimer (composed
 of same chains might be enough), let's say we have the mapping. Than, again only within the same-bio-multimer group one structure could
 be used multiple times.

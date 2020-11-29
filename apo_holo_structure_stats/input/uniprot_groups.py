@@ -1,41 +1,11 @@
-import csv
-import hashlib
-import itertools
-from collections import namedtuple, defaultdict
-from io import StringIO
+from collections import defaultdict
 import gzip
 import urllib.request
 from datetime import datetime
 
 import pandas as pd
 import numpy as np
-import requests
-from Bio.PDB.MMCIF2Dict import MMCIF2Dict
-from Bio.PDB.MMCIFParser import MMCIFParser
-from pandas.core.util.hashing import hash_pandas_object, hash_array, _combine_hash_arrays
-
-
-def download_and_save_file(url, filename):
-    r = requests.get(url, stream=True)
-
-    with open(filename, 'wb') as f:
-        for chunk in r.iter_content(chunk_size=1024 * 1024):
-            f.write(chunk)
-
-
-def download_file_stringio(url):
-    r = requests.get(url, stream=True)
-
-    file_like = StringIO()
-    for chunk in r.iter_content(chunk_size=1024 * 1024, decode_unicode=True):
-        file_like.write(chunk)
-
-    file_like.seek(0)
-    return file_like
-
-
-def get_structure_stringio(code):
-    return download_file_stringio(f'https://models.rcsb.org/v1/{code}/full')
+from pandas.core.util.hashing import hash_array, _combine_hash_arrays
 
 
 def get_pdb_chain_codes_with_uniprot_accession():
@@ -56,7 +26,7 @@ def get_pdb_chain_codes_with_uniprot_accession():
                 'unp_begin',  # SIFTS mapping to the uniprotKB sequence
                 'unp_end'
             ), dtype = {
-                # 'pdb_code': 'category',  # s odkomentovanym vsim extra zravy a pomaly
+                # 'pdb_code': 'category',  # when anything uncommented, extra memory and time hungry, category probably suited only for a small set of values
                 # 'chain_id': 'category',
                 # 'uniprotkb_id': 'category',
             })
@@ -64,13 +34,6 @@ def get_pdb_chain_codes_with_uniprot_accession():
     date_csv_created = datetime.strptime(date_row.strip(' #'), '%Y/%m/%d - %H:%M')
 
     return chain_mapping, date_csv_created
-
-
-def prepare_structure_groups(pdbchain_to_uniprot):
-    gb = pdbchain_to_uniprot.groupby(['uniprotkb_id', 'unp_begin', 'unp_end'])  # or I could somehow groupby (unp_begin, unp_end) tuple if that's possible
-    groups = sorted(gb, key=lambda x: len(x[1]), reverse=True)
-
-    return groups
 
 
 def _hash_dataframe_rows_no_categorize(df):
@@ -86,27 +49,15 @@ def _hash_dataframe_rows_no_categorize(df):
 
 
 def hash_dataframe_rows_no_categorize(df):
+    """ returns a Series of hashes, for each row, as in original `hash_pandas_object` """
+
     return pd.Series(_hash_dataframe_rows_no_categorize(df), index=df.index, dtype="uint64", copy=False)
 
 
 def hash_dataframe(df):
-    """ returns single hash for the entire dataframe. Same hash for arbitrary row order (deliberately, by summing row-hashe) """
+    """ returns single hash for the entire dataframe. Same hash for any row ordering (deliberately, by _summing_ row-hashes) """
 
     return np.sum(_hash_dataframe_rows_no_categorize(df))  # deliberately summing row's hashes, allows row-order-agnostic hash
-
-
-def test_string_hashing_returns_same_hash_even_if_string_are_different_in_memory():
-    s1 = 'hovno'
-    s2 = s1[:2] + s1[2:]
-
-    assert s1 is not s2
-
-    df = pd.DataFrame({'col1': [1,1], 'col2': [s1, s2]})
-
-    row_hashes = hash_dataframe_rows_no_categorize(df)
-    assert row_hashes[0] == row_hashes[1]
-
-
 
 
 def equivalence_partition(iterable, relation):
@@ -138,54 +89,83 @@ def equivalence_partition(iterable, relation):
     return classes, partitions
 
 
-def test():
+def analyze_basic_uniprot_id_groups():
     pdbchain_to_uniprot, _ = get_pdb_chain_codes_with_uniprot_accession()
-    # struct_groups = prepare_structure_groups(pdbchain_to_uniprot)
+    uniprot_groupby = pdbchain_to_uniprot.drop_duplicates(['pdb_code', 'chain_id']).groupby('uniprotkb_id')[['pdb_code', 'chain_id']]
+    # also possible to .groupby(['uniprotkb_id', 'unp_begin', 'unp_end'])
+
+    uniprot_groups = {}
+    for uniprotkb_id, group in uniprot_groupby:
+        up_group = defaultdict(list)
+
+        for row in group.to_records(index=False):
+            up_group[row.pdb_code].append(row.chain_id)
+
+        if len(up_group) > 1:
+            uniprot_groups[uniprotkb_id] = up_group
+
+    print('multiple-struct-groups:', len(uniprot_groups))
+    print('unique_structures multiple-struct-groups', len(set(s for g in uniprot_groups.values() for s in g)))
+
+    chain_dataframes_gb = pdbchain_to_uniprot.groupby(['pdb_code', 'chain_id'])
+    chain_up_map_lengths = chain_dataframes_gb.unp_end.sum() - chain_dataframes_gb.unp_begin.sum()
+
+    struct_chain_count = dict(map(lambda code: (code, 0), chain_up_map_lengths.index.get_level_values('pdb_code')))
+    struct_chain_count.update(chain_up_map_lengths[chain_up_map_lengths > 15].groupby('pdb_code').count().to_dict())
+
+    single_chain_structs = list(filter(
+        lambda g: len(g) > 1,
+        (
+            list(filter(lambda struct_chains: struct_chain_count[struct_chains[0]] <= 1, g.items()))  # todo watch for == or <=
+            for g in uniprot_groups.values()
+        )
+    ))
+
+    print('single-chain structures:: ',
+          'groups: ', len(single_chain_structs),
+          'unique_structures: ', len(set(s for g in single_chain_structs for s, chains in g)))
+    # multiple-struct-groups: 27092
+    # unique_structures multiple-struct-groups 139913
+    # single-chain (one chain > 50) structures:  groups:  9159 unique_structures:  60294
+    # single-chain (one chain > 15) structures:  groups:  8683 unique_structures:  57308
+
+analyze_basic_uniprot_id_groups()
+
+
+# tohle je možná trochu blbost (ale sežrala čas), observed fragmenty u různých struktur stejných proteinů mohou být různé -- v jednom experimentu něco být observed nemusí, trochu jinej krystal
+# ALE todo použít místo uniprot_segments_observed.csv.gz tohle: pdb_chain_uniprot.csv.gz, tam jsou extendlý ty alignmenty, a pokud je na jeden chain víc fragmentů od jednoho uniprotu,
+# znamená to rozdíl v sekvenci (ale i jen v SEQRES, nemusí být ten rozdíl observed).
+def analyze_uniprot_groups_all_fragments_identical():
+    pdbchain_to_uniprot, _ = get_pdb_chain_codes_with_uniprot_accession()
 
     # chains having same segment (but how do I go to same segmentS)
-    # struct_groups.filter()
 
 
     # structure ids, that have a chain (or only one) that maps to at least N residues of a uniprot id (one? because, theoretically a merged chain if there is...)
     # 1 group it by struct+chain+uniprot and count the mapping residues, filter groups of < N residues
 
-    # pdbchain_to_uniprot.groupby(['pdb_code', 'chain_id'])['uniprotkb_id', 'unp_begin', 'unp_end']
 
 
-    # (determine if there's a chain with > 1 uniprot_id) Ano, napr. 6hr1
+    # (determine if there's a chain with > 1 uniprot_id) Ano, napr. 6hr1, v dokumentaci `chimeric`
     series = pdbchain_to_uniprot.groupby(['pdb_code', 'chain_id'])['uniprotkb_id'].nunique()
-    series.nlargest(100)
-    (series > 1).sum()  # 3584 chainů  (ale to budou asi divný struktury, beztak žádná apo+holo)
+    print((series > 1).sum())  # 3584 chainů  (ale to budou asi divný struktury, beztak žádná apo+holo)
 
-    # Now we'll inspect the uniprot segments observed in chains. For chains in an A-H group, their segment list should be the same (condition for 100 %
-    # sequence identity, at least with the same length chains)
+    # Now we'll inspect the uniprot segments observed in chains (structure). For chains in an A-H group, their segment list should (hopefully, see input
+    # docs) be the same (condition for 100 % sequence identity, at least with the same length chains)
+
     # we'll hash the chains' dataframes, so the (rough) comparison is faster
 
     chain_dataframes_gb = pdbchain_to_uniprot.groupby(['pdb_code', 'chain_id'])
 
-
-    chain_up_map_lengths = chain_dataframes_gb.unp_end.sum() - chain_dataframes_gb.unp_begin.sum()
-
-    # chain_dataframes = chain_dataframes_gb.filter(lambda g: chain_up_map_lengths.loc[g.name] > 50)  unfortunately, pandas filter does eager eval into a DataFrame..., losing the groups and slow
-
-        # superslow pandas sort? When multiple columns it converts them into categoricals? Even integers?
-        # .apply(lambda g: g.sort_values(['uniprotkb_id', 'unp_begin', 'unp_end'], ignore_index=True))
-
-    #filter_condition = lambda g: chain_up_map_lengths.loc[g.name] > 50
-    filter_condition = lambda g: True
-
-    # chain_fingerprints = chain_dataframes_gb[['uniprotkb_id', 'unp_begin', 'unp_end']].apply(lambda g:
-    #     hash_dataframe(g) if filter_condition(g) else None
-    # ).dropna()  # unfortunate hack, pandas groupby.filter bad..,
-
-    # made the hashing faster than above. hash rows before hashing dataframe, then .sum hashes on groupby, my hashing method already supports this
+    # made the hashing faster than before. hash rows before hashing dataframe, then .sum hashes on groupby, my hashing concept already supports this
     chain_fingerprints = hash_dataframe_rows_no_categorize(pdbchain_to_uniprot[['uniprotkb_id', 'unp_begin', 'unp_end']])\
         .groupby([pdbchain_to_uniprot['pdb_code'], pdbchain_to_uniprot['chain_id']]).sum()
+
+    chain_up_map_lengths = chain_dataframes_gb.unp_end.sum() - chain_dataframes_gb.unp_begin.sum()
 
     chain_fingerprints = chain_fingerprints[chain_up_map_lengths > 50]  # should work even if series are in different order `pandas aligns all AXES when setting (ha- setting not indexing) Series and DataFrame from .loc, and .iloc.`
 
     # chain_groups_with_same_fragments = chain_fingerprints.groupby(chain_fingerprints).apply(lambda g: g.reset_index(inplace=True))
-
     chain_groups_with_same_fragments = [group.index.values for group_fingerprint, group in chain_fingerprints.groupby(chain_fingerprints, sort=False)]
 
 
@@ -203,10 +183,11 @@ def test():
      #    classes, _ = equivalence_partition(group.index, dataframes_equal)
      #
      #    if len(classes) > 1:
-     #        print("Lucky day")
+     #        print("Lucky day, hash collision")
      #
      #    chain_groups_with_same_fragments.append(classes)
 
+    # have the largest groups of chains first
     chain_groups_with_same_fragments.sort(key=lambda l: len(l), reverse=True)
 
     print(chain_groups_with_same_fragments[:50])
@@ -231,7 +212,7 @@ def test():
     print('unique_structures multiple-struct-groups', len(set(s for g in struct_groups_with_multiple_structures for s in g)))
 
     struct_chain_count = dict(map(lambda code: (code, 0), chain_up_map_lengths.index.get_level_values('pdb_code')))
-    struct_chain_count.update(chain_up_map_lengths[chain_up_map_lengths > 50].groupby('pdb_code').count().to_dict())
+    struct_chain_count.update(chain_up_map_lengths[chain_up_map_lengths > 15].groupby('pdb_code').count().to_dict())  # now 15
 
     a = list(filter(
         lambda g: len(g) > 1,
@@ -248,31 +229,15 @@ def test():
     # 55444 groups same fragments len >1, 35092 actually multiple struct groups, 7124 single chain struct groups
     # into #structs:                      92375 unique structs                   36345 structures (36345 chains) (unique)
 
-    # no minimum coverage of uniprot seq,                                       but single-chain structure has one >50 aa chain
+    #                                                                            single-chain structure has one or less >15-aa chain
+    #                                                                             6934
+    #                                                                             35299
+
+    # no minimum coverage of uniprot seq...                                    ...but single-chain structure has one >50-aa chain (allows e.g.  40-aa chain appearing in the groups, larger than 1st)
     # 59618                               37617                                    7523
     #                                      95784                                   36770
+    #                                                                           having <= 1 >50-aa chain
+    #                                                                           7652
+    #                                                                           37002
 
-    #                                                                           but single-chain structure has one or less >50 aa chain
-    #                                                                                8285
-    #                                                                               39210
-
-
-
-    # DO MORE IN PYTHON RATHER THAN PANDAS?
-    structures_with_one_chain = set()
-    for pdb_code, structure_chains in pdbchain_to_uniprot.groupby(['pdb_code']):
-        structure_chains.groupby('chain_id').apply(lambda r: r['unp_end'] - r['unp_begin']).filter
-        # for .apply(lambda row: row.unp_end - row.unp_begin, axis=1)
-
-test()
-
-def test2():
-    structure_code = '4cj6'
-    structure_file = get_structure_stringio(structure_code)
-
-    mmcif_parser = MMCIFParser()
-
-    structure = mmcif_parser.get_structure(structure_code, structure_file)
-    mmcif_dict_undocumented = mmcif_parser._mmcif_dict
-
-    print(structure)
+analyze_uniprot_groups_all_fragments_identical()
