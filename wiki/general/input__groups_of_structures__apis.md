@@ -139,6 +139,8 @@ PDBe apis
 Biopython
 - lze nacist bez headeru, o neco rychleji (cte pouze atom lines) a header jen par polí, málo pro generic filtering
 - pokud by nás zajímal header, lze nacist mmcif do dictu. Pak by se ten dict dal vyuzit pro build struktury, ale nemaj to tak udelany
+- problemy viz v kodu
+- jak vlastne se mmcifu resi multiple models (nmr)? Biopython parser pouziva legacy pdb_model_num nebo neco takovyho
 
 Biopython rychlost
 - sám biopython.PDB uvádí 1.5 s/ structure (800 proteins each from a unique SCOP superfamily)
@@ -148,10 +150,14 @@ Biopython rychlost
 - např. gemmi-structure 16x rychlejší na struktuře s normální velikostí 836 kB (75 percentil)  (biopython 0.5 s)
     - 30x rychlejší na obří struktuře (HIV-1 capsid 250 MB)  (biopython 128 s)
     - ale developed primarily for use in macromolecular crystallography
+    - fast qcp (quaternion char. pol.) RMSD (ma to vubec cenu?, stejne bude mit SVD v kabschovi konstanti slozitost, 
+        navic pythoni implementace rmsd.quaternion_rmsd dela moc veci v pythonu a malo v numpy, otazka, jestli by to bylo vubec rychlejsi...)
 - nebo ihm (integrative-hybrid modeling) https://github.com/ihmwg/python-ihm, podporuje i BinaryCIF
     - co umí?
     - c-extension parsování
     - mmcif into a hierarchy of classes
+
+
 
 
 
@@ -170,6 +176,57 @@ ty struktury dál vytřídim (jak? Na počítači, nebo dotazem do server datab�
 
 
 clustering si pak dělám sám (používám sekvence z pdb asi), nebo jsou nějaký auto-verifikovaný z pdb (auto-annotation)??
+
+
+## pdbe-kb graph api (REST api, ale z grafový db)
+
+PDB - Get secondary structures for an entity
+PDB - Get sequence and structural domains for an entity
+
+(UniProt - Get similar proteins for a UniProt accession for a given sequence identity
+- mohl bych tam dát ten uniprot accession (postupně jeden ze 60 tisíc, ale to nejsou izoformy, takže bych nemohl použít 1 identity?)
+- spíš ne)
+
+
+
+Residue - Get annotations for a PDB Residue range
+- ale je tam strašně moc anotací (dat), mě zajímá jen uni-pdb 
+
+nebo PDB - Get all FunPDBe annotations for a PDB entry _from a specific resource_
+- _resource_ se nedá vybrat jako ten základní SIFTS (uniprot_features)
+
+SIFTS - Get best isoform for a PDB entry ID
+- Identity of the alignment (from 0 to 1). Co ale délka alignmentu? Nesmí být gaps? U identity 1 asi ne
+
+co musim udelat
+- get from csv uniprot group (might contain strucutures with multiple chains)
+- ?get chains lengths
+- ?get resolution
+- get best isoform for each chain/structuru in a group
+- get mappings to uniprot for a PDB Residue range (not crucial, at the same time I would need to compare structure-to-structure, 1st try just assert 100% identity in the isoforms)
+- liší se vůbec per-residue a celý uniprot mapping (todo assert)? mismatche budou asi taky namapovane...
+
+only then I need the whole structure (?=optional, can get from the mmcif)
+
+další možnost -- xml pdbe soubory po jednotlivých entries. Obsahují všechno, jsou teda ještě větší, než výsledky z api, asi. Ale stačil by pak jen jeden request. Místo dvou? zbytečný.
+
+## dalsi api 
+### rcsb
+https://data.rcsb.org/redoc/index.html#operation/getUniprotByEntityId
+- melo by mit polozku rcsb_uniprot_alignments, ale nevrací ji, asi stejný jako pdbe.get_best_isoform (otazka jeste jestli vraci isoform)
+
+### pdbe (celkem 3, takze dalsi dve)
+solr (apache) api
+- neumí per-residue annotations (ani uniprot)
+původní rest api, entry-based?
+- taky nemá per-residue annotation
+
+### PDB
+rcsb - graphql api
+https://data.rcsb.org/graphql/
+- asi nemá PDBe anotace,...
+
+
 
 
 ## SIFTS download and processing

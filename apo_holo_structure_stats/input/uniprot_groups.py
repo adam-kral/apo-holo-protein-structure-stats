@@ -8,14 +8,18 @@ import numpy as np
 from pandas.core.util.hashing import hash_array, _combine_hash_arrays
 
 
-def get_pdb_chain_codes_with_uniprot_accession():
+def get_uniprot_segments_observed_dataset():
+    """ loads uniprot_segments_observed.csv
+
+     the csv contains only observed segments (aa stretches with coordinates) of uniprot sequences in pdb chains"""
+
     url = 'ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/csv/uniprot_segments_observed.csv.gz'
 
     with urllib.request.urlopen(url) as response:  # ~60 MB
         with gzip.open(response, 'rt', newline='', encoding='utf-8') as f:  # todo get encoding from response.headers? https://docs.python.org/3/library/urllib.request.html#urllib.response.addinfourl.headers
             date_row = next(f).strip()  # example: `# 2020/11/14 - 14:40`
 
-            chain_mapping = pd.read_csv(f, header=0, names=(
+            chain_mapping_df = pd.read_csv(f, header=0, names=(
                 'pdb_code',
                 'chain_id',  # in mmcif
                 'uniprotkb_id',
@@ -33,7 +37,40 @@ def get_pdb_chain_codes_with_uniprot_accession():
 
     date_csv_created = datetime.strptime(date_row.strip(' #'), '%Y/%m/%d - %H:%M')
 
-    return chain_mapping, date_csv_created
+    return chain_mapping_df, date_csv_created
+
+
+def get_uniprot_mappings_dataset():
+    """ loads pdb_chain_uniprot.csv
+
+    the csv contains fused observed segments (aa stretches with coordinates) together to cover the whole pdb chain sequence (incl. unobserved
+    residues); the uniprot sequence maps to the pdb chain sequence even if those residues don't have coordinates observed """
+
+    url = 'ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/csv/pdb_chain_uniprot.csv.gz'
+
+    with urllib.request.urlopen(url) as response:  # ~60 MB
+        with gzip.open(response, 'rt', newline='', encoding='utf-8') as f:  # todo get encoding from response.headers? https://docs.python.org/3/library/urllib.request.html#urllib.response.addinfourl.headers
+            date_row = next(f).strip().split('|', maxsplit=1)[0]   # example: `# 2020/11/14 - 14:40 | PDB: 47.20 | UniProt: 2020.06`
+
+            chain_mapping_df = pd.read_csv(f, header=0, names=(
+                'pdb_code',
+                'chain_id',  # in mmcif
+                'uniprotkb_id',
+                'label_seq_id__begin',  # in mmcif, residue sequence id
+                'label_seq_id__end',
+                'auth_seq_id__begin',  # in mmcif, author residue mapping to some kind of protein reference sequence, probably unimportant
+                'auth_seq_id__end',
+                'unp_begin',  # SIFTS mapping to the uniprotKB sequence
+                'unp_end'
+            ), dtype = {
+                # 'pdb_code': 'category',  # when anything uncommented, extra memory and time hungry, category probably suited only for a small set of values
+                # 'chain_id': 'category',
+                # 'uniprotkb_id': 'category',
+            })
+
+    date_csv_created = datetime.strptime(date_row.strip(' #'), '%Y/%m/%d - %H:%M')
+
+    return chain_mapping_df, date_csv_created
 
 
 def _hash_dataframe_rows_no_categorize(df):
@@ -89,10 +126,13 @@ def equivalence_partition(iterable, relation):
     return classes, partitions
 
 
-def analyze_basic_uniprot_id_groups():
-    pdbchain_to_uniprot, _ = get_pdb_chain_codes_with_uniprot_accession()
-    uniprot_groupby = pdbchain_to_uniprot.drop_duplicates(['pdb_code', 'chain_id']).groupby('uniprotkb_id')[['pdb_code', 'chain_id']]
-    # also possible to .groupby(['uniprotkb_id', 'unp_begin', 'unp_end'])
+def get_basic_uniprot_groups(uniprot_segments_observed_df=None):
+    # hack so we don't need more functions like this one
+    if uniprot_segments_observed_df is None:
+        uniprot_segments_observed_df, _ = get_uniprot_segments_observed_dataset()
+
+    uniprot_groupby = uniprot_segments_observed_df.drop_duplicates(['pdb_code', 'chain_id']).groupby('uniprotkb_id')[['pdb_code', 'chain_id']]
+    # also possible to .groupby(['uniprotkb_id', 'unp_begin', 'unp_end']), any changes?
 
     uniprot_groups = {}
     for uniprotkb_id, group in uniprot_groupby:
@@ -104,10 +144,18 @@ def analyze_basic_uniprot_id_groups():
         if len(up_group) > 1:
             uniprot_groups[uniprotkb_id] = up_group
 
+    return uniprot_groups
+
+
+def analyze_basic_uniprot_id_groups():
+    uniprot_segments_observed_df, _ = get_uniprot_segments_observed_dataset()
+
+    uniprot_groups = get_basic_uniprot_groups(uniprot_segments_observed_df)
+
     print('multiple-struct-groups:', len(uniprot_groups))
     print('unique_structures multiple-struct-groups', len(set(s for g in uniprot_groups.values() for s in g)))
 
-    chain_dataframes_gb = pdbchain_to_uniprot.groupby(['pdb_code', 'chain_id'])
+    chain_dataframes_gb = uniprot_segments_observed_df.groupby(['pdb_code', 'chain_id'])
     chain_up_map_lengths = chain_dataframes_gb.unp_end.sum() - chain_dataframes_gb.unp_begin.sum()
 
     struct_chain_count = dict(map(lambda code: (code, 0), chain_up_map_lengths.index.get_level_values('pdb_code')))
@@ -129,14 +177,11 @@ def analyze_basic_uniprot_id_groups():
     # single-chain (one chain > 50) structures:  groups:  9159 unique_structures:  60294
     # single-chain (one chain > 15) structures:  groups:  8683 unique_structures:  57308
 
-analyze_basic_uniprot_id_groups()
 
-
-# tohle je možná trochu blbost (ale sežrala čas), observed fragmenty u různých struktur stejných proteinů mohou být různé -- v jednom experimentu něco být observed nemusí, trochu jinej krystal
-# ALE todo použít místo uniprot_segments_observed.csv.gz tohle: pdb_chain_uniprot.csv.gz, tam jsou extendlý ty alignmenty, a pokud je na jeden chain víc fragmentů od jednoho uniprotu,
+# použít místo uniprot_segments_observed.csv.gz tohle: pdb_chain_uniprot.csv.gz, tam jsou extendlý ty alignmenty, a pokud je na jeden chain víc fragmentů od jednoho uniprotu,
 # znamená to rozdíl v sekvenci (ale i jen v SEQRES, nemusí být ten rozdíl observed).
-def analyze_uniprot_groups_all_fragments_identical():
-    pdbchain_to_uniprot, _ = get_pdb_chain_codes_with_uniprot_accession()
+def analyze_uniprot_groups_joined_fragments():
+    pdbchain_to_uniprot, _ = get_uniprot_mappings_dataset()
 
     # chains having same segment (but how do I go to same segmentS)
 
@@ -225,6 +270,8 @@ def analyze_uniprot_groups_all_fragments_identical():
 
     print()
 
+    ## uniprot_segments_observed.csv
+
     # for > 50 amino uniprot mappings
     # 55444 groups same fragments len >1, 35092 actually multiple struct groups, 7124 single chain struct groups
     # into #structs:                      92375 unique structs                   36345 structures (36345 chains) (unique)
@@ -240,4 +287,13 @@ def analyze_uniprot_groups_all_fragments_identical():
     #                                                                           7652
     #                                                                           37002
 
-analyze_uniprot_groups_all_fragments_identical()
+
+    ## pdb_chain_uniprot.csv
+    # groups same fragments len >1 54328
+    # multiple-struct-groups: 31126  # proč je těch prvních dvou míň?
+    # unique_structures multiple-struct-groups 122018
+    # single-chain structures:  groups:  8214 unique_structures:  47936
+
+if __name__ == '__main__':
+    analyze_basic_uniprot_id_groups()
+    # analyze_uniprot_groups_joined_fragments()

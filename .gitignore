@@ -134,3 +134,4 @@ dmypy.json
 scratch_files/
 todo.txt
 .idea/
+pdb_structs/

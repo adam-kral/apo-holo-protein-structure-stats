@@ -40,6 +40,7 @@ Multimery
 - u multimerů prostě musí být vrstva, která, v případě výskytu stejných monomerů rozhodne, které chainy dvou struktur sobě odpovídají/zkusí všechny možnosti (můj default třeba).
     - tohle (párování) pak půjde pro analýzu vzájemného postavení podjednotek i pro analýzu jednotlivých podjednotek (domén v nich).
 
+- [todo] co je PDB Complex ID (píšou to v https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/#api-PDB-GetPDBComplexDetails)
 
 Analýzy, (kt. jsou zamýšlené pro výstup) musí být serializovatelné. Pak se ještě musí připojit metadata úrovně zpracovaní -- o jakou strukturu a chain jde (popř. kombinace).
 

@@ -2,6 +2,7 @@ import unittest
 
 import pandas as pd
 
+from apo_holo_structure_stats.input.download import get_best_isoform_for_chains
 from ..input.uniprot_groups import hash_dataframe_rows_no_categorize
 
 
@@ -21,6 +22,11 @@ class TestUniprotGroups(unittest.TestCase):
 
         row_hashes = hash_dataframe_rows_no_categorize(df)
         self.assertEqual(row_hashes[0], row_hashes[1])
+
+
+class TestDownload(unittest.TestCase):
+    def test_get_best_isoform(self):
+        print(get_best_isoform_for_chains('2cjs'))  # todo probably patch requests
 
 
 if __name__ == '__main__':
