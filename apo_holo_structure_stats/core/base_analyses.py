@@ -12,32 +12,31 @@ class Ligand:
 # get_atoms
 
 
-class AnalysisArgs:
-    # bud RAII nebo metoda run
-    def __init__(self, *args, **kwargs):
-        pass
+# class AnalysisArgs:
+#     # bud RAII nebo metoda run
+#     def __init__(self, *args, **kwargs):
+#         pass
+#
+#     def serialize(self):
+#         """ Returns analysis name and serialized arguments """
+#         pass
+#
+#
+# class AnalysisResult:
+#     # tohle spis bude metoda na Analyzer -> serializeResult
+#     # protoze nechci vzdycky delat Analyzer()(args).value ...
+#
+#     def serialize(self):
+#         pass
+#     #
+#     # def value(self):
+#     #     pass
 
-    def serialize(self):
-        """ Returns analysis name and serialized arguments """
-        pass
-
-
-class AnalysisResult:
-    # tohle spis bude metoda na Analyzer -> serializeResult
-    # protoze nechci vzdycky delat Analyzer()(args).value ...
-
-    def serialize(self):
-        pass
-    #
-    # def value(self):
-    #     pass
 
 class Analyzer:
-    is_output: bool
     dependencies: Tuple['Analyzer', ...]
 
-    def __init__(self, dependencies: Tuple['Analyzer', ...] = (), is_output: bool = True):
-        self.is_output = is_output
+    def __init__(self, dependencies: Tuple['Analyzer', ...] = ()):
         self.dependencies = dependencies
 
     def __call__(self, *args, **kwargs):
@@ -48,6 +47,11 @@ class Analyzer:
 
     def get_name(self):
         return type(self).__name__
+
+
+class SerializableAnalyzerMixin:
+    def serialize(self, result, *args, **kwargs):
+        raise NotImplementedError
 
 
 class CachedAnalyzer(Analyzer):
@@ -63,6 +67,9 @@ class CachedAnalyzer(Analyzer):
     def analysis_cached_run(self, *args, **kwargs):
         return super().__call__(*args, **kwargs)
 
+
+class SerializableCachedAnalyzer(CachedAnalyzer, SerializableAnalyzerMixin):
+    pass
 
 
 

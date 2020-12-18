@@ -1,6 +1,8 @@
 import itertools
 from typing import Iterator, List
 
+import rmsd
+
 from .base_analyses import CachedAnalyzer, Analyzer
 
 from Bio.PDB import is_aa, NeighborSearch
@@ -82,3 +84,26 @@ class IsHolo(CachedAnalyzer):
         return len(acceptable_ligands) > 0
 
 
+class RMSD(CachedAnalyzer):
+    """nebo GetRMSD - naming. """
+
+    def run(self, struct1: Entity, struct2: Entity) -> float:
+        pp1, pp2 = map(lambda struct: chain_to_polypeptide(get_main_chain(struct)), (struct1, struct2))
+        seq1, seq2 = map(lambda pp: pp.get_sequence(), (pp1, pp2))
+
+        if seq1 != seq2:
+            # debug print to see how seqs differ
+
+            #     residues_mapping = # might be a fallback to the pdb-residue-to-uniprot-residue mapping api, depends, what we want
+            #           (also we have some mapping (segment to segment) when we do get_best_isoform, there can probably be mutations though)
+            #
+            #          if there are some extra residues on ends, we can truncate the sequences
+            #          maybe I wouldn't use the API, just do this alignment, if we wanted to compare structs with non-100%-identical sequences)
+
+            alignment = next(aligner.align(seq1, seq2))
+            print(alignment)
+            return None
+
+        P, Q = map(get_c_alpha_coords, (pp1, pp2))
+
+        return rmsd.kabsch_rmsd(P, Q)
