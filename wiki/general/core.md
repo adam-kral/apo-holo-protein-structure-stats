@@ -103,3 +103,19 @@ analyzer
 
 analyzers may depend on each other
 - would there be a
+
+
+# analyzer caching args and result -- preventing memory leak
+Caching result -- when returning an object from a cached analysis, make sure it does not have any unwanted references to large objects, which would due to the reference linger in memory, too. For example, if you return Bio.PDB.Chain, it normally has references to parents, so entire PDB.Structure would be in memory. Solution -- either use your own object, which do not do this, or remove the references, in Bio's case with detach parent (warning, get_full_id and \_\_hash__ function will be compromised).
+
+arguments, which are used to look up the result are hashed. BioPython has already a suitable implementation of \_\_hash__ method, hashes a tuple -- full_id, which is a tuple of parents' and the object ids. For your own classes, override the default python's \_\_hash__, which returns same hash only if objects are identical in memory. Which would not be true, if the same structure is loaded during the pipeline multiple times (which generally will happen, as all structures needed won't have to fit in memory). POZOR -- asi nemá jen hash, ale stejně celý objekt!!! (Porovnává pak equalitu, kvuli kolizim, takze to stejně bude v paměti -- use full id! )
+todo -- Takže hash je nakonec zbytečný, spíš fakt nějaký to id..
+
+to stejny z komentu cesky:
+cachovani nebude fungovat dobre (argy z SMCRA), i presto, ze hash Entity vraci hash full id. Totiz stejne bude (kvuli moznym kolizim) Structure,.. v pameti
+-- dal taky jestlize nebude nacachovany result napr. chain, pak tam bohuzel zustane (ma reference na parenty...). Jenze to je - GetMainChain
+udelam si vlastni tridicky pro to? Co se budou chovat podobne -- get atoms
+nebo ten problem je jenom u GetMainChain. At sakra vraci jen id!
+
+Moje hierarchie? detach_parent, ale nechat full id?
+serializace     argu udela ten celkovy runner. Pouze analyzer bude serializovat svuj result a nazev

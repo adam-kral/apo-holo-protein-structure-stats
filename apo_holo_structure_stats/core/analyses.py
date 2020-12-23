@@ -1,12 +1,16 @@
 import itertools
 from typing import Iterator, List
 
+import numpy as np
 import rmsd
-
-from .base_analyses import CachedAnalyzer, Analyzer
-
 from Bio.PDB import is_aa, NeighborSearch
-from Bio.PDB import Entity, Residue, Chain, Model
+from Bio.PDB.Chain import Chain
+from Bio.PDB.Entity import Entity
+from Bio.PDB.Model import Model
+from Bio.PDB.Polypeptide import PPBuilder
+from Bio.PDB.Residue import Residue
+
+from .base_analyses import CachedAnalyzer, Analyzer, SerializableCachedAnalyzer
 
 
 def get_hetero_atom_residues(struct: Entity) -> Iterator[Residue]:
@@ -84,10 +88,36 @@ class IsHolo(CachedAnalyzer):
         return len(acceptable_ligands) > 0
 
 
-class RMSD(CachedAnalyzer):
-    """nebo GetRMSD - naming. """
+def chain_to_polypeptide(chain):
+    ppb = PPBuilder()
+    polypeptides = ppb.build_peptides(chain, aa_only=0)  # allow non-standard aas?
 
-    def run(self, struct1: Entity, struct2: Entity) -> float:
+    if len(polypeptides) != 1:
+        print('warning ', len(polypeptides), ' polypeptides from one chain, extending first pp')
+
+        for pp in polypeptides[1:]:
+            polypeptides[0].extend(pp)
+
+    return polypeptides[0]
+
+
+# debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
+from Bio import Align
+aligner = Align.PairwiseAligner(mode='global',
+                                open_gap_score=-0.5,
+                                extend_gap_score=-0.1,
+                                end_gap_score=0,)  # match by default 1 and mismatch 0
+
+
+def get_c_alpha_coords(polypeptide):
+    return np.array([res['CA'].get_coord() for res in polypeptide])
+
+
+
+class RMSD(SerializableCachedAnalyzer):
+    """nebo GetRMSD - naming. todo bude brát nejspíš numpy array, nebo nějakej jeho wrapper"""
+
+    def run(self, struct1: Entity, struct2: Entity, get_main_chain) -> float:
         pp1, pp2 = map(lambda struct: chain_to_polypeptide(get_main_chain(struct)), (struct1, struct2))
         seq1, seq2 = map(lambda pp: pp.get_sequence(), (pp1, pp2))
 
@@ -102,8 +132,11 @@ class RMSD(CachedAnalyzer):
 
             alignment = next(aligner.align(seq1, seq2))
             print(alignment)
-            return None
+            import math
+            return math.inf
 
         P, Q = map(get_c_alpha_coords, (pp1, pp2))
 
         return rmsd.kabsch_rmsd(P, Q)
+
+

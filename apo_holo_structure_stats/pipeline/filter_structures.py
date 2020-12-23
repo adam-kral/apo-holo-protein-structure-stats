@@ -6,12 +6,13 @@ import warnings
 import logging
 from typing import Iterable, List, Any
 
-from Bio.PDB import PDBList, MMCIFParser, Structure
+from Bio.PDB import PDBList, MMCIFParser
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from Bio.PDB.Structure import Structure
 
-from ..core.analyses import GetChains, GetMainChain
-from ..settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
+from apo_holo_structure_stats.core.analyses import GetChains, GetMainChain
+from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
 
 
 def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains):
@@ -51,7 +52,9 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
 class CustomMMCIFParser(MMCIFParser):
     """ Adapted BioPython code, just to get the pdb code (_entry.id) from the mmcif file """
     def get_structure(self, file, structure_id=None):
-        """ Parses file contents and returns Structure object
+        """ Parses file contents and returns Structure object.
+
+        Note that parameter order is different to the BioPython's implementation (reversed, as structure_id is optional).
 
         :param file: a file-like object or a file name
         :param structure_id: if not specified, taken from mmcif (`_entry.id`)
@@ -65,7 +68,7 @@ class CustomMMCIFParser(MMCIFParser):
 
             # begin change
             if structure_id is None:
-                structure_id = self._mmcif_dict['_entry.id'].lower()
+                structure_id = self._mmcif_dict['_entry.id'][0].lower()
             # end change
 
             self._build_structure(structure_id)
@@ -92,9 +95,9 @@ def parse_structure(structure_file, structure_code=None):
     #  auth_asym_id, in about 93.8 % of entries -- zde to může spadnout
     # auth_seq_id u heteroatomů (v mmcifu mají všechny heteroatomy label_seq_id `.`) umožnuje identifikaci, do jaké molekuly atom patří (jinak by byl jen název sloučeniny)
     # ovšem ty auth_ položky nemusí být číslem, ale např. tento parser je převádí na int() -- může spadnout
-    mmcif_parser = MMCIFParser()
+    mmcif_parser = CustomMMCIFParser()
 
-    structure = mmcif_parser.get_structure(structure_code, structure_file)
+    structure = mmcif_parser.get_structure(structure_file, structure_code)
     mmcif_dict_undocumented = mmcif_parser._mmcif_dict
 
     return structure, mmcif_parser.header, mmcif_dict_undocumented
@@ -113,11 +116,59 @@ def parse_and_filter_group_of_structures(files: Iterable[Any]) -> Iterable[Struc
     return structures
 
 
-def get_structure_filenames(root_directory):
+def get_structure_filenames_in_dir(root_directory):
     for root, dirs, files in os.walk(root_directory):
         for name in files:
             yield os.path.join(root, name)
 
+
+def print_random_groups(n):
+    """ samples uniprot groups
+
+    Provides test input, pick suitable groups and paste them below into dict `groups`.
+    Run in interactive console, so that all_uniprot_groups is loaded only once (takes long), while sampling can be run multiple times """
+
+    from apo_holo_structure_stats.input.uniprot_groups import get_basic_uniprot_groups
+    all_uniprot_groups = get_basic_uniprot_groups()
+
+    import random
+    groups_sample = dict(random.sample(list(all_uniprot_groups.items()), n))
+    print(groups_sample)
+
+
+def get_test_input(groups=None):
+    """ returns comma-separated sequence of structure PDB codes
+
+    groups variable is like output from get_basic_uniprot_groups, or print_random_groups """
+
+    from collections import defaultdict
+
+    if groups is None:
+        groups = {
+            'Q2YQQ9': defaultdict(list,
+                         {'3mqd': ['A'],
+                          '3lrf': ['A'],
+                          '4jv3': ['A'],
+                          '3u0e': ['A'],
+                          '3u0f': ['A']}),
+            'A0ZZH6': defaultdict(list,  # z těhlech vyhovujou jen 3 holo: 5mb2 5man 5m9x
+                                  {'2gdu': ['A', 'B'],
+                                   '6fme': ['A', 'B'],
+                                   '1r7a': ['A', 'B'],
+                                   '5mb2': ['B'],
+                                   '5c8b': ['B'],
+                                   '5man': ['B'],
+                                   '2gdv': ['A', 'B'],
+                                   '5m9x': ['B']}),
+        }
+
+    # remove chain ids, keep just pdb codes
+    struct_code_groups = [list(uniprot_group.keys()) for uniprot_group in groups.values()]
+
+    import itertools
+    return ','.join(itertools.chain(*struct_code_groups))
+
+# todo logging level ArgumentParser default subclass?
 
 if __name__ == '__main__':
     # chce, aby se tomu mohly dodat fily přes directory
@@ -135,14 +186,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # translate input into structure filenames
-    if args.directory:
+    if args.is_directory:
         directory = args.pdb_codes_or_directory
 
         if not os.path.isdir(directory):
             logging.error(f'Directory {directory} does not exist')
             sys.exit(1)
 
-        structure_filenames = get_structure_filenames(directory)
+        structure_filenames = get_structure_filenames_in_dir(directory)
     else:
         pdb_codes = args.pdb_codes_or_directory.strip().split(',')
 
@@ -152,6 +203,7 @@ if __name__ == '__main__':
 
         structure_filenames = (retrieve_structure_file_from_pdb(pdb_code) for pdb_code in pdb_codes)
 
+    # load and filter structures
     structures_passed = []
 
     for filename in structure_filenames:

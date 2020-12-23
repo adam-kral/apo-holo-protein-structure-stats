@@ -34,24 +34,24 @@ class Ligand:
 
 
 class Analyzer:
+    """ Instance behaves like a function.
+
+    Use analyzer_instance(arg1, arg2) to get the result. """
     dependencies: Tuple['Analyzer', ...]
 
     def __init__(self, dependencies: Tuple['Analyzer', ...] = ()):
         self.dependencies = dependencies
 
     def __call__(self, *args, **kwargs):
+        """ Use this """
         return self.run(*args, *self.dependencies, **kwargs)
 
     def run(self, *args, **kwargs):
+        """ Provide your own method. """
         raise NotImplementedError
 
     def get_name(self):
         return type(self).__name__
-
-
-class SerializableAnalyzerMixin:
-    def serialize(self, result, *args, **kwargs):
-        raise NotImplementedError
 
 
 class CachedAnalyzer(Analyzer):
@@ -63,12 +63,25 @@ class CachedAnalyzer(Analyzer):
     def __call__(self, *args, **kwargs):
         return self.analysis_cached_run(*args, **kwargs)
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def analysis_cached_run(self, *args, **kwargs):
         return super().__call__(*args, **kwargs)
 
 
-class SerializableCachedAnalyzer(CachedAnalyzer, SerializableAnalyzerMixin):
+class SerializableAnalyzer(Analyzer):
+    def serialize(self, result, *args, **kwargs):
+        """ default implementation assumes result, args and kwargs are primitive types, therefore know how to serialize to a string value
+
+        :param result: result of __call__/run
+        :param args: for now: arbitrary args, serve as identifier for an analysis result in the serialized data. (Don't need to be actual args to __call__/run)
+        :param kwargs: similar as args
+        :return: a potentially nested dict/list of primitive types
+        """
+        return {'analysis_name': self.get_name(), 'args': args, 'kwargs': kwargs, 'result': result}
+
+
+
+class SerializableCachedAnalyzer(CachedAnalyzer, SerializableAnalyzer):
     pass
 
 
