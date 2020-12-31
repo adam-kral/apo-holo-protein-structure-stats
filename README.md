@@ -2,8 +2,8 @@
 
 ## Install
 In repository root:
-- Create a new virtual environment 'venv' with Python 3 `virtualenv -p python3 venv`
-- Activate the venv `source venv/bin/activate`
+- Create a new virtual environment (recommended) named 'venv' with Python 3: `python3 -m venv venv` (Python 3 has a built-in `venv` module for that, alternatively you can use virtualenv: `virtualenv -p python3 venv`)
+- Activate the venv: `source venv/bin/activate` on Unix or `venv\Scripts\activate.bat` on Windows
 - Install requirements `pip install -r requirements.txt`
 - todo for easier script running, extract runnable scripts to the repository root/maybe setup.py
 

@@ -63,3 +63,67 @@ def get_best_isoform_for_chains(struct_code):
                     f'pdbe API response, Get Best Isoform for {struct_code}:  `pdb_` sequence positions do not match those in `start` and `end`')
 
     return chain_based_data
+
+
+def get_secondary_structure(struct_code: str):
+    """ Get secondary structure info from pdbe API
+
+    (that is based on their computation and is consistent across entries unlike SS info in mmcif files)
+
+    :return: list of molecule objects (loaded json at "molecules")
+
+    Example API json response:
+    {
+        "1cbs": {
+            "molecules": [
+                {
+                    "entity_id": 1,
+                    "chains": [
+                        {
+                            "chain_id": "A",
+                            "struct_asym_id": "A",
+                            "secondary_structure": {
+                                "helices": [
+                                    {
+                                        "start": {
+                                            "author_residue_number": 14,
+                                            "author_insertion_code": null,
+                                            "residue_number": 14
+                                        },
+                                        "end": {
+                                            "author_residue_number": 22,
+                                            "author_insertion_code": null,
+                                            "residue_number": 22
+                                        }
+                                    }
+                                ],
+                                "strands": [
+                                    {
+                                        "start": {
+                                            "author_residue_number": 5,
+                                            "author_insertion_code": null,
+                                            "residue_number": 5
+                                        },
+                                        "end": {
+                                            "author_residue_number": 13,
+                                            "author_insertion_code": null,
+                                            "residue_number": 13
+                                        },
+                                        "sheet_id": 1
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    """
+
+    r = requests.get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{struct_code}')
+    # if I knew entity id (not with biopython's parser), I could append it to the url
+
+    r.raise_for_status()
+    return r.json()[struct_code]['molecules']
+

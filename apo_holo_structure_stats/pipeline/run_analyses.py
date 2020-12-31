@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import itertools
 import json
+import logging
 from typing import List, TypeVar, Generic
 
-from Bio.PDB import MMCIFParser
+from Bio.PDB import MMCIFParser, PPBuilder, is_aa
 
-from apo_holo_structure_stats.core.analyses import RMSD, GetMainChain, GetChains
+from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, ChainResidues, CompareSecondaryStructure, \
+    GetSecondaryStructureForStructure
 from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
 
 
@@ -36,58 +38,59 @@ class JSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
             json.dump(self.data, f)
 
 
-# class Feeder:
-#     analyzers: List[Analyzer]
-#     analysis_handler: AnalysisHandler  # muze se zmenit na List, kdyby bylo treba (output ve vice formatech). Pak by bylo rozumny posilat ale result a args a spoustet to zde
-#
-#     def __init__(self, analysis_handler: AnalysisHandler):
-#         self.analyzers = []
-#         self.analysis_handler = analysis_handler
-#
-#     def add_analyzers(self, *analyzers: [Analyzer, ...]) -> None:
-#         self.analyzers.extend(analyzers)
-#
-#     def run_batch(self, *args, **kwargs):
-#         raise NotImplementedError
-#
-#     def run_analyzers_with_args(self, *args, **kwargs):
-#         for analyzer in self.analyzers:
-#             result = analyzer(*args, **kwargs)
-#
-#             self.analysis_handler.handle(analyzer, result, *args, **kwargs)
-#
-#
-# class ApoHoloPairFeeder(Feeder):
-#     """ Feeds pairs into analyzers/  indirectly via analysishandlers """
-#
-#     def run_batch(self, apo_codes, holo_codes, get_structure):
-#         # neni finalni, protoze tohle nemuze plug and play vyuzit parallelfeeder. Protože to getuje structure
-#         for apo_code, holo_code in itertools.product(apo_codes, holo_codes):
-#             apo, holo = map(get_structure, (apo_code, holo_code))
-#
-#             apo_domains = apo.get_domains()
-#             holo_domains = holo.get_domains()
-#             # asi by mely byt stejny (v sekvenci hopefully)
-#
-#             corresponding_domains = list(zip(apo_domains, holo_domains))
-#
-#             pairs =
-#
-#             # da se rict, ze zde jsou pouze twin struct analyzers (asi bych to mohl dat jako TwinStructAnalyzer?)
-#             self.run_analyzers_with_args(apo, holo)
+# debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
+from Bio import Align
+aligner = Align.PairwiseAligner(mode='global',
+                                open_gap_score=-0.5,
+                                extend_gap_score=-0.1,
+                                end_gap_score=0,)  # match by default 1 and mismatch 0
 
 
-# vyhodit feeders, jsou k ničemu
-# stejne bude jen jedna pipeline
-# pokud bude multithread, bude se pouzivat ta
+
+def chain_to_polypeptide(chain):
+    ppb = PPBuilder()
+    polypeptides = ppb.build_peptides(chain, aa_only=0)  # allow non-standard aas?
+
+    if len(polypeptides) != 1:
+        print('warning ', len(polypeptides), ' polypeptides from one chain, extending first pp')
+
+        for pp in polypeptides[1:]:
+            polypeptides[0].extend(pp)
+
+    return polypeptides[0]
+
+
+def sequences_same(ch1, ch2):
+    pp1, pp2 = map(chain_to_polypeptide, (ch1, ch2))
+    seq1, seq2 = map(lambda pp: pp.get_sequence(), (pp1, pp2))
+
+    if seq1 != seq2:
+        # debug print to see how seqs differ
+
+        #     residues_mapping = # might be a fallback to the pdb-residue-to-uniprot-residue mapping api, depends, what we want
+        #           (also we have some mapping (segment to segment) when we do get_best_isoform, there can probably be mutations though)
+        #
+        #          if there are some extra residues on ends, we can truncate the sequences
+        #          maybe I wouldn't use the API, just do this alignment, if we wanted to compare structs with non-100%-identical sequences)
+
+        alignment = next(aligner.align(seq1, seq2))
+        logging.info('Sequences differ, alignment:')
+        logging.info(alignment)
+        import math
+        return False
+
+    return True
 
 
 def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], get_structure, serializer_or_analysis_handler: AnalysisHandler):
     # apo-holo analyses
 
-    rmsd_a = RMSD((GetMainChain((GetChains(),)),))
+    get_main_chain = GetMainChain((GetChains(),))
+    rmsd_a = GetRMSD((get_main_chain,))
 
-    a_h_struct_analyzers = [rmsd_a]  # SS
+    ss_a = CompareSecondaryStructure((GetSecondaryStructureForStructure(),))
+
+    a_h_struct_analyzers = [rmsd_a, ss_a]  # SS
     a_h_domain_analyzers = [rmsd_a]  # SS
     a_h_domain_pair_analyzers = [rmsd_a]  # taky rmsd (jejich graf rmsd vs bending), rotation (vyuzije rmsd, tady to zrovna asi smysl dává), screw axis (posunutí), interdomain surface
         # tady se vyuzije caching? rotační matrix na zarovnání první domény
@@ -107,11 +110,21 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
     for apo_code, holo_code in itertools.product(apo_codes, holo_codes):
         apo, holo = map(get_structure, (apo_code, holo_code))
 
+        apo_main_chain, holo_main_chain = map(get_main_chain, (apo, holo))
+
+        if not sequences_same(apo_main_chain, holo_main_chain):
+            logging.info('skipping pair {apo_code}, {holo_code}. Main chain sequences differ.')
+            continue
+
+        apo_chain_residues, holo_chain_residues = map(
+            lambda chain: ChainResidues(list(r for r in chain.get_residues() if is_aa(r)), chain.get_parent().get_parent().id, chain.id), (apo_main_chain, holo_main_chain)
+        )
+
         for a in a_h_struct_analyzers:
             # this fn (run_analyses_for_isoform_group) does not know anything about serialization?
             # But it will know how nested it is (domain->structure) and can pass full identifiers of structures/domains
 
-            serializer_or_analysis_handler.handle(a, a(apo, holo), apo_code, holo_code)  # in future maybe pass apo and holo. Will serialize itself. And output the object in rdf for example?
+            serializer_or_analysis_handler.handle(a, a(apo_chain_residues, holo_chain_residues), apo_chain_residues, holo_chain_residues)  # in future maybe pass apo and holo. Will serialize itself. And output the object in rdf for example?
             # because what I would like is to output the analysis with objects identifiers, and then output the objects, what they contain (e.g. domain size?)
 
 
@@ -119,6 +132,7 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
 
         # domain analysis, asi by mely byt stejny (v sekvenci hopefully)
         apo_domains = [] #apo.get_domains()  # opět může být cachované, tentokrát to bude malá response z apicka, obdobně SS
+        # přesně! Tady je to nenačte, ty atomy. Pouze vrátí identifikátory a rozsah. Pokud bude někdo chtít, bude si moct to přeložit do BioPythoní entity, ten analyzer ale cachovaný nebude mezi fóry nebo vůbec
         holo_domains = [] #holo.get_domains()
         # ještě se bude muset translatovat na array coordinates (to bude taky pomalý, ale nebude obrovský -- odhad
         # domena max 200, takze 200*3*8(double)= 4.8 kB= nic
@@ -171,6 +185,8 @@ if __name__ == '__main__':
     parser.add_argument('output_file', help='dumped results of analyses')
     args = parser.parse_args()
 
+    logging.root.setLevel(logging.INFO)
+
     with open(args.structures_json) as f:
         structures_info = json.load(f)
 
@@ -184,6 +200,7 @@ if __name__ == '__main__':
     key_isoform = lambda struct_info: struct_info['isoform_id']
     structures_info.sort(key=key_isoform)  # must be sorted for itertools.groupby
 
+    # run analyses for each isoform group separately
     for isoform_id, isoform_group in itertools.groupby(structures_info, key=key_isoform):
         isoform_structure_info_dict = {s['pdb_code']: s for s in isoform_group}  # store info (path to files) for `structure_getter` lambda
 

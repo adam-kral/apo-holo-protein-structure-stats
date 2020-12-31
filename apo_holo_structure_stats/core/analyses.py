@@ -1,5 +1,8 @@
+from bisect import bisect_left
+from enum import Enum, auto
 import itertools
-from typing import Iterator, List
+from dataclasses import dataclass
+from typing import Iterator, List, TypeVar, Generic, Dict, Tuple, Optional
 
 import numpy as np
 import rmsd
@@ -10,6 +13,7 @@ from Bio.PDB.Model import Model
 from Bio.PDB.Polypeptide import PPBuilder
 from Bio.PDB.Residue import Residue
 
+from apo_holo_structure_stats.input.download import get_secondary_structure
 from .base_analyses import CachedAnalyzer, Analyzer, SerializableCachedAnalyzer
 
 
@@ -88,55 +92,151 @@ class IsHolo(CachedAnalyzer):
         return len(acceptable_ligands) > 0
 
 
-def chain_to_polypeptide(chain):
-    ppb = PPBuilder()
-    polypeptides = ppb.build_peptides(chain, aa_only=0)  # allow non-standard aas?
-
-    if len(polypeptides) != 1:
-        print('warning ', len(polypeptides), ' polypeptides from one chain, extending first pp')
-
-        for pp in polypeptides[1:]:
-            polypeptides[0].extend(pp)
-
-    return polypeptides[0]
-
-
-# debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
-from Bio import Align
-aligner = Align.PairwiseAligner(mode='global',
-                                open_gap_score=-0.5,
-                                extend_gap_score=-0.1,
-                                end_gap_score=0,)  # match by default 1 and mismatch 0
-
-
-def get_c_alpha_coords(polypeptide):
-    return np.array([res['CA'].get_coord() for res in polypeptide])
 
 
 
-class RMSD(SerializableCachedAnalyzer):
+
+
+class SSType(Enum):
+    HELIX = auto()
+    STRAND = auto()
+    NO_TYPE = auto()  # no ss type found for a residue
+
+
+@dataclass
+class SSForChain:
+    """ Can determine if a residue is a secondary structure by bisecting the ss_start lists.
+
+    <ss>_start and <ss>_end lists have to be sorted and for a ss type their positions correspond (e.g. helices_start[i] and helices_end[i]
+    mark the start and end of i-th helical segment)
+    """
+    helices_start: List[int]
+    helices_end: List[int]
+    strands_start: List[int]
+    strands_end: List[int]
+
+    def _is_ss_for_residue(self, residue_serial: int, ss_start: List[int], ss_end: List[int]) -> bool:
+        i = bisect_left(ss_start, residue_serial)
+        return i != len(ss_start) and ss_end[i] >= residue_serial
+
+    def ss_for_residue(self, residue: Residue):
+        residue_serial = residue.id[1]  #  davam author_seq_id nekam, kde mam mit label_seq (nebo to predelej na author, ale vykaslat se na insertion code)
+
+        for ss_type, ss_start, ss_end in ((SSType.HELIX, self.helices_start, self.helices_end), (SSType.STRAND, self.strands_start, self.strands_end)):
+            if self._is_ss_for_residue(residue_serial, ss_start, ss_end):
+                return ss_type
+
+        return SSType.NO_TYPE
+
+
+@dataclass
+class SSForStructure:
+    ss_for_chains: Dict[str, SSForChain]
+
+    def ss_for_residue(self, residue: Residue):
+        return self.ss_for_chains[residue.get_parent().id].ss_for_residue(residue)
+
+
+class GetSecondaryStructureForStructure(CachedAnalyzer):
+    """ caches SS for the whole structure """
+
+    def run(self, pdb_code: str) -> SSForStructure:
+        ss_for_chains: Dict[str, SSForChain] = {}
+
+        for molecule in get_secondary_structure(pdb_code):
+            for chain in molecule['chains']:
+                helices_start = []
+                helices_end = []
+                for helix_segment in chain['secondary_structure']['helices']:
+                    helices_start.append(helix_segment['start']['residue_number'])  # residue number is WRONG, I only have author_residue_number, so either get res. number from mmcif or use auth.
+                    helices_end.append(helix_segment['end']['residue_number'])
+
+                strands_start = []
+                strands_end = []
+                for helix_segment in chain['secondary_structure']['strands']:
+                    strands_start.append(helix_segment['start']['residue_number'])  # residue number is WRONG, I only have author_residue_number, so either get res. number from mmcif or use auth.
+                    strands_end.append(helix_segment['end']['residue_number'])
+                    # todo sheet_id important?
+
+                ss_for_chains[chain['chain_id']] = SSForChain(sorted(helices_start), sorted(helices_end), sorted(strands_start), sorted(strands_end))
+                # don't know if the segment order from api guaranteed ascending, so sorted
+
+        return SSForStructure(ss_for_chains)
+
+
+ResidueId = Tuple[int, str]
+
+
+# TResidueData = TypeVar('TResidueData')
+@dataclass
+class GroupOfResidues:
+    # TResidueId = Tuple[int, str]  # author_seq_id, author_insertion_code? As in BioPython, but no hetero flag
+
+    data: List[Residue]
+    structure_id: str
+
+    def get_full_id(self):
+        raise NotImplementedError
+
+    def __len__(self):
+        return len(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def serialize(self):
+        return self.get_full_id()
+
+@dataclass
+class ChainResidues(GroupOfResidues):
+    chain_id: str
+
+    def get_full_id(self):
+        return (self.structure_id, self.chain_id)
+
+    def __hash__(self):
+        return hash(self.get_full_id())  # zatim asi hack, do budoucna trochu jinak bude cachovani fungovat
+
+@dataclass
+class DomainResidues(GroupOfResidues):
+    chain_id: str
+    domain_id: str
+
+    def get_full_id(self):
+        return (self.structure_id, self.chain_id, self.domain_id)
+
+
+class CompareSecondaryStructure(SerializableCachedAnalyzer):
+    """ caches the API response for the whole structure, as returned by `get_secondary_structure` """
+
+    def run(self, residues1: GroupOfResidues, residues2: GroupOfResidues, get_ss: GetSecondaryStructureForStructure) -> float:
+        """ sequences of residues have to correspond to each other
+
+         :returns ratio of residues with the same SS, if no SS is known for a residue, it is assumed to have NO_TYPE SS.
+        """
+
+        assert len(residues1) == len(residues2)
+        pdb_code = residues1.structure_id  # assuming residues1 and 2 are from the same structure
+
+        ss1 = get_ss(residues1.structure_id)
+        ss2 = get_ss(residues2.structure_id)
+
+        same_count = 0
+        for r1, r2 in zip(residues1, residues2):
+            if ss1.ss_for_residue(r1) == ss2.ss_for_residue(r2):
+                same_count += 1
+
+        return same_count / len(residues1)
+
+
+def get_c_alpha_coords(residues):
+    return np.array([res['CA'].get_coord() for res in residues])
+
+
+class GetRMSD(SerializableCachedAnalyzer):
     """nebo GetRMSD - naming. todo bude brát nejspíš numpy array, nebo nějakej jeho wrapper"""
 
-    def run(self, struct1: Entity, struct2: Entity, get_main_chain) -> float:
-        pp1, pp2 = map(lambda struct: chain_to_polypeptide(get_main_chain(struct)), (struct1, struct2))
-        seq1, seq2 = map(lambda pp: pp.get_sequence(), (pp1, pp2))
-
-        if seq1 != seq2:
-            # debug print to see how seqs differ
-
-            #     residues_mapping = # might be a fallback to the pdb-residue-to-uniprot-residue mapping api, depends, what we want
-            #           (also we have some mapping (segment to segment) when we do get_best_isoform, there can probably be mutations though)
-            #
-            #          if there are some extra residues on ends, we can truncate the sequences
-            #          maybe I wouldn't use the API, just do this alignment, if we wanted to compare structs with non-100%-identical sequences)
-
-            alignment = next(aligner.align(seq1, seq2))
-            print(alignment)
-            import math
-            return math.inf
-
-        P, Q = map(get_c_alpha_coords, (pp1, pp2))
+    def run(self, residues1: GroupOfResidues, residues2: GroupOfResidues, get_main_chain) -> float:
+        P, Q = map(get_c_alpha_coords, (residues1, residues2))
 
         return rmsd.kabsch_rmsd(P, Q)
-
-

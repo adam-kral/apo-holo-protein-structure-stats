@@ -19,7 +19,6 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
     """ decides if structure meets criteria for resolution, single-chainedness, etc. """
 
     resolution = s_header['resolution']
-    print(resolution)
 
     # skip low resolution
     if resolution and resolution > MIN_STRUCTURE_RESOLUTION:
@@ -86,8 +85,10 @@ def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     :return: file name
     """
 
-    return PDBList(pdb=STRUCTURE_DOWNLOAD_ROOT_DIRECTORY).retrieve_pdb_file(pdb_code, file_format='mmCif')  # (mmCif is the default for file_format, but implicit = warning, this way no warning)
-
+    return PDBList(pdb=STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, verbose=logging.INFO >= logging.root.level).retrieve_pdb_file(pdb_code, file_format='mmCif')
+    # (mmCif is the default for file_format, but implicit = warning, this way no warning)
+    # verbose: BioPython prints to stdout, determine verbose by root logger level (I could also have a settings variable
+    # which also could be reset by a commandline argument)
 
 def parse_structure(structure_file, structure_code=None):
     # bipythoní parser neni ideální, využívá legacy PDB fieldy (ATOM/HETATM) a auth_seq_id (s fallbackem na label_seq_id == problém při mapování z pdbe api), auth_asym_id. Pokud by např.
@@ -182,7 +183,7 @@ if __name__ == '__main__':
                         help='now pdb_codes_or_directory is a path to a directory with mmcif files. Whole tree structure is inspected, all files are assumed to be mmcifs.')
 
     parser.add_argument('pdb_codes_or_directory', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
-    parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter')
+    parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
     args = parser.parse_args()
 
     # translate input into structure filenames

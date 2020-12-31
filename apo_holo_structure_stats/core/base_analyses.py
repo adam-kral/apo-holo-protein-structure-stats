@@ -70,14 +70,24 @@ class CachedAnalyzer(Analyzer):
 
 class SerializableAnalyzer(Analyzer):
     def serialize(self, result, *args, **kwargs):
-        """ default implementation assumes result, args and kwargs are primitive types, therefore know how to serialize to a string value
+        """ default implementation assumes result, args and kwargs are primitive types, therefore know how to serialize to a string value.
 
         :param result: result of __call__/run
         :param args: for now: arbitrary args, serve as identifier for an analysis result in the serialized data. (Don't need to be actual args to __call__/run)
         :param kwargs: similar as args
         :return: a potentially nested dict/list of primitive types
         """
-        return {'analysis_name': self.get_name(), 'args': args, 'kwargs': kwargs, 'result': result}
+
+        def serialize_argument(a):
+            try:
+                return a.serialize()  # třeba takhle přidat custom argumenty, ktery se budou umet serializovat? Mozna to jeste muzu ujasnit pomoci typing?
+            except AttributeError:
+                return a
+
+        serialized_args = [serialize_argument(a) for a in args]
+        serialized_kwargs = {k: serialize_argument(v) for k, v in kwargs.items()}
+
+        return {'analysis_name': self.get_name(), 'args': serialized_args, 'kwargs': serialized_kwargs, 'result': result}  # jeste serialize result?
 
 
 
