@@ -127,3 +127,60 @@ def get_secondary_structure(struct_code: str):
     r.raise_for_status()
     return r.json()[struct_code]['molecules']
 
+
+def get_domains(struct_code: str):
+    """ Get SCOP domains from pdbe API
+
+    :param struct_code:
+    :return:
+
+    docs: https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/#api-SIFTS-GetPDBSCOPMapping
+
+    Example API json response:
+    {
+        "1cbs": {
+            "SCOP": {
+                "50847": {
+                    "superfamily": {
+                        "sunid": 50814,
+                        "description": "Lipocalins"
+                    },
+                    "sccs": "b.60.1.2",
+                    "fold": {
+                        "sunid": 50813,
+                        "description": "Lipocalins"
+                    },
+                    "identifier": "Fatty acid binding protein-like",
+                    "class": {
+                        "sunid": 48724,
+                        "description": "All beta proteins"
+                    },
+                    "description": "Fatty acid binding protein-like",
+                    "mappings": [
+                        {
+                            "entity_id": 1,
+                            "end": {
+                                "author_residue_number": 137,
+                                "author_insertion_code": "",
+                                "residue_number": 137
+                            },
+                            "segment_id": 1,
+                            "chain_id": "A",
+                            "scop_id": "d1cbsa_",
+                            "start": {
+                                "author_residue_number": 1,
+                                "author_insertion_code": "",
+                                "residue_number": 1
+                            },
+                            "struct_asym_id": "A"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+    """
+    r = requests.get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/scop/{struct_code}')
+    r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested with new release -- sifts mapping exists but there is no scop data yet)
+
+    return r.json()[struct_code]['SCOP']

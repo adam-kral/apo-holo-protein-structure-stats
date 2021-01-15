@@ -108,6 +108,8 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
     # apo-holo analyses
 
     for apo_code, holo_code in itertools.product(apo_codes, holo_codes):
+        logging.info(f'(not) running analyses for ({apo_code}, {holo_code}) apo-holo pair...')
+
         apo, holo = map(get_structure, (apo_code, holo_code))
 
         apo_main_chain, holo_main_chain = map(get_main_chain, (apo, holo))
@@ -126,6 +128,7 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
 
             serializer_or_analysis_handler.handle(a, a(apo_chain_residues, holo_chain_residues), apo_chain_residues, holo_chain_residues)  # in future maybe pass apo and holo. Will serialize itself. And output the object in rdf for example?
             # because what I would like is to output the analysis with objects identifiers, and then output the objects, what they contain (e.g. domain size?)
+
 
 
     # ---------- odtud níže zatim nefunkční stub až do konce funkce
@@ -150,15 +153,23 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
 
     # holo-holo analyses
 
-    h_h_struct_analyzers = [rmsd_a]  # SS
+    h_h_struct_analyzers = [rmsd_a, ss_a]  # SS
 
     h_h_domain__analyzers = [rmsd_a]  # SS
     h_h_domain_pair_analyzers = [rmsd_a]  # rotation, screw axis, interdomain surface
 
     for holo1_code, holo2_code in itertools.combinations(holo_codes, 2):
+        logging.info(f'running analyses for ({holo1_code}, {holo2_code}) holo-holo pair...')
+
         holo1, holo2 = map(get_structure, (holo1_code, holo2_code))
 
-        h_h_struct_analyzers
+        # todo copy the preparation from apo-holo
+        # for a in h_h_struct_analyzers:
+        #     # this fn (run_analyses_for_isoform_group) does not know anything about serialization?
+        #     # But it will know how nested it is (domain->structure) and can pass full identifiers of structures/domains
+        #
+        #     serializer_or_analysis_handler.handle(a, a(apo_chain_residues, holo_chain_residues), apo_chain_residues,
+        #                                           holo_chain_residues)  # in future maybe pass apo and holo. Will serialize itself. And output the object in rdf for example?
 
         # domain analysis, asi by mely byt stejny (v sekvenci hopefully)
         holo1_domains = []#holo1.get_domains()  # vsechno může být již nacachované z apo-holo analýzy (otázka, todo jak jsou velké největší uniprot skupiny struktur, jestli se to vejde do paměti)

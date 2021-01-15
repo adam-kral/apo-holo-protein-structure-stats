@@ -2,8 +2,9 @@ from bisect import bisect_left
 from enum import Enum, auto
 import itertools
 from dataclasses import dataclass
-from typing import Iterator, List, TypeVar, Generic, Dict, Tuple, Optional
+from typing import Iterator, List, Dict, Tuple, Any
 
+import freesasa as freesasa
 import numpy as np
 import rmsd
 from Bio.PDB import is_aa, NeighborSearch
@@ -109,6 +110,11 @@ class SSForChain:
 
     <ss>_start and <ss>_end lists have to be sorted and for a ss type their positions correspond (e.g. helices_start[i] and helices_end[i]
     mark the start and end of i-th helical segment)
+
+    If we were always to compare the whole sequences of residues, it would be faster to implement it with a pointer to
+    current SS start/end segment. But this should be fast enough, is easier to implement (just using bisect module),
+    and more versatile use (fast for single residues). However, it can work (fast) only with 1-integer ids of residues.
+    (or use numpy and structs, but author_insertion_code has a length limit??)
     """
     helices_start: List[int]
     helices_end: List[int]
@@ -138,7 +144,39 @@ class SSForStructure:
 
 
 class GetSecondaryStructureForStructure(CachedAnalyzer):
-    """ caches SS for the whole structure """
+    """ caches SS for the whole structure
+
+    (pdbe API response already contains the whole structure and it's not a lot of data
+    however I could use endpoint also by entity id, not structure, but that has disadvantages -- To begin with, using BioPython's mmcif parser
+    I don't have the entity id.)
+    """
+
+    def run(self, pdb_code: str) -> SSForStructure:
+        ss_for_chains: Dict[str, SSForChain] = {}
+
+        for molecule in get_secondary_structure(pdb_code):
+            for chain in molecule['chains']:
+                helices_start = []
+                helices_end = []
+                for helix_segment in chain['secondary_structure']['helices']:
+                    helices_start.append(helix_segment['start']['residue_number'])  # residue number is WRONG, I only have author_residue_number, so either get res. number from mmcif or use auth.
+                    helices_end.append(helix_segment['end']['residue_number'])
+
+                strands_start = []
+                strands_end = []
+                for helix_segment in chain['secondary_structure']['strands']:
+                    strands_start.append(helix_segment['start']['residue_number'])  # residue number is WRONG, I only have author_residue_number, so either get res. number from mmcif or use auth.
+                    strands_end.append(helix_segment['end']['residue_number'])
+                    # todo sheet_id important?
+
+                ss_for_chains[chain['chain_id']] = SSForChain(sorted(helices_start), sorted(helices_end), sorted(strands_start), sorted(strands_end))
+                # don't know if the segment order from api guaranteed ascending, so sorted
+
+        return SSForStructure(ss_for_chains)
+
+
+class GetDomainsForStructure(CachedAnalyzer):
+    """ caches Domain mappings for the whole structure """
 
     def run(self, pdb_code: str) -> SSForStructure:
         ss_for_chains: Dict[str, SSForChain] = {}
@@ -168,8 +206,8 @@ ResidueId = Tuple[int, str]
 
 
 # TResidueData = TypeVar('TResidueData')
-@dataclass
-class GroupOfResidues:
+@dataclass(frozen=True, eq=False)
+class SetOfResidues:
     # TResidueId = Tuple[int, str]  # author_seq_id, author_insertion_code? As in BioPython, but no hetero flag
 
     data: List[Residue]
@@ -187,18 +225,50 @@ class GroupOfResidues:
     def serialize(self):
         return self.get_full_id()
 
-@dataclass
-class ChainResidues(GroupOfResidues):
+    def get_atoms(self):
+        """ for compatibility with FreeSASA BioPython binding, which uses get_atoms() """
+        for residue in self.data:
+            yield from residue
+
+    def __add__(self, other: 'SetOfResidues'):
+        return CombinedSetOfResidues.create_from_groups_of_residues(self, other)
+
+    def __hash__(self):
+        return hash(self.get_full_id())  # zatim asi hack, do budoucna trochu jinak bude cachovani fungovat (tohle by stejně asi nefunguvalo -- kdyby tam sla instance, nemohl by to GC odstranit
+
+    def __eq__(self, other):
+        return self.get_full_id() == other.get_full_id()
+
+
+@dataclass(frozen=True, eq=False)
+class CombinedSetOfResidues(SetOfResidues):
+    combined_id: Tuple[Any]
+
+    @classmethod
+    def create_from_groups_of_residues(cls, *groups_of_residues: SetOfResidues):
+        all_residues = []
+
+        for residues in groups_of_residues:
+            all_residues.extend(residues)
+
+        return CombinedSetOfResidues(all_residues,
+                                     groups_of_residues[0].structure_id,
+                                     tuple(g.get_full_id() for g in groups_of_residues))
+
+    def get_full_id(self):
+        return self.combined_id
+
+
+@dataclass(frozen=True, eq=False)
+class ChainResidues(SetOfResidues):
     chain_id: str
 
     def get_full_id(self):
         return (self.structure_id, self.chain_id)
 
-    def __hash__(self):
-        return hash(self.get_full_id())  # zatim asi hack, do budoucna trochu jinak bude cachovani fungovat
 
-@dataclass
-class DomainResidues(GroupOfResidues):
+@dataclass(frozen=True, eq=False)
+class DomainResidues(SetOfResidues):
     chain_id: str
     domain_id: str
 
@@ -206,17 +276,34 @@ class DomainResidues(GroupOfResidues):
         return (self.structure_id, self.chain_id, self.domain_id)
 
 
+class GetSASAForStructure(CachedAnalyzer):
+    """ Return solvent accessible surface area for a group of residues.
+
+    Uses FreeSASA. TODO - outputs a lot of warnings: FreeSASA: warning: guessing that atom 'CG' is symbol ' C'
+    - either provide my own classifier, or temporarily redirect stderr (but then I lose error reporting)
+    """
+
+    def run(self, residues: SetOfResidues) -> float:
+        sasa_structure = freesasa.structureFromBioPDB(residues)
+        result = freesasa.calc(sasa_structure)
+        return result.totalArea()
+
+
+class GetInterdomainSurface(Analyzer):
+    def run(self, residues1: SetOfResidues, residues2: SetOfResidues, get_sasa: GetSASAForStructure) -> float:
+        return 1/2 * (get_sasa(residues1) + get_sasa(residues2) - get_sasa(residues1 + residues2))
+
+
 class CompareSecondaryStructure(SerializableCachedAnalyzer):
     """ caches the API response for the whole structure, as returned by `get_secondary_structure` """
 
-    def run(self, residues1: GroupOfResidues, residues2: GroupOfResidues, get_ss: GetSecondaryStructureForStructure) -> float:
+    def run(self, residues1: SetOfResidues, residues2: SetOfResidues, get_ss: GetSecondaryStructureForStructure) -> float:
         """ sequences of residues have to correspond to each other
 
          :returns ratio of residues with the same SS, if no SS is known for a residue, it is assumed to have NO_TYPE SS.
         """
 
         assert len(residues1) == len(residues2)
-        pdb_code = residues1.structure_id  # assuming residues1 and 2 are from the same structure
 
         ss1 = get_ss(residues1.structure_id)
         ss2 = get_ss(residues2.structure_id)
@@ -236,7 +323,7 @@ def get_c_alpha_coords(residues):
 class GetRMSD(SerializableCachedAnalyzer):
     """nebo GetRMSD - naming. todo bude brát nejspíš numpy array, nebo nějakej jeho wrapper"""
 
-    def run(self, residues1: GroupOfResidues, residues2: GroupOfResidues, get_main_chain) -> float:
+    def run(self, residues1: SetOfResidues, residues2: SetOfResidues, get_main_chain) -> float:
         P, Q = map(get_c_alpha_coords, (residues1, residues2))
 
         return rmsd.kabsch_rmsd(P, Q)

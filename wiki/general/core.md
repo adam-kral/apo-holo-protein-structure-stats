@@ -119,3 +119,16 @@ nebo ten problem je jenom u GetMainChain. At sakra vraci jen id!
 
 Moje hierarchie? detach_parent, ale nechat full id?
 serializace     argu udela ten celkovy runner. Pouze analyzer bude serializovat svuj result a nazev
+
+# Parsing protein chains into domains
+Sequence-based (pfam, interpro) vs structure-based approaches (cath, scop)
+but - secondary structure=sequence (can be well predicted from sequence)?
+
+What exactly do structure-based approaches do? That sequence-based do not.
+
+SCOP
+- family domain should be large enough (superfamily - just the conserved core domain)
+    - so that it is in the sense of compacted protein chain segment(s)
+        - which is what I want in my analyses, right? (domain movements)
+
+use CATH
