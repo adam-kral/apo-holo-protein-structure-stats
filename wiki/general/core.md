@@ -111,6 +111,11 @@ Caching result -- when returning an object from a cached analysis, make sure it 
 arguments, which are used to look up the result are hashed. BioPython has already a suitable implementation of \_\_hash__ method, hashes a tuple -- full_id, which is a tuple of parents' and the object ids. For your own classes, override the default python's \_\_hash__, which returns same hash only if objects are identical in memory. Which would not be true, if the same structure is loaded during the pipeline multiple times (which generally will happen, as all structures needed won't have to fit in memory). POZOR -- asi nemá jen hash, ale stejně celý objekt!!! (Porovnává pak equalitu, kvuli kolizim, takze to stejně bude v paměti -- use full id! )
 todo -- Takže hash je nakonec zbytečný, spíš fakt nějaký to id..
 
+## Memory-aware cache
+- perhaps single cache for all my objects
+- LRU, with set memory limit. implementation: customized std's lru_cache, fullness indicated by available memory (psutil) -- https://stackoverflow.com/questions/23477284/memory-aware-lru-caching-in-python, 
+todo vyjit z https://gist.github.com/wmayner/0245b7d9c329e498d42b, ale zkopirovat python 3.8 kod
+
 to stejny z komentu cesky:
 cachovani nebude fungovat dobre (argy z SMCRA), i presto, ze hash Entity vraci hash full id. Totiz stejne bude (kvuli moznym kolizim) Structure,.. v pameti
 -- dal taky jestlize nebude nacachovany result napr. chain, pak tam bohuzel zustane (ma reference na parenty...). Jenze to je - GetMainChain
@@ -132,3 +137,13 @@ SCOP
         - which is what I want in my analyses, right? (domain movements)
 
 use CATH
+
+# Analyses
+
+interdomain surface needs BioPython's Entity (atoms names (for sphere sizes) and coordinates)
+rmsd needs just CA coordinates
+ss needs either the whole structure (DSSP - needs whole mmcif, cannot be MMCIFIO by biopython -- missing fields for the program), or if I get the info via an API, just the residue ids (label_seq_id, or author number)
+
+domain mapping needs again just residue ids
+with the residue ids i can get the structure Residue
+

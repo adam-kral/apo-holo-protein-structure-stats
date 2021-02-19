@@ -57,9 +57,6 @@ class Analyzer:
 class CachedAnalyzer(Analyzer):
     """ Holds instances of analyses and their results. Analyses are run though this object. But then -- parallelization? Serialization?"""
 
-    # tady nekde bude kod, kde pujde analyza spustit na batchi, klidne multiprocessove a prubezne se bude serializovat nejakym serializerem
-    #   nebo klidne bude nejakej batch spoustec jina class
-
     def __call__(self, *args, **kwargs):
         return self.analysis_cached_run(*args, **kwargs)
 

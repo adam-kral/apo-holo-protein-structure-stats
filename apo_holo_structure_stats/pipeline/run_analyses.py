@@ -7,7 +7,8 @@ from typing import List, TypeVar, Generic
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
 
 from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, ChainResidues, CompareSecondaryStructure, \
-    GetSecondaryStructureForStructure
+    GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterdomainSurface, GetSASAForStructure, ChainResidueData, ResidueId, \
+    DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
 from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
 
 
@@ -86,15 +87,32 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
     # apo-holo analyses
 
     get_main_chain = GetMainChain((GetChains(),))
-    rmsd_a = GetRMSD((get_main_chain,))
+
+    get_c_alpha_coords = GetCAlphaCoords()
+    get_centroid = GetCentroid((get_c_alpha_coords,))
+    get_centered_c_alpha_coords = GetCenteredCAlphaCoords((get_c_alpha_coords, get_centroid))
+    get_rotation_matrix = GetRotationMatrix((get_centered_c_alpha_coords,))
+
+    get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, get_rotation_matrix))
+    get_rmsd = GetRMSD((get_centered_c_alpha_coords, get_rotation_matrix))
 
     ss_a = CompareSecondaryStructure((GetSecondaryStructureForStructure(),))
+    interdomain_surface_a = GetInterdomainSurface((GetSASAForStructure(),))
 
-    a_h_struct_analyzers = [rmsd_a, ss_a]  # SS
-    a_h_domain_analyzers = [rmsd_a]  # SS
-    a_h_domain_pair_analyzers = [rmsd_a]  # taky rmsd (jejich graf rmsd vs bending), rotation (vyuzije rmsd, tady to zrovna asi smysl dává), screw axis (posunutí), interdomain surface
+    comparators_of_apo_holo__residues_param = [get_rmsd, interdomain_surface_a]
+    comparators_of_apo_holo__residue_ids_param = [ss_a]
+
+    comparators_of_apo_holo_domains__residues_param = [get_rmsd, interdomain_surface_a]
+    comparators_of_apo_holo_domains__residue_ids_param = [ss_a]
+
+    comparators_of_apo_holo_2domains__residues_param = [get_hinge_angle]
+
+    a_h_domain_analyzers = [get_rmsd]  # SS
+    a_h_domain_pair_analyzers = [get_rmsd]  # taky rmsd (jejich graf rmsd vs bending), rotation (vyuzije rmsd, tady to zrovna asi smysl dává), screw axis (posunutí), interdomain surface
         # tady se vyuzije caching? rotační matrix na zarovnání první domény
 
+
+    get_domains = GetDomainsForStructure()
     # nejrychlejsi /pro analyzu rmsd/ bude nacist CA z chainu/domen do np arraye. Pak porovnávat jen ty arraye, ale pak to nebude moc extensible pro jiny analyzy
     # napr interdomenovy povrch
     # tohle to zrychli víc nez nejaky caching centroidu (ten skoro vubec, rychly numpy, kdyz uz mam atomy v arrayi)
@@ -103,7 +121,6 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
 
     # runner, co to umí spustit, jak chce, (plánuje multivláknově), podle těch kombinací dvojic třeba, jak má, je k ničemu, pokud ty argumenty budou plný, ,velký, objekty
     # protoze se zadela pamět jestě pred tim, nez se neco spusti. -> identifikatory chainů, domén (domény získám z apicka)
-
 
     # apo-holo analyses
 
@@ -119,10 +136,11 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
             continue
 
         apo_chain_residues, holo_chain_residues = map(
-            lambda chain: ChainResidues(list(r for r in chain.get_residues() if is_aa(r)), chain.get_parent().get_parent().id, chain.id), (apo_main_chain, holo_main_chain)
+            lambda chain: ChainResidues([r for r in chain.get_residues() if is_aa(r)], chain.get_parent().get_parent().id, chain.id),
+            (apo_main_chain, holo_main_chain)
         )
 
-        for a in a_h_struct_analyzers:
+        for a in comparators_of_apo_holo__residues_param:
             # this fn (run_analyses_for_isoform_group) does not know anything about serialization?
             # But it will know how nested it is (domain->structure) and can pass full identifiers of structures/domains
 
@@ -130,33 +148,60 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
             # because what I would like is to output the analysis with objects identifiers, and then output the objects, what they contain (e.g. domain size?)
 
 
+        apo_chain_residue_ids, holo_chain_residue_ids = map(
+            lambda chain_residues: ChainResidueData[ResidueId]([ResidueId.from_bio_residue(r, chain_residues.chain_id) for r in chain_residues], chain_residues.structure_id, chain_residues.chain_id),
+            (apo_chain_residues, holo_chain_residues)
+        )
 
-    # ---------- odtud níže zatim nefunkční stub až do konce funkce
+        for c in comparators_of_apo_holo__residue_ids_param:
+            serializer_or_analysis_handler.handle(c, c(apo_chain_residue_ids, holo_chain_residue_ids), apo_chain_residue_ids, holo_chain_residue_ids)
 
         # domain analysis, asi by mely byt stejny (v sekvenci hopefully)
-        apo_domains = [] #apo.get_domains()  # opět může být cachované, tentokrát to bude malá response z apicka, obdobně SS
+        #apo_domains = [] #apo.get_domains()  # opět může být cachované, tentokrát to bude malá response z apicka, obdobně SS
         # přesně! Tady je to nenačte, ty atomy. Pouze vrátí identifikátory a rozsah. Pokud bude někdo chtít, bude si moct to přeložit do BioPythoní entity, ten analyzer ale cachovaný nebude mezi fóry nebo vůbec
-        holo_domains = [] #holo.get_domains()
+        #holo_domains = [] #holo.get_domains()
         # ještě se bude muset translatovat na array coordinates (to bude taky pomalý, ale nebude obrovský -- odhad
         # domena max 200, takze 200*3*8(double)= 4.8 kB= nic
 
-        corresponding_domains = list(zip(apo_domains, holo_domains))
+        apo_domains = sorted(get_domains(apo_code), key=lambda d: d.domain_id,)
+        holo_domains = sorted(get_domains(holo_code), key=lambda d: d.domain_id)
 
-        for d_apo, d_holo in corresponding_domains:
-            a_h_domain_analyzers
 
-        for (d1_apo, d1_holo), (d2_apo, d2_holo) in itertools.combinations(corresponding_domains, 2):
-            a_h_domain_pair_analyzers
+        # todo assert domains equal in sequence
+        #   now equal in seqres? and correspond (only checks auth_seq_id/label_seq_id correspond, but that might be wrong - a different
+        #   pdb structure might have a different numbering! TODO check sequence somehow (ideally without requiring to load the structure)
+        for d_apo, d_holo in zip(apo_domains, holo_domains):
+            assert len(d_apo) == len(d_holo) == sum(i == j for i,j in zip(d_apo, d_holo))
 
-        # # da se rict, ze zde jsou pouze twin struct analyzers (asi bych to mohl dat jako TwinStructAnalyzer?)
-        # self.run_analyzers_with_args(apo, holo)
+        apo_domains__residues = [DomainResidues.from_domain(d_apo, apo) for d_apo in apo_domains]
+        holo_domains__residues = [DomainResidues.from_domain(d_holo, holo) for d_holo in holo_domains]
+
+        for d_apo, d_holo in zip(apo_domains__residues, holo_domains__residues):
+
+            for a in comparators_of_apo_holo_domains__residues_param:
+                serializer_or_analysis_handler.handle(a, a(d_apo, d_holo), d_apo, d_holo)
+
+        for d_apo, d_holo in zip(apo_domains, holo_domains):
+            d_apo = d_apo.to_set_of_residue_ids(apo_code)
+            d_holo = d_holo.to_set_of_residue_ids(holo_code)
+
+            for a in comparators_of_apo_holo_domains__residue_ids_param:
+                serializer_or_analysis_handler.handle(a, a(d_apo, d_holo), d_apo, d_holo)
+
+        for (d1_apo, d1_holo), (d2_apo, d2_holo) in itertools.combinations(zip(apo_domains__residues, holo_domains__residues), 2):
+            for a in comparators_of_apo_holo_2domains__residues_param:
+                serializer_or_analysis_handler.handle(a, a(d1_apo, d2_apo, d1_holo, d2_holo), d1_apo, d2_apo, d1_holo, d2_holo)
+
+            d1d2_apo = d1_apo + d2_apo
+            d1d2_holo = d1_holo + d2_holo
+            serializer_or_analysis_handler.handle(get_rmsd, get_rmsd(d1d2_apo, d1d2_holo), d1d2_apo, d1d2_apo)  # todo hardcoded analysis
 
     # holo-holo analyses
 
-    h_h_struct_analyzers = [rmsd_a, ss_a]  # SS
+    h_h_struct_analyzers = [get_rmsd, ss_a]  # SS
 
-    h_h_domain__analyzers = [rmsd_a]  # SS
-    h_h_domain_pair_analyzers = [rmsd_a]  # rotation, screw axis, interdomain surface
+    h_h_domain__analyzers = [get_rmsd]  # SS
+    h_h_domain_pair_analyzers = [get_rmsd]  # rotation, screw axis, interdomain surface
 
     for holo1_code, holo2_code in itertools.combinations(holo_codes, 2):
         logging.info(f'running analyses for ({holo1_code}, {holo2_code}) holo-holo pair...')

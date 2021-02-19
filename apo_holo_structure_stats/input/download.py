@@ -1,12 +1,34 @@
+import gzip
 import logging
+import urllib.request
 from collections import defaultdict, namedtuple
 from io import StringIO
+from pathlib import Path
 
 import requests
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
+
+REQUESTS_TIMEOUT = 10
+
+
+class RequestsSessionFactory:
+    retries = Retry(total=5, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504])  # https://stackoverflow.com/a/35504626/3791837
+
+    @classmethod
+    def create(cls):
+        s = requests.Session()
+        s.mount('http://', HTTPAdapter(max_retries=cls.retries))
+        s.mount('https://', HTTPAdapter(max_retries=cls.retries))
+        return s
+
+
+def get_requests_session():
+    return RequestsSessionFactory.create()
 
 
 def download_and_save_file(url, filename):
-    r = requests.get(url, stream=True)
+    r = get_requests_session().get(url, stream=True, timeout=REQUESTS_TIMEOUT)
 
     with open(filename, 'wb') as f:
         for chunk in r.iter_content(chunk_size=1024 * 1024):
@@ -14,7 +36,7 @@ def download_and_save_file(url, filename):
 
 
 def download_file_stringio(url):
-    r = requests.get(url, stream=True)
+    r = get_requests_session().get(url, stream=True, timeout=REQUESTS_TIMEOUT)
 
     file_like = StringIO()
     for chunk in r.iter_content(chunk_size=1024 * 1024, decode_unicode=True):
@@ -27,17 +49,19 @@ def download_file_stringio(url):
 def get_structure_stringio(code):
     return download_file_stringio(f'https://models.rcsb.org/v1/{code}/full')
 
-# def get_full_mmcif_stringio(code):
-#     url = f'ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/{code[1:3]}/{code}.cif.gz'
-#
-#     with urllib.request.urlopen(url) as response:  # ~60 MB
-#         with gzip.open(response, 'rt', newline='', encoding='utf-8')
+def get_full_mmcif_stringio(code, dir: Path):
+    url = f'ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/{code[1:3]}/{code}.cif.gz'
+
+    with urllib.request.urlopen(url) as response:  # ~60 MB
+        with gzip.open(response, 'rt', newline='', encoding='utf-8') as r:
+            with open(dir / f'{code}.cif', 'w') as f:
+                f.write(r.read())
 
 
 def get_best_isoform_for_chains(struct_code):
     """ Returns dict chain_id -> list of SegmentMapping(isoform_id, label_seq_id__begin, label_seq_id__end, unp_begin, unp_end, identity) """
 
-    r = requests.get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}')
+    r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}', timeout=REQUESTS_TIMEOUT)
     r.raise_for_status()
     data = r.json()[struct_code]['UniProt']
 
@@ -121,52 +145,53 @@ def get_secondary_structure(struct_code: str):
     }
     """
 
-    r = requests.get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{struct_code}')
+    r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
     # if I knew entity id (not with biopython's parser), I could append it to the url
 
     r.raise_for_status()
     return r.json()[struct_code]['molecules']
 
 
+
+
+
 def get_domains(struct_code: str):
-    """ Get SCOP domains from pdbe API
+    """ Get CATH domains from pdbe API.
 
-    :param struct_code:
-    :return:
+    docs: https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/#api-SIFTS-GetPDBCATHMapping
 
-    docs: https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/#api-SIFTS-GetPDBSCOPMapping
+    How are the domains represented?
+
+    The domains are composed of residue segments: CATH's API has pdb_segments array: http://www.cathdb.info/version/v4_1_0/api/rest/domain_summary/1cukA01
+    Domains are not always contiguous. A domain can be inserted in between residues belonging to another one (e.g. 1ex6 in tests). The
+    inserted residues (domain) then form their own structurally packed domain.
+
+    More on CATH domain representation: http://wiki.cathdb.info/wiki-beta/doku.php?id=data:cathdomall
+
+    See the example response below and the return statement for the return value of this function.
 
     Example API json response:
     {
         "1cbs": {
-            "SCOP": {
-                "50847": {
-                    "superfamily": {
-                        "sunid": 50814,
-                        "description": "Lipocalins"
-                    },
-                    "sccs": "b.60.1.2",
-                    "fold": {
-                        "sunid": 50813,
-                        "description": "Lipocalins"
-                    },
-                    "identifier": "Fatty acid binding protein-like",
-                    "class": {
-                        "sunid": 48724,
-                        "description": "All beta proteins"
-                    },
-                    "description": "Fatty acid binding protein-like",
+            "CATH": {
+                "2.40.128.20": {
+                    "homology": "Lipocalin",
+                    "name": "Cellular retinoic acid binding protein type ii. Chain:a. Engineered:yes",
+                    "class": "Mainly Beta",
+                    "architecture": "Beta Barrel",
+                    "identifier": "Lipocalin",
+                    "topology": "Lipocalin",
                     "mappings": [
                         {
-                            "entity_id": 1,
+                            "domain": "1cbsA00",
                             "end": {
                                 "author_residue_number": 137,
                                 "author_insertion_code": "",
                                 "residue_number": 137
                             },
                             "segment_id": 1,
+                            "entity_id": 1,
                             "chain_id": "A",
-                            "scop_id": "d1cbsa_",
                             "start": {
                                 "author_residue_number": 1,
                                 "author_insertion_code": "",
@@ -180,7 +205,7 @@ def get_domains(struct_code: str):
         }
     }
     """
-    r = requests.get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/scop/{struct_code}')
-    r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested with new release -- sifts mapping exists but there is no scop data yet)
+    r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/cath/{struct_code}', timeout=REQUESTS_TIMEOUT)
+    r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested with new release -- sifts mapping exists but there is no cath data yet)
 
-    return r.json()[struct_code]['SCOP']
+    return r.json()[struct_code]['CATH']
