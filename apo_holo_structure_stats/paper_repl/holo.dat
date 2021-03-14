@@ -1,0 +1,812 @@
+# When publishing work using this dataset please cite the following reference:
+# Brylinski M, Skolnick J. (2008) What is the relationship between the global 
+# structures of apo and holo proteins? Proteins 70, 363-77.
+#
+# Format: #_of_domains(PDP) #_of_conformers PDB_codes
+
+   1   4  101m_ 1mtk_ 1mtj_ 1mym_
+   2  17  10gsA 3pgtB 8gssA 2a2rA 2a2sB 1zgnB 20gsB 19gsA 11gsB 7gssB 2gssA 18gsA 12gsA 5gssB 9gssB 6gssA 13gsA
+   1  66  1a00A 1yvqC 1mkoC 1nejC 1m9pC 1bbbC 1buwA 1yffG 1yziA 1fn3C 1yvtA 1hhoA 1k1kA 2dn3A 1yeuA 1yieA 1yeoA 1ljwA 1rqaC 2d5zA 1ye0A 1a3nA 2d60A 2hbsC 1yihA 1gzxA 6hbwC 1c7dA 1rq4A 1o1pA 1yh9C 1y7dA 1yheA 1ye2C 1y46A 1rpsC 1y5kC 1y7gA 1y4rA 1y31A 1y4qA 2dn2C 1y5jA 1y35A 1y4vA 1y4pA 1y83A 2hhbC 1y4fA 1y4bA 1bz1C 1rq3A 1dxuC 1y85C 1xz2C 1dxvC 1hbaC 1bz0C 1dxtC 1y7zC 1y5fC 1xxtC 1y0wC 1y45C 1a01C 1a0zA
+   1   6  1a07A 1y57A 1a09A 1a08A 1a1cA 1a1bA
+   2   2  1a0fA 1n2aA
+   2   2  1a27_ 1i5rA
+   1   2  1a28B 1sr7B
+   1   2  1a2b_ 1cxzA
+   1  10  1a46H 2c90B 2c8zB 2c8xB 2c8wB 1sb1H 2c8yB 2c93B 1o2gH 1a61H
+   1   3  1a4h_ 2brcA 1bgq_
+   2   3  1a4iA 1diaA 1digA
+   1   2  1a4mA 2ada_
+   2   2  1a5sB 1beuB
+   1   3  1a5v_ 1a5w_ 1a5x_
+   2   2  1a8a_ 1a8b_
+   1   2  1a8gA 1ebyB
+   1   2  1a95B 1a96C
+   1  17  1aa4_ 2eutA 2eunA 2eurA 2euuA 2eupA 2eusA 2euqA 2as3A 2as6A 2as2A 1cpf_ 2as1A 2aqdA 1cpe_ 1cpd_ 2as4A
+   1  11  1ab9B 1yphD 1p2qA 1ca0G 1hjaB 1n8oB 4vgcB 2vgcB 3vgcB 1afqB 1vgcB
+   2   4  1af2A 1ctu_ 1ctt_ 1aln_
+   1   2  1afa1 1afb2
+   1   6  1afqC 1ca0H 1yphE 1hjaC 1n8oC 1p2qA
+   4   6  1ai4B 1ai7B 1ajqB 1ai5B 1ajnB 1ajpB
+   2   7  1akd_ 1dz9B 1o76B 1dz8B 1uyuB 1dz4B 1dz6B
+   1   3  1akq_ 1aku_ 1akv_
+   2   2  1aky_ 2aky_
+   2   3  1al6_ 6cscA 1amz_
+   2   3  1aofA 1aoqA 1aomB
+   4   2  1aogA 1bzlA
+   2   7  1aqdA 1d5xA 1fv1A 1j8hA 1jwuA 1sjeA 1t5wA
+   2   8  1aqdB 1kluB 1sjhB 1sjeB 1pywB 1t5xB 2g9hB 1t5wB
+   3   3  1aqm_ 1g94A 1g9hA
+   1   2  1aquB 1aqyB
+   1   6  1awqA 1awvB 1nmkA 1yndB 1awrB 1awuA
+   1   3  1ayx_ 2f6dA 2fbaA
+   1   3  1azm_ 1czm_ 1bzm_
+   1   2  1azsB 1cs4B
+   1  17  1b0dA 1jttL 1ri8B 1zvyB 1t3pA 2blxA 2blyA 1dpwA 1h87A 1yikA 1lzc_ 1yilA 1n4fA 1ykzX 1jj0A 1uih_ 1yl1X
+   2  26  1b0gA 2bsuD 1lp9H 2bsvD 2f53A 1i4fA 1tvhD 1tvbA 1qewA 1ogaA 1im3M 1t20A 1s8dA 1t1yA 1t1wA 1t1xA 1t1zA 2bnrA 2c7uD 2bnqA 1duzA 2gitA 1eezA 1duyD 1i1yD 1eeyD
+   1   3  1b11A 1fivA 4fiv_
+   1   2  1b2vA 1dk0B
+   2   3  1b38A 1pxlA 1b39A
+   1   9  1b42_ 1vp3_ 1jszA 1v39_ 3mag_ 1p39_ 2vp3_ 1bky_ 3mct_
+   1   2  1b5eA 1b5dA
+   2   2  1b63A 1nhiA
+   1   2  1b7vA 1c75A
+   2   2  1b8fA 1gkmA
+   3   3  1b9jA 1olcA 2olbA
+   1   3  1b9sA 1b9tA 1b9vA
+   1   2  1bbzA 1opkA
+   3   2  1bc5A 1af7_
+   3   2  1bfd_ 1ynoA
+   1   2  1bfn_ 1q6cA
+   1   3  1bfvH 2bfvH 1cfvH
+   3   2  1bg0_ 1m15A
+   2   2  1bif_ 3bifA
+   4  10  1bj5_ 1n5uA 1gniA 1e7fA 1ha2A 2bxmA 1h9zA 1e7cA 1hk4A 1e7gA
+   1  13  1bk0_ 1w05A 1oc1A 1w06A 1w04A 1uzwA 1hb2A 2bu9A 1w03A 1odmA 1w3vA 1hb3A 1w3xA
+   1   7  1bm7A 1y1dA 1u21B 1z7jB 1tt6A 2b15B 1tz8C
+   1   4  1bmqA 2h48A 1rwkA 1rwnA
+   1   4  1bmqB 2hbrB 2hbqB 1rwnB
+   1   2  1br5A 1br6A
+   1   2  1bs1A 1damA
+   1   5  1bs4A 1bs6C 1bs8C 1bszC 1icjC
+   2  11  1btoA 1ye3A 1hf3A 1heuB 1hetA 1mg0C 1n92B 1p1rD 3btoC 1ldeC 1ldyD
+   1  11  1bviA 5gsp_ 3gsp_ 1gsp_ 1rga_ 2rnt_ 4bu4A 1i0vA 2bu4A 1i0xA 7gspA
+   1   2  1bzcA 1bzhA
+   2   4  1c0iA 1c0pA 1c0kA 1c0lA
+   3   2  1c1hA 1c9eA
+   1   7  1c21A 1yvmA 3matA 1c23A 1c24A 1c27A 1c22A
+   1   5  1c29A 1c8vA 1c9dA 1cw2A 1cx9A
+   2   3  1c2tA 1jkxA 1cde_
+   1  10  1c3bA 1xgiB 1l2sB 1xgjB 1ke0B 1kdwB 1ke3B 1ga9A 1my8A 1kdsB
+   1   2  1c3nA 1c3mA
+   2   2  1c3vA 1p9lB
+   1   3  1c5wB 1c5yB 1c5xB
+   2   3  1c63A 1c65A 1c64A
+   2   6  1c82A 1f9gA 2brpA 1w3yA 1ojmA 1ojpA
+   1   2  1c9uA 1cq1B
+   1   5  1cbq_ 2fr3A 3cbsA 2cbsA 1cbs_
+   5   4  1cdg_ 1cxi_ 1cxh_ 1cxe_
+   1   2  1cf0A 1cjfA
+   2   2  1cfmA 1ewhB
+   2   7  1cg0A 1hopB 1honA 1hooA 1gim_ 1nht_ 1juy_
+   1   2  1cgkA 1cgzA
+   2   6  1cjcA 1e6eA 1e1lA 1e1nA 1e1kA 1e1mA
+   1  34  1cjrB 1u1bB 1o0mA 1w4qB 1o0oA 1o0nA 1rob_ 1w4pB 1z6dA 1o0fB 1rnd_ 1rca_ 1rnc_ 1z6sA 7rsa_ 1w4oA 1o0hB 1d5eB 1rbe_ 1z3lE 1j80B 1z3mE 1d5dB 1fevB 1rbd_ 1j81B 1rbi_ 1z3pE 1rbc_ 1rbh_ 1rbg_ 1j82B 1rbf_ 1j7zB
+   1   2  1ckaA 1ckbA
+   3   2  1ckmA 1cknA
+   2   7  1cm1A 2f3zA 1iq5A 2f3yA 1yr5A 1qiwB 1wrzA
+   1   2  1co6A 1io3A
+   1   3  1cpq_ 1rcpA 1nbbB
+   1   3  1cs4A 1azsA 1culA
+   1   2  1cteA 1theB
+   1   4  1ctqA 1p2sA 1p2vA 1qraA
+   2   2  1culC 1cs4C
+   1   7  1cvnA 1nxd4 1qdcD 1jw6A 1gicA 1i3hA 5cnaC
+   3   2  1cw1A 1cw4A
+   1   3  1cxa_ 1l9bC 1cxc_
+   1   2  1cyi_ 1cyj_
+   3  19  1d0cA 1fopA 1d1yA 1dm8A 1d1wA 1ed5A 1d1xA 1ed6A 1dm7A 1d1vA 1ed4A 1dm6A 1dmkA 1folA 1fooA 1foiA 2g6oA 1fojA 1d0oA
+   2   4  1d0hA 1fv3A 1fv2A 1dllA
+   2   2  1d0kA 1d0lA
+   2   2  1d0sA 1d0vA
+   1   2  1d2aB 1d1qA
+   1  20  1d2uA 1koiA 1x8oA 2at5X 2at8X 1ywbA 1ikjA 1ywaA 1x8nA 1u0xA 1ml7A 1x8qA 2at4X 2at6X 2at7X 1ywcA 1x8pA 1ywdA 1ikeA 1d3sA
+   1   3  1d4tA 1m27A 1d4wA
+   1   9  1d7iA 2dg3A 1j4rD 1qpfA 3fapA 1fkd_ 2fke_ 2fapA 1d7jB
+   3   7  1d8dA 1tn8A 1kzoA 1tn7A 1jcrA 1kzpA 1jcsA
+   2   5  1d8dB 1tn8B 1tn7B 1kzpB 1jcsB
+   1   5  1dawA 1lpuA 1lr4A 1dayA 1lp4A
+   1   2  1db1A 1ie8A
+   2   2  1dbvO 2dbvQ
+   1   2  1ddrA 1ddsB
+   2   2  1de5B 1de6C
+   2   2  1dgbA 1dghC
+   3   2  1dhs_ 1rlzA
+   1   2  1diiC 1wveD
+   1   6  1dioA 1egmA 1egvL 1uc4A 1eexL 1uc5L
+   3   2  1djnA 1o94A
+   1  11  1djrD 1eefM 1lt6M 1jqyV 1ltaE 1ltiH 1fd7M 1lt4H 1lt3H 1efiF 1pziH
+   3   2  1djwA 1djxA
+   1   3  1dkdA 1kp8K 1sx3L
+   2   2  1dkpA 1dkqA
+   2   4  1dlmA 1dmhB 1dltB 1dlqA
+   1   2  1dluA 1dlvD
+   3   2  1dmr_ 3dmr_
+   1  10  1dmwA 1mmtA 1mmkA 1kw0A 3pah_ 4pah_ 6pah_ 5pah_ 1lrmA 1j8uA
+   1   5  1dorA 2bslB 2bx7A 1jueB 2dorB
+   2   2  1dp5A 1dpjA
+   3   2  1dq8C 1dqaA
+   2   3  1dqrA 1kojB 1xtbB
+   2   7  1ds7A 1oo6A 1ylrB 1oo5A 1ykiB 1ooqA 1idtA
+   1   3  1dt1A 1qyzA 1r0qA
+   1   5  1dud_ 1sehA 1rn8A 1euwA 1eu5A
+   3   8  1dv3L 1ogvL 2bnsA 1rg5L 1l9bL 2bozL 1kbyL 1dv6R
+   3   6  1dv3M 1rg5M 1ogvM 2bnsB 1ry5M 1dv6S
+   1   4  1dw0A 1dw1B 1dw2B 1dw3B
+   1  10  1dx6A 2cmfA 1zgcB 1h23A 1h22A 2ckmA 1odcA 1zgbA 1ut6A 1w6rA
+   1   7  1dzjA 1e00B 1dzkB 1e02A 1dzmA 1e06A 1dzpA
+   1   2  1dzrA 1dztB
+   3   4  1e1rA 1e79B 1w0jC 2ck3C
+   2   4  1e1rD 2ck3D 1h8eD 1w0jD
+   3   3  1e1tA 1e22A 1e24A
+   1   9  1e2dA 1nmzA 1e2fA 1e2eA 1nn1A 1nn0A 1nn3A 1nmxA 1nmyA
+   1   2  1e2mA 1e2pA
+   3   2  1e3zA 1e40A
+   1   3  1e4lA 1v08A 1e55B
+   2   2  1e4wH 1e4xH
+   2   2  1e4wL 1e4xM
+   1   2  1e5jA 1qi0A
+   3   2  1e6nA 1e6pB
+   1   3  1e83A 1e86A 1e84A
+   1   3  1ec8A 1ecqD 1ec9D
+   1   4  1ee1A 1kqpB 1ih8A 1fydA
+   1   6  1eexB 1dioE 1egvE 1uc5B 1uc4B 1egmB
+   1   2  1eg2A 1nw5A
+   2   5  1eg9A 1uuvA 1o7pA 1o7gA 1o7nA
+   1   2  1eghA 1ik4E
+   1   2  1egyA 1jinA
+   1   2  1ehbA 1cyo_
+   1   2  1ej1B 1l8bB
+   2   2  1ejcA 1ejdB
+   2   3  1ejjA 1o98A 1eqjA
+   2   2  1ek5A 1ek6A
+   1   2  1el3A 1t40A
+   3   6  1el5A 2a89B 1l9eA 2gb0B 1el8B 1el7B
+   2   5  1enuA 1n2vA 1k4gA 1k4hA 1f3eA
+   1   4  1eoaA 2buvA 1eocA 1eobA
+   1   5  1eoaB 2buqB 1eocB 2burB 1eobB
+   1   6  1eqmA 1ex8A 1q0nA 1f9yA 1rb0A 1raoA
+   2   3  1etpA 1m70A 1m6zA
+   2   2  1ev4C 1ev9A
+   2   3  1evkB 1evlA 1fyfB
+   1   5  1ewlA 1u9qX 1ewoA 1ewpA 1ewmA
+   2   2  1ex7A 1gky_
+   1   2  1exaA 1exxA
+   2   2  1ey3A 1dubF
+   1   3  1eyqA 1fm7B 1fm8A
+   2   2  1eyyA 1ez0A
+   4   3  1eyzA 1kjiB 1ez1B
+   2   3  1f06A 3dapB 2dap_
+   1   2  1f0nA 1f0pA
+   2   2  1f12A 1f17A
+   3   2  1f20A 1tllB
+   1   2  1f4vA 2b1jA
+   1   2  1f5fA 1lhvA
+   1   2  1f6kA 1f74C
+   1   3  1f8bA 1l7fA 1f8cA
+   1   2  1f9dA 1fbwA
+   1   3  1fdk_ 1g4iA 1mkv_
+   1   5  1fh7A 2xyl_ 1fhdA 1fh8A 1fh9A
+   1   5  1fj4A 2aq7D 2aqbD 2buiC 1fj8D
+   1   9  1fk0A 1fk6A 1fk3A 1fk5A 1mzm_ 1fk7A 1fk2A 1fk1A 1fk4A
+   1   2  1flv_ 1rcf_
+   1   2  1fm6A 1fm9A
+   1   4  1fm6D 2hfpA 1zgyA 1fm9D
+   1   8  1fn8A 1pq5A 1pq7A 1try_ 1gduA 1fy4A 1gdnA 1fy5A
+   2   3  1fnb_ 1fnc_ 1fnd_
+   2   5  1foaA 2am4A 2apcA 2am5A 2am3A
+   1   7  1fr8A 1nwgD 1o23D 1nqiD 1oqmB 1nkhB 1nf5B
+   2   3  1froA 1qipA 1qinB
+   1   3  1fw9A 2ahcB 1tt8A
+   1   3  1fwnA 1pe1B 1fwsB
+   2   2  1fwyA 1fxjA
+   2   3  1fxoA 1g0rG 1g1lF
+   1   7  1fzjB 1mwaL 1lk2B 1fzkB 1fzmB 1fzoB 1kpuB
+   1   2  1g0hA 1g0iB
+   1   7  1g3uA 1mrnA 1n5iA 1n5jA 1mrsA 1gtvA 1gsiA
+   1   3  1g4sA 1g69B 1g6cB
+   1   2  1g5tA 1g64B
+   2   5  1g6sA 1x8tA 2aayA 2aa9A 1g6tA
+   1   5  1g72A 2ad6C 2ad7A 4aahA 2ad8C
+   2   2  1g76A 1g79A
+   3   2  1g99A 1tuuB
+   3   2  1gbnA 2canA
+   1   2  1gczA 1gd0C
+   2   2  1gg9A 1ggfC
+   1   4  1gklA 1wb4B 1wb5B 1wb6A
+   0   3  1gm4A 1up9A 1gmbA
+   1   4  1gmpA 1gmrB 1rsnB 2sarA
+   4   3  1gqiA 1gqkB 1gqjB
+   2   4  1gqtA 1rksA 1rkd_ 1rk2C
+   2   4  1gs5A 1ohbA 1ohaA 1oh9A
+   3   6  1gskA 1hkzA 1of0A 1uvwA 1hkpA 1w6wA
+   1   3  1gsl_ 1lec_ 1led_
+   3   2  1gtkA 2ypnA
+   2   3  1gu7A 1n9gB 1gufA
+   1   2  1gvcA 1gv8A
+   1  10  1gvoA 1h63A 1h50A 2abaA 1gvqA 1h61A 1h62A 1h60A 1gvsA 1h51A
+   1   2  1gwlA 1gwmA
+   2   2  1gwtA 3atjB
+   1   4  1gwvA 1gx4B 1gwwB 1gx0B
+   2  19  1gxwA 8tliA 1thl_ 7tliA 1zdpE 5tmnE 6tmnE 2tmnE 1z9gE 4tmnE 2tlxA 8tlnE 1qf0A 1qf1A 1pe5A 1pe7A 1tlxA 1pe8A 1qf2A
+   2   3  1gxyA 1og1A 1gxzA
+   2   3  1gy9A 1os7D 1otjC
+   1   3  1gykA 2a3wC 2a3yA
+   1   2  1gyxA 1gyyB
+   1   3  1gzfA 1uziA 2a9kB
+   1   8  1gztA 1oxcA 1ovsA 1w8fD 1uzvB 1ourA 1ovpA 2bojD
+   1   3  1h16A 1h18B 1h17A
+   1   2  1h1dA 2cl5A
+   1   4  1h1lA 1qh8C 1qguC 1qh1A
+   2   8  1h24B 1okwD 1oiyD 2cchB 1oi9B 1h25B 1h27B 1h26B
+   1   3  1h2kA 1h2mA 1h2lA
+   1   2  1h2tZ 1h2uX
+   1   2  1h32B 1h33B
+   1   3  1h47A 2ao4A 1h48E
+   1   3  1h4oA 1oc3B 1hd2A
+   2   4  1h6aA 1h6cB 1rydA 1h6dF
+   3   3  1h72C 1h74B 1h73A
+   2   4  1h7fB 1h7hA 1h7gB 1h7tB
+   1   2  1h91A 1s44B
+   2   2  1h93A 1h94A
+   1   2  1hbg_ 2hbg_
+   1   4  1hbhB 1pbxB 2h8dD 2h8fD
+   1   4  1hbiA 4sdhB 3sdhB 1nwiB
+   1   4  1hfbA 1ofbB 1oabB 1ofoB
+   1   4  1hfs_ 2d1oA 1c3iB 1sln_
+   2   2  1hfwC 1hg1B
+   1   2  1hjsA 1hjuB
+   2   2  1hm8A 1hm9B
+   1   6  1hnnB 2g8nB 2an3B 2an5B 1yz3B 2an4B
+   1   2  1ho4A 1ixnD
+   2   2  1ho5A 1hpuB
+   2   4  1hp4A 1hp5A 1jakA 1m01A
+   1  34  1hqqA 2rthB 2rtoB 2rtiB 2rtnB 2rtpB 2rtqB 2rteB 2rtfB 2rtgB 2rtdB 2f01A 2izgB 2izlB 2rtrB 2izfB 2izhB 2rtk_ 2izk_ 2rtj_ 2izi_ 2rtl_ 2izj_ 2rtm_ 1vwiB 1vwlB 1vwjB 1vwkB 1vwaB 1vwbB 1rstB 1rsuB 1hy2D 1hxlA
+   2   3  1ht6A 1p6wA 1rpkA
+   4   4  1hu9A 1jnqA 1n8qA 1no3A
+   1   2  1hvq_ 1llo_
+   1   2  1hvvC 1sfcB
+   1   3  1hx3A 1q54B 1ow2B
+   2   3  1hyoA 2hzyB 1qcoB
+   1   2  1i12A 1i1dB
+   1   2  1i2bA 1i2cA
+   1   2  1i59B 1i58A
+   2   3  1i6mA 1m83A 1mauA
+   0   4  1i72B 1i7cB 1i7bB 1i79B
+   2   2  1i7yA 1ktpA
+   1   2  1i8fC 1lnxF
+   1   2  1i8iA 1i8kA
+   2   4  1ia1A 1m78B 1m7aB 1m79B
+   2   2  1ia9A 1iahA
+   1   2  1ib6A 1ie3D
+   1   4  1idrA 1s61B 1s56B 1rteB
+   2   2  1iepA 1opjB
+   2   2  1ig1A 1jklA
+   2   2  1ig3A 2f17A
+   1   2  1igb_ 1xryA
+   4   2  1ijeA 1g7cA
+   1   3  1ipeA 1ipfB 2ae2B
+   3   2  1ireB 1ugrB
+   1   6  1iupA 1uk9A 1ukbA 1uk8A 1ukaA 1uk7A
+   1   9  1ivjA 1ix3A 1dveA 1ulxA 1ix4A 1j2cA 1vgiA 1j02A 1ubbA
+   1   6  1iw0A 1wzfB 1wzgB 1wzdB 1iw1A 1v8xB
+   2   4  1iyhA 2cvdB 1iyiC 1v40A
+   6   3  1j09A 2cuzA 1n75A
+   2   5  1j0yA 1j10D 1j18A 1vemA 1j0zB
+   2   2  1j1bA 1j1cA
+   1   2  1j1rA 1j1sA
+   1   4  1j1zA 1kh3B 1korB 1j20D
+   1   2  1j2jA 1o3yA
+   3   2  1j3bB 1xkvB
+   1   3  1j3jC 1j3iD 1j3kD
+   1   2  1j53A 1j54A
+   1   2  1j9kA 1j9lB
+   1   9  1jacA 1ku8C 1kujC 1m26E 1pxdA 1ugyE 1ws5E 1ws4E 1ugwC
+   2   2  1jdc_ 1jdd_
+   2   4  1jg1A 1jg3A 1jg4A 1jg2A
+   2   7  1jg6A 1nvkA 1jivA 1jixA 1jiuA 1jg7A 1qkjA
+   2   2  1jjeA 1jjtA
+   6   2  1jjuA 1pbyA
+   2   2  1jjuB 1pbyB
+   3   2  1jkjE 2scuB
+   3   2  1jpnB 1o87A
+   1   2  1jpzB 1zo9A
+   1   2  1jr8A 1jraC
+   1   3  1jrkA 1k2eB 1k26A
+   2   3  1js4A 4tf4B 3tf4B
+   1   2  1jt1A 1k07B
+   3   2  1jv1A 1jv3A
+   1   2  1jvfA 1jw7A
+   3   2  1jwyB 1jx2B
+   2   3  1jx6A 1zhhA 2hj9A
+   0   2  1jy2O 1jy3O
+   2   2  1k0cB 1k0dB
+   4   2  1k1xB 1k1yB
+   1   5  1k4cC 1k4dC 1r3lC 1r3iC 1r3jC
+   1   3  1k4wA 1nq7A 1n4hA
+   1   3  1k9iA 1sl5A 1sl4A
+   2   3  1k9yA 1ka1A 1qgxA
+   1   8  1kbyH 1rzzH 1ogvH 1rzhH 2bozH 1rg5H 1yf6H 1ry5H
+   1   3  1kdnA 1s5zA 2befB
+   9   2  1keeA 1t36G
+   1   2  1khbA 1khfA
+   1   3  1khhA 1xcjA 1xclA
+   1   2  1kjlA 1kjrA
+   3   2  1kkpA 1kl1A
+   1   2  1kmoA 1po0A
+   1   3  1knaA 1kneA 1q3lA
+   1   2  1ko5A 1ko8A
+   2   2  1kq0A 1qzyA
+   2   2  1kt8B 1ktaA
+   1   2  1kuiA 1kukA
+   1   6  1kw1A 1q6qB 1q6oB 1q6lB 1xbvB 1q6rB
+   1   4  1kw6B 1eirA 1kw8B 1kw9B
+   4   2  1kwgA 1kwkA
+   3   2  1kywC 1kyzE
+   1   3  1l1gA 2de8A 2cv3A
+   1   4  1l4uA 2g1kA 1we2A 1l4yA
+   2   3  1l5bA 1m5mB 1m5jB
+   1   6  1l7kA 1mmuB 1mn0B 1mmyB 1mmzB 1mmxB
+   1   2  1le6B 1le7A
+   1   2  1lldA 1lthR
+   6   2  1llqA 1o0sA
+   1   2  1lo7A 1lo8A
+   1   5  1lq9A 1n5tB 1n5sB 1n5qB 1n5vA
+   1   2  1lr5A 1lrhD
+   1   2  1lxyA 1s9rB
+   1   2  1ly9A 1lycB
+   1   4  1lyxA 1o5xA 1m7oA 1m7pB
+   1   3  1m1pA 1m1rA 1m1qA
+   1   3  1m3dA 1t60T 1t61E
+   1   2  1m48A 1m49A
+   1   3  1m4dA 1m4gA 1m4iA
+   2   9  1m5bA 1syhA 1wvjA 1m5cA 2aixA 2al4E 1m5eB 2al5B 1nnkA
+   2   3  1m66A 1m67A 1n1gA
+   1   2  1m7hA 1m7gC
+   1   4  1m7jA 1v51A 1rjpA 1rk6A
+   1   4  1m7qA 1zzlA 1ouyA 1oukA
+   2   2  1m99A 1m9aA
+   4   3  1m9nA 1thzB 1oz0A
+   1   2  1mg2D 1mg3P
+   2   2  1mlyA 1mlzA
+   2   2  1mnzA 2glkA
+   2   4  1mopA 1n2hA 2a86A 1n2gA
+   2   3  1moq_ 1mor_ 1mosA
+   1   2  1mq5L 1fjsL
+   2   3  1mrzA 1t6xA 1t6zA
+   0   2  1mt1E 1n2mC
+   1   2  1muqA 1jznE
+   3   3  1mwvA 2b2rB 2b2sB
+   3   2  1mxdA 1mxgA
+   1   3  1n06A 1n08B 1n07B
+   1   2  1n13D 1n2mC
+   1   2  1n1pA 2gewA
+   2   2  1n22A 1n24A
+   2   8  1n51A 1wlrA 1wl6A 2bh3A 2bhaA 2bhbA 2bhdA 2bn7A
+   1   2  1n6hA 1r2qA
+   2   2  1n71A 2a4nA
+   1   2  1n7gC 1n7hB
+   1   2  1n8uA 1n8vB
+   1   2  1n9nA 1n9lA
+   1   3  1naeA 1o8sA 1od3A
+   1   4  1nc1A 1nc3A 1y6qA 1y6rA
+   2   4  1ndfA 1ndiB 2h3pB 2h3uB
+   2   2  1ne4A 1ne6A
+   1   3  1nf4A 1nfvG 1nf6J
+   1   8  1nf5A 1nheC 1nkhC 2fydC 1yroC 1o23C 1nwgA 2fycA
+   1   2  1nffA 1nfqD
+   2   3  1nhuA 2d3uB 2d41A
+   0   2  1nkzA 2fkwR
+   1   9  1nmeA 2h5iA 2c1eA 2c2oA 2c2mA 2c2kA 2cjyA 2dkoA 2cjxA
+   1   4  1nmeB 1cp3A 1nmsA 1nmqA
+   1   4  1nquA 1nqwA 1nqxC 1nqvD
+   1   3  1nsgB 3fapB 2fapB
+   1   2  1ntvA 1nu2A
+   1   2  1nu4A 1urnB
+   1   3  1nupA 1nuqA 1nuuA
+   1  11  1nuwA 1nv3A 1cnqA 1nv6A 1nv2A 1nuxA 1nv4A 1nv0A 1nv5A 1nuzA 1nuyA
+   2   3  1nvqA 1nvsA 1nvrA
+   1   2  1nw4A 1q1gD
+   1   3  1nwzA 1otbA 3pyp_
+   1   2  1nywA 1nzcB
+   3   5  1nzxA 1of7A 1o02C 1o01E 1nzzE
+   2   2  1o03A 1o08A
+   2   2  1o25D 1o2aD
+   1   2  1o61B 1o69B
+   1   2  1o71A 1o72B
+   1   2  1o82B 1o83B
+   1   2  1o9vA 1zplB
+   2   3  1oafA 2ghkX 2ghhX
+   1   8  1obxA 1w9eB 1yboA 1w9qB 1w9oB 1v1tB 1obzA 1obyB
+   1   2  1odiA 1odjB
+   2   4  1oe7A 2ca8A 2c80B 1oe8A
+   1   3  1oebB 2d0nC 1utiA
+   1   2  1of4A 1oh4A
+   1   2  1ofnA 1oi6B
+   3  14  1oj9A 1ojaA 1s2yA 1ojbA 2c65A 2bybA 2c64A 2c67A 2c66A 1s3bA 1s2qA 2c70A 1s3eA 1ojcA
+   4   2  1ojvA 1ok2A
+   2   8  1olsB 1v1rB 2bewB 2bevB 1oluB 1v16B 1v1mB 1v11B
+   3   2  1on3A 1on9E
+   2   2  1on6A 1omzB
+   1   3  1oreA 1zn9B 1zn8B
+   1   2  1orgA 1ow4B
+   1   2  1ot3A 1oe0A
+   3   6  1owlA 1qnf_ 1owpA 1owoA 1owmA 1ownA
+   1   2  1oxnA 1oxqD
+   3   2  1oxuA 1oxvB
+   1   6  1oynA 2fm0D 2fm5D 1q9mD 1zknD 1ptwA
+   3   2  1ozpA 1p0hA
+   2   3  1p1jA 1p1kA 1rm0A
+   1   2  1p4cA 1p5bA
+   1   3  1p5zB 1p61B 1p62B
+   2   4  1pax_ 1a26_ 3pax_ 2pax_
+   3   2  1pbb_ 1pbd_
+   3   2  1pg3B 1pg4B
+   3   3  1pgn_ 1pgp_ 1pgo_
+   6   3  1pj5A 1pj7A 1pj6A
+   2   2  1pjmB 1q1sC
+   1   2  1pnoA 1pnqA
+   2   2  1pot_ 1poy4
+   2   2  1pp9A 2a06N
+   2   3  1pp9B 1ppjB 2a06O
+   2   3  1pp9C 1ppjC 2a06C
+   2   3  1pp9D 1ppjD 2a06D
+   1   3  1pp9E 1ppjE 2a06E
+   1   3  1pp9F 2a06S 1ppjS
+   1   3  1pp9G 1ppjT 2a06T
+   3   4  1pt5A 1q6yA 1pt7A 1pt8A
+   1   4  1pu5A 2ag4B 1tjjB 2ag2B
+   1   2  1pvyA 1snnA
+   1   4  1pwzA 1zo8C 1px0B 1zmtB
+   1   2  1pzfA 1pzhB
+   1   2  1q0rA 1q0zA
+   1   4  1q16A 1y5nA 1y5lA 1y5iA
+   5   4  1q16B 1y5nB 1y5lB 1y5iB
+   1   2  1q4sA 1q4tA
+   2   2  1q8yA 1q97A
+   1   2  1q91A 1q92A
+   2   7  1q95A 2airA 1za2C 2fzkA 1r0cA 2fzgA 2fzcC
+   1   2  1qawA 1utfD
+   2   3  1qb7A 1qb8A 1qccA
+   1   2  1qbgB 1d4aC
+   3   2  1qexB 1s2eB
+   1   2  1qf9A 5ukdA
+   1   2  1qg8A 1qgsA
+   3   3  1qguB 1qh8D 1qh1D
+   1   2  1qh3A 1qh5B
+   1   2  1qj4A 1sc9A
+   2   2  1qk3A 1fsgA
+   5   2  1qltA 1qluB
+   7   2  1qsaA 1qteA
+   2   2  1qw8A 1qw9B
+   1   2  1qxaA 1qwzA
+   1   6  1qxrA 1x7nA 2gc1A 2gc3A 2gc2A 2gc0B
+   1   9  1qy0A 1zneA 1znhA 1qy2A 1znlA 1zndA 1qy1A 1znkA 1zngA
+   2   2  1qzzA 1r00A
+   1   2  1r4pB 2ga4C
+   2   3  1r4sA 1r56G 1r51A
+   2   2  1r7iA 1r31B
+   4   3  1r89A 1r8cA 1r8bA
+   2   2  1r9lA 1r9qA
+   2   2  1r9xA 1ra0A
+   2   3  1rboB 1rcxV 1rcoV
+   2   2  1reqA 6reqC
+   2   4  1reqB 7reqB 5reqD 4reqD
+   2   2  1rf4A 1rf6C
+   2   4  1ri1A 1ri4A 1ri3A 1z3cA
+   4   2  1ridA 1y8eA
+   1   2  1rj4B 2cj4B
+   1   2  1rjdA 1rjeC
+   2   2  1rltD 1rlmA
+   6   2  1rm6A 1sb3A
+   1   2  1rm6B 1sb3E
+   1   3  1rmtA 2b82A 2b8jA
+   2   3  1rqpA 2c4uE 2c2wC
+   1   3  1rr6A 1rszA 1rt9A
+   1   4  1rtxA 1s69A 1s6aA 2hz1A
+   2   4  1rwaA 1rwfA 1rwgA 1rwcA
+   2   9  1rxcB 1rxyB 1tgyA 1tgvA 1u1dE 1u1gF 1u1cC 1u1eD 1u1fF
+   3   2  1rz6A 1nmlA
+   1   2  1rzpB 2bwiA
+   1   4  1rzyA 4rhn_ 3rhn_ 5rhn_
+   2   2  1s0iA 1s0jA
+   1   2  1s18A 1s1dA
+   2   3  1s2gA 1s3fA 1s2iA
+   1   2  1s2nA 1sh7A
+   1   2  1s3zA 1s5kA
+   1   3  1s4nB 1s4pB 1s4oB
+   3   2  1s7gA 1yc2B
+   1   2  1s7lA 1s7nB
+   1   2  1s9pA 1tfcB
+   1   2  1sb9A 1sb8A
+   2   3  1scwA 1yqsA 1sdeA
+   1   3  1si6X 1y21A 1yjhA
+   1   2  1si9A 1tr0L
+   5   2  1sijA 1zcsA
+   2   4  1sjaA 1sjdB 1sjcD 1sjbD
+   1   2  1sjnB 1sixA
+   4   4  1sli_ 2sli_ 3sli_ 4sli_
+   1   3  1snc_ 1stg_ 1sth_
+   1   2  1ssxA 2h5cA
+   2   2  1st0A 1st4A
+   1   2  1suoA 2bdmA
+   2   3  1suwA 1z0sA 1z0uB
+   3   2  1szcA 1szdA
+   1   2  1t0qA 1t0sA
+   2   2  1t15A 1y98A
+   3   2  1t1rA 1t1sB
+   3   2  1t44A 2ff3B
+   1   2  1t4fM 2axiA
+   2   4  1t4gA 2fpkA 2fplA 2b21A
+   1   2  1t8tA 1t8uA
+   3   2  1t9cA 1t9dD
+   1   4  1t9sA 1tbfA 1xozA 1xp0A
+   1   2  1tc1B 1tc2B
+   1   2  1tcbB 1tccB
+   2   2  1te6A 2akzA
+   1   2  1tfkA 1v74A
+   1   2  1tj1A 1tj2A
+   2   5  1tj5A 2d2vA 1u2sA 2b1qA 2b1rA
+   1   3  1tjmA 1uowA 1tjxA
+   2   3  1tkeA 1tkgA 1tkyA
+   2   4  1tl9A 2g8jA 1tloA 2g8eA
+   1   2  1tr7A 1uwfA
+   1   2  1tv8A 2fb3A
+   1   2  1twqA 2aphB
+   1   2  1tx0B 1tx2B
+   2   2  1txzA 1ty8A
+   2   4  1tzbA 1tzcB 1x9iB 1x9hB
+   1   2  1u11A 2fwjA
+   2   3  1u1wA 1xuaB 1u1xB
+   1   2  1u27A 1u29A
+   1   2  1u3fA 1u3gA
+   2   3  1u55A 1xbnA 1u56A
+   2   2  1uakA 1ualA
+   1   2  1uaqA 1p6oA
+   1   3  1uf5A 1uf8B 1uf7B
+   6   3  1uh2A 2d0hA 1uh4A
+   3   2  1uh5A 1v35B
+   2   2  1uhiA 1uhkA
+   2   7  1uk4A 2a5iA 2alvA 2a5kA 2amdA 1wofA 2amqA
+   2   2  1ukvG 2bcgG
+   1   4  1uldA 1ulgB 1ulfB 1uleB
+   1   3  1umbA 1umcA 1umdA
+   1   2  1umnA 2bw1B
+   5   3  1uooA 1uoqA 1uopA
+   1   2  1up3A 1uozA
+   3   2  1upbB 1upcB
+   2   2  1uqtA 1uquA
+   1   3  1uqyA 1ur2A 1uqzA
+   2   2  1urdA 1urgA
+   1   4  1urvA 1ux9B 1uryB 1ut0B
+   1   2  1uscA 1usfB
+   2   2  1usiA 1uskC
+   1   2  1usqA 1ut1D
+   3   2  1uu1A 2f8jC
+   1   2  1uuqA 1uz4A
+   2   5  1uxnA 1uxqA 1uxtA 1uxrA 1uxuA
+   1   4  1uy0A 1uz0A 1uyyB 1uyzB
+   3   2  1v26A 1v25A
+   2   2  1v3tA 1v3vA
+   2   3  1v7uA 1x07A 1x06A
+   3   2  1v7wA 1v7xA
+   1   2  1v83A 1v84A
+   1   2  1v9tB 1vaiB
+   1   2  1v9zA 1vb6A
+   6   2  1vb9A 2d2oA
+   1   2  1vc8A 1vcdB
+   1   2  1vczA 1vd3A
+   1   2  1vd5A 2fuzA
+   2   2  1vhlA 1vhtB
+   4   2  1vj5A 1zd3A
+   2   2  1vjcA 1vjdA
+   2   8  1vrnC 1prcC 2prcC 4prcC 5prcC 6prcC 3prcC 2i5nC
+   7   2  1vrqA 1x31A
+   2   2  1vrqB 1x31B
+   2   2  1vzgA 1vzhB
+   5   2  1w0oA 1w0pA
+   1   2  1w1dA 1w1gA
+   2   2  1w2cA 1w2dA
+   1   2  1w37A 1w3iB
+   1   2  1w3oA 1w3rA
+   1   4  1w44A 1w48B 1w4aC 1w49C
+   1   2  1w4rC 1xbtC
+   2   2  1w5aA 1w5bB
+   3   2  1w5sB 1w5tB
+   2   2  1w61A 1w62A
+   1   2  1w6mB 1w6oB
+   3   2  1w8nA 1w8oA
+   1   2  1w92A 1q1fA
+   1   5  1w9uA 2iuzB 1w9vB 2a3eA 2a3cA
+   1   2  1waqA 2bhkA
+   2   2  1wb0A 1wawA
+   1   2  1wc0A 1wc3A
+   1   3  1wluA 1wlvA 1wn3H
+   2   3  1wm1A 1x2eA 1x2bA
+   2   2  1wngA 2dekA
+   2   3  1wnlA 1wqwB 1x01B
+   2   3  1wooA 1wopA 1worA
+   1   2  1wpvA 1wroB
+   2   2  1wq4A 1wq3A
+   1   2  1wraA 2bibA
+   2   2  1wuqA 1wurD
+   1   2  1wzeA 1wziA
+   3   3  1x28A 1x2aB 1x29B
+   2   2  1x54A 1x55A
+   1   2  1x6mB 1xa8B
+   2   2  1x8iA 1x8hA
+   2   2  1xaiA 1xagA
+   1   2  1xddA 1xdgA
+   2   2  1xefA 2ffaA
+   1   2  1xffA 1xfgB
+   1   2  1xg3B 1xg4A
+   3   2  1xjqB 1xnjB
+   1   5  1xp1A 1yimA 1xp9A 1xpcA 1xp6A
+   2   2  1xqwA 1xqxA
+   2   4  1xsiB 1xskD 2f2hF 1xsjF
+   2   8  1xu3A 1xvbB 1xveB 1xvfB 1xu5B 1xvgB 1xvdB 1xvcA
+   2   2  1xuuA 1xuzA
+   3   2  1xvuA 1xvvA
+   2   6  1xwsA 1xr1A 1yxtA 1yxuD 1yxxA 1yxvA
+   1   2  1xx1A 2f9rC
+   1   2  1xz1A 1xz3A
+   1   4  1y2uA 1y2vB 1y2wB 1y2xC
+   1   2  1y30A 2aq6A
+   2   2  1y3nA 1y3pA
+   1   2  1y5iC 1y5nC
+   1   2  1y9lA 1y9tA
+   1   3  1yczA 1yd0A 1yd1A
+   4   3  1yfrA 1ygbA 1yfsB
+   2   3  1yfuA 1yfwA 1yfxA
+   2   2  1yljA 1ymsA
+   2   2  1ym2B 1ym4B
+   1   2  1ynpB 1ynqB
+   2   2  1yonA 1yjqA
+   2   2  1yq3B 1yq4B
+   1   2  1yq3C 1yq4C
+   1   3  1yq3D 2h89D 1yq4D
+   2   2  1yqdA 1yqxB
+   1   2  1ys3A 1ysrA
+   1   2  1yunA 1yumA
+   1   2  1yv5A 1zw5A
+   3   2  1yvhA 2cblA
+   1   2  1yxdA 2atsB
+   1   4  1yy6A 2fooA 2fopA 2fojA
+   3   3  1z2nX 1z2pX 1z2oX
+   3   2  1z5aA 1z5bA
+   2   5  1za1B 2fzkB 2fzgD 2fzcD 1tugD
+   1   2  1zabA 2fr6D
+   3   2  1zarA 1tqmA
+   1   4  1zb6A 1zcwA 1zdwA 1zdyA
+   1   3  1zg7A 1zg9B 1zg8B
+   2   2  1zhqC 1zhsG
+   1   5  1zhtA 1zhyA 1zhzA 1zhxA 1zhwA
+   2   2  1zieA 1ziqA
+   4   2  1zmdA 2f5zJ
+   1   2  1zp3C 1zptB
+   2   3  1zq6A 1zq8A 1yh1A
+   2   2  1zsqA 1zvrA
+   2   2  1zvzA 1t01A
+   3   2  1zx9A 1zk7A
+   1   2  1zxcA 2a8hA
+   2   2  1zy4A 1zy5A
+   1   2  1zykA 2gvqD
+   1   2  1zz1A 1zz3B
+   2   2  1zz7A 1zzcB
+   1   3  2a4gC 2a4qC 2a4rC
+   1   5  2a50A 2a52A 2a56A 2a54A 2a53A
+   1   2  2a5fB 2a5dB
+   7   3  2a68C 2a6hM 2a69M
+   2   2  2a9aA 2a99A
+   2   4  2a9yA 2ab8A 2aa0A 2a9zA
+   1   2  2afkE 2afhE
+   1   3  2afwA 2afxB 2afzB
+   3   6  2aglA 2ah0B 2agwB 2agyB 2iuqB 2agzB
+   2   2  2ahvB 2ahwB
+   1   2  2aijX 2aikX
+   1   3  2apgA 2ar8A 2aqjA
+   1   2  2arcA 2aacB
+   1   2  2artA 2aruA
+   1   2  2b0mA 1d3hA
+   3   2  2b3bA 2b3fB
+   3   2  2b51A 2b56A
+   1   2  2b8tA 1xmrD
+   3   6  2b9wA 2bacA 2ba9A 2b9yA 2babA 2b9xA
+   2   2  2bb6A 2bbcA
+   1   3  2bcdA 1jk7A 2bdxA
+   1   2  2besA 2betE
+   2   2  2bexA 1z7xW
+   1   2  2bfnA 1k6eA
+   2   2  2bgiA 2bgjC
+   2   4  2bhpA 2iy6B 2bhqB 2bjkB
+   3   2  2bi7A 2bi8A
+   3   2  2biaB 1w23B
+   1   2  2bj7A 2bj8A
+   1   2  2bkvA 2bkxB
+   1   3  2blfB 2c9xB 2bpbB
+   2   2  2bnqD 2bnrD
+   2   2  2bnqE 2bnrE
+   2   2  2bo4A 2bo6B
+   1   2  2br8A 2c9tD
+   1   2  2bv7A 1wbeA
+   1   3  2bwaA 1h0bB 2bwcB
+   1   3  2bwmA 2bwrB 2c25B
+   1   2  2bznA 2c6qG
+   1   3  2bzzA 2c02A 2c05A
+   1   2  2c53A 2c56A
+   1   2  2c6zA 2ci5B
+   1   2  2ca9B 2cajB
+   3   2  2cbiA 2cbjB
+   1   2  2cbmA 2cboA
+   1   4  2cc8A 2cccA 1mogA 2ccbA
+   2   2  2cdbB 2cdcC
+   1   2  2ce8A 2ce9C
+   1   2  2ceqA 2cerA
+   2   2  2chlA 2izsA
+   2   3  2cjdA 2cjhA 2cjgA
+   1   2  2cnqA 2cnuA
+   1   4  2cnyA 2co1A 2co4A 2cnzA
+   1   2  2co0C 2cnxA
+   3   2  2cvwA 2cvxA
+   1   2  2cwfA 2cwhB
+   2   2  2cy0A 2ev9B
+   1   3  2cz5A 2czeB 2czfB
+   3   2  2d10A 1j19A
+   1   3  2d36A 2d37A 2d38A
+   2   2  2daaA 3daaA
+   2   2  2de3A 2de4B
+   4   2  2deyX 2dewX
+   4   2  2dkcA 2dkdA
+   1   2  2duaA 2hjpA
+   1   2  2dvuA 2dvxA
+   1   2  2evuA 2f2bA
+   4   5  2ez4A 2ez9B 2eztB 2ezuB 2ez8A
+   2   2  2f6uA 2f6xA
+   1   2  2f98A 2f99A
+   1   3  2fal_ 2fam_ 5mba_
+   2   2  2faqA 2farB
+   1   2  2fctA 2fcvA
+   1   2  2fgqX 2fgrA
+   2   2  2fhjA 2fhkD
+   2   2  2fibA 1re3C
+   1   2  2fp2B 2ao2B
+   1   2  2fqoA 2fqtA
+   1   3  2fqwA 2fqyA 2fqxA
+   1   2  2ft9A 2ftbA
+   4   2  2g28A 2ieaB
+   2   2  2g2yA 2g1hA
+   1   2  2gj9A 2gjaA
+   1   2  2gjlA 2gjnA
+   2   2  2gkeA 2gkjA
+   2   2  2gmsA 2gmuB
+   1   2  2gn4A 2gn8B
+   1   2  2go3A 1p42A
+   1   3  2gucA 2gudB 2gueA
+   1   2  2gxqA 2gxsA
+   2   3  2gz1A 2gz2B 2gz3D
+   4   2  2h21A 2h23A
+   1   3  2h8xA 2h8zA 2h90A
+   2   2  2hb6A 2hc9A
+   1   3  2hkzA 2hl0A 2hl1B
+   1   3  2hmtA 2hmvA 2hmuA
+   2   2  2hozA 2hp1A
+   1   3  2hpoA 2hptA 2dqmA
+   1   2  2hteC 2i7cA
+   2   2  2i3aA 2i3gA
+   2   2  2i66A 2i67A
+   3   2  2i80A 2i8cB
+   1   2  2j1eA 2j1fA
+   1   2  2j1sA 2j1vA
+   1   2  2por_ 3por_
+   1   2  351c_ 451c_
+   2   2  3gbp_ 1gca_
+   1   2  4tmkA 5tmpA

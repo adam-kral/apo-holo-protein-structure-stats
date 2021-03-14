@@ -5,12 +5,15 @@ import logging
 from typing import List, TypeVar, Generic
 
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
+from Bio.PDB.Chain import Chain
 
 from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, ChainResidues, CompareSecondaryStructure, \
     GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterdomainSurface, GetSASAForStructure, ChainResidueData, ResidueId, \
     DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
 from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
+from apo_holo_structure_stats.pipeline.logging import add_loglevel_args
 
+from apo_holo_structure_stats.core.analysesinstances import *
 
 TAnalyzer = TypeVar('TAnalyzer')
 
@@ -53,7 +56,7 @@ def chain_to_polypeptide(chain):
     polypeptides = ppb.build_peptides(chain, aa_only=0)  # allow non-standard aas?
 
     if len(polypeptides) != 1:
-        print('warning ', len(polypeptides), ' polypeptides from one chain, extending first pp')
+        logging.info('parsed f{len(polypeptides)} polypeptides from one chain, concatenating')
 
         for pp in polypeptides[1:]:
             polypeptides[0].extend(pp)
@@ -83,6 +86,10 @@ def sequences_same(ch1, ch2):
     return True
 
 
+
+
+
+
 def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], get_structure, serializer_or_analysis_handler: AnalysisHandler):
     # apo-holo analyses
 
@@ -106,10 +113,6 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
     comparators_of_apo_holo_domains__residue_ids_param = [ss_a]
 
     comparators_of_apo_holo_2domains__residues_param = [get_hinge_angle]
-
-    a_h_domain_analyzers = [get_rmsd]  # SS
-    a_h_domain_pair_analyzers = [get_rmsd]  # taky rmsd (jejich graf rmsd vs bending), rotation (vyuzije rmsd, tady to zrovna asi smysl dává), screw axis (posunutí), interdomain surface
-        # tady se vyuzije caching? rotační matrix na zarovnání první domény
 
 
     get_domains = GetDomainsForStructure()
@@ -149,7 +152,7 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
 
 
         apo_chain_residue_ids, holo_chain_residue_ids = map(
-            lambda chain_residues: ChainResidueData[ResidueId]([ResidueId.from_bio_residue(r, chain_residues.chain_id) for r in chain_residues], chain_residues.structure_id, chain_residues.chain_id),
+            lambda chain_residues: ChainResidueData[ResidueId]([ResidueId.from_bio_residue(r) for r in chain_residues], chain_residues.structure_id, chain_residues.chain_id),
             (apo_chain_residues, holo_chain_residues)
         )
 
@@ -239,9 +242,10 @@ if __name__ == '__main__':
     parser.add_argument('--isoform', help='process only structures with main chain of that isoform')
     parser.add_argument('structures_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
     parser.add_argument('output_file', help='dumped results of analyses')
-    args = parser.parse_args()
+    add_loglevel_args(parser)
 
-    logging.root.setLevel(logging.INFO)
+    args = parser.parse_args()
+    logging.basicConfig(level=args.loglevel)
 
     with open(args.structures_json) as f:
         structures_info = json.load(f)

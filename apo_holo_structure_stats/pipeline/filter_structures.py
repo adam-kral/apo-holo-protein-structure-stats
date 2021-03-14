@@ -12,6 +12,7 @@ from Bio.PDB.PDBExceptions import PDBConstructionWarning
 from Bio.PDB.Structure import Structure
 
 from apo_holo_structure_stats.core.analyses import GetChains, GetMainChain
+from apo_holo_structure_stats.pipeline.logging import add_loglevel_args
 from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
 
 
@@ -184,7 +185,10 @@ if __name__ == '__main__':
 
     parser.add_argument('pdb_codes_or_directory', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
     parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
+    add_loglevel_args(parser)
+
     args = parser.parse_args()
+    logging.basicConfig(level=args.loglevel)
 
     # translate input into structure filenames
     if args.is_directory:

@@ -107,8 +107,8 @@ class ResidueId(NamedTuple):
     # simplest, ok)
 
     @classmethod
-    def from_bio_residue(cls, residue: Residue, chain_id: str):
-        return ResidueId(residue.id[1], residue.id[2], chain_id)
+    def from_bio_residue(cls, residue: Residue):
+        return ResidueId(residue.id[1], residue.id[2], residue.get_parent().id)
 
 
 class SSType(Enum):
@@ -156,6 +156,10 @@ class SSForStructure:
         return self.ss_for_chains[r.chain_id].ss_for_residue(r)
 
 
+def is_sorted(lst: List):
+    return all(x <= y for x, y in zip(lst, itertools.islice(lst, 1)))
+
+
 class GetSecondaryStructureForStructure(CachedAnalyzer):
     """ caches SS for the whole structure
 
@@ -182,8 +186,11 @@ class GetSecondaryStructureForStructure(CachedAnalyzer):
                     strands_end.append(helix_segment['end']['author_residue_number'])
                     # todo sheet_id important?
 
-                ss_for_chains[chain['chain_id']] = SSForChain(sorted(helices_start), sorted(helices_end), sorted(strands_start), sorted(strands_end))
-                # don't know if the segment order from api guaranteed ascending, so sorted
+                # don't know if the segment order from api guaranteed ascending, so check that
+                assert is_sorted(helices_start)
+                assert is_sorted(strands_start)
+                # if I wanted to sort that, I would also need to sort helices_end accordingly (as pairs with the start segments), NOT on its own
+                ss_for_chains[chain['chain_id']] = SSForChain(helices_start, helices_end, strands_start, strands_end)
 
         return SSForStructure(ss_for_chains)
 
@@ -207,6 +214,9 @@ class SetOfResidueData(Generic[TResidueData]):
 
     def __iter__(self) -> Iterator[TResidueData]:
         return iter(self.data)
+
+    def __getitem__(self, item):
+        return self.data[item]
 
     def serialize(self):
         return self.get_full_id()
@@ -289,8 +299,9 @@ class DomainResidueMapping:
 
         return residue_count
 
-    def to_set_of_residue_ids(self, structure_id: str) -> SetOfResidueData[ResidueId]:
-        return DomainResidueData[ResidueId]([ResidueId(auth_seq_id, ' ', self.chain_id) for auth_seq_id in self], structure_id, self.chain_id, self.domain_id)
+    def to_set_of_residue_ids(self, structure_id: str, skip_auth_seq_id=lambda id: False) -> SetOfResidueData[ResidueId]:
+        return DomainResidueData[ResidueId]([ResidueId(auth_seq_id, ' ', self.chain_id) for auth_seq_id in self
+                                                if not skip_auth_seq_id(auth_seq_id)], structure_id, self.chain_id, self.domain_id)
 
 
 class GetDomainsForStructure(CachedAnalyzer):
@@ -309,22 +320,27 @@ class GetDomainsForStructure(CachedAnalyzer):
                 domains[domain_id].segment_beginnings.append(domain_segment['start']['author_residue_number'])
                 domains[domain_id].segment_ends.append(domain_segment['end']['author_residue_number'])
 
+        # don't know if the segment order from api guaranteed ascending, check that
+        for domain in domains.values():
+            assert is_sorted(domain.segment_beginnings)
+            # if I wanted to sort that, I would also need to sort segment_ends accordingly (as pairs with the start segments), NOT on its own
+
         return list(domains.values())
 
 
 class DomainResidues(DomainResidueData[Residue]):
     @classmethod
-    def from_domain(cls, domain: DomainResidueMapping, bio_structure: Structure):
-        bio_chain = bio_structure[0][domain.chain_id]
+    def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model, skip_auth_seq_id=lambda id: False):
+        bio_chain = bio_structure[domain.chain_id]
 
         try:
-            domain_residues = [bio_chain[' ', auth_seq_id, ' '] for auth_seq_id in domain]
+            domain_residues = [bio_chain[' ', auth_seq_id, ' '] for auth_seq_id in domain if not skip_auth_seq_id(auth_seq_id)]
         except KeyError:
             # a residue probably has a hetero flag (!= ' '), e.g. 'H_CSU' (CYSTEINE-S-SULFONIC ACID)
             # formally this could be the only code (try not needed), I don't know which is faster
-            domain_residues = [residue for residue in bio_chain if residue.get_id()[1] in domain]
+            domain_residues = [residue for residue in bio_chain if residue.get_id()[1] in domain if not skip_auth_seq_id(residue.get_id()[1])]
 
-        return cls(domain_residues, bio_structure.id, domain.chain_id, domain.domain_id)
+        return cls(domain_residues, bio_structure.get_parent().id, domain.chain_id, domain.domain_id)
 
 
 class GetSASAForStructure(CachedAnalyzer):
@@ -338,7 +354,9 @@ class GetSASAForStructure(CachedAnalyzer):
         # attach method get_atoms used by freesasa's BioPython binding (so that it behaves like BioPython's Entity)
         def get_atoms(self):
             for r in self:
-                yield from r.get_atoms()
+                for atom in r.get_atoms():
+                    if atom.element != 'H':  # otherwise freesasa somehow crashes with: AssertionError: Error: Radius array is <= 0 for the residue: PHE ,atom: H
+                        yield atom
 
         bound_method =  get_atoms.__get__(residues)
         object.__setattr__(residues, 'get_atoms', bound_method)  # setting to a _frozen_ dataclass (SetOfResidues)

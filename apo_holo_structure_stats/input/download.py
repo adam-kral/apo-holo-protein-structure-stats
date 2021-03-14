@@ -6,10 +6,15 @@ from io import StringIO
 from pathlib import Path
 
 import requests
+from requests import RequestException
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
 REQUESTS_TIMEOUT = 10
+
+
+class APIException(Exception):
+    pass
 
 
 class RequestsSessionFactory:
@@ -61,8 +66,12 @@ def get_full_mmcif_stringio(code, dir: Path):
 def get_best_isoform_for_chains(struct_code):
     """ Returns dict chain_id -> list of SegmentMapping(isoform_id, label_seq_id__begin, label_seq_id__end, unp_begin, unp_end, identity) """
 
-    r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}', timeout=REQUESTS_TIMEOUT)
-    r.raise_for_status()
+    try:
+        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}', timeout=REQUESTS_TIMEOUT)
+        r.raise_for_status()
+    except RequestException:
+        raise APIException()
+
     data = r.json()[struct_code]['UniProt']
 
     chain_based_data = defaultdict(list)
@@ -145,14 +154,14 @@ def get_secondary_structure(struct_code: str):
     }
     """
 
-    r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
-    # if I knew entity id (not with biopython's parser), I could append it to the url
+    try:
+        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
+        # if I knew entity id (not with biopython's parser), I could append it to the url
+        r.raise_for_status()
+    except RequestException:
+        raise APIException()
 
-    r.raise_for_status()
     return r.json()[struct_code]['molecules']
-
-
-
 
 
 def get_domains(struct_code: str):
@@ -205,7 +214,10 @@ def get_domains(struct_code: str):
         }
     }
     """
-    r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/cath/{struct_code}', timeout=REQUESTS_TIMEOUT)
-    r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested with new release -- sifts mapping exists but there is no cath data yet)
+    try:
+        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/cath/{struct_code}', timeout=REQUESTS_TIMEOUT)
+        r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested with new release -- sifts mapping exists but there is no cath data yet)
+    except RequestException:
+        raise APIException()
 
     return r.json()[struct_code]['CATH']

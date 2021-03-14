@@ -60,7 +60,7 @@ class CachedAnalyzer(Analyzer):
     def __call__(self, *args, **kwargs):
         return self.analysis_cached_run(*args, **kwargs)
 
-    @lru_cache(maxsize=None)
+    # @lru_cache(maxsize=None)
     def analysis_cached_run(self, *args, **kwargs):
         return super().__call__(*args, **kwargs)
 

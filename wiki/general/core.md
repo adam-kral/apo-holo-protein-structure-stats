@@ -147,3 +147,5 @@ ss needs either the whole structure (DSSP - needs whole mmcif, cannot be MMCIFIO
 domain mapping needs again just residue ids
 with the residue ids i can get the structure Residue
 
+# crystallography
+https://proteopedia.org/wiki/index.php/Asymmetric_Unit

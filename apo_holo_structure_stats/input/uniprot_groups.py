@@ -173,7 +173,7 @@ def analyze_basic_uniprot_id_groups():
           'groups: ', len(single_chain_structs),
           'unique_structures: ', len(set(s for g in single_chain_structs for s, chains in g)))
     # multiple-struct-groups: 27092
-    # unique_structures multiple-struct-groups 139913
+        # unique_structures multiple-struct-groups 139913
     # single-chain (one chain > 50) structures:  groups:  9159 unique_structures:  60294
     # single-chain (one chain > 15) structures:  groups:  8683 unique_structures:  57308
 
@@ -181,7 +181,8 @@ def analyze_basic_uniprot_id_groups():
 # použít místo uniprot_segments_observed.csv.gz tohle: pdb_chain_uniprot.csv.gz, tam jsou extendlý ty alignmenty, a pokud je na jeden chain víc fragmentů od jednoho uniprotu,
 # znamená to rozdíl v sekvenci (ale i jen v SEQRES, nemusí být ten rozdíl observed).
 def analyze_uniprot_groups_joined_fragments():
-    pdbchain_to_uniprot, _ = get_uniprot_mappings_dataset()
+    pdbchain_to_uniprot, _ = get_uniprot_segments_observed_dataset()
+    # pdbchain_to_uniprot, _ = get_uniprot_mappings_dataset()
 
     # chains having same segment (but how do I go to same segmentS)
 
@@ -255,6 +256,7 @@ def analyze_uniprot_groups_joined_fragments():
 
     print('multiple-struct-groups:', len(struct_groups_with_multiple_structures))
     print('unique_structures multiple-struct-groups', len(set(s for g in struct_groups_with_multiple_structures for s in g)))
+    print('multiple-struct-groups total len', sum(len(g) for g in struct_groups_with_multiple_structures))
 
     struct_chain_count = dict(map(lambda code: (code, 0), chain_up_map_lengths.index.get_level_values('pdb_code')))
     struct_chain_count.update(chain_up_map_lengths[chain_up_map_lengths > 15].groupby('pdb_code').count().to_dict())  # now 15
@@ -295,5 +297,5 @@ def analyze_uniprot_groups_joined_fragments():
     # single-chain structures:  groups:  8214 unique_structures:  47936
 
 if __name__ == '__main__':
-    analyze_basic_uniprot_id_groups()
-    # analyze_uniprot_groups_joined_fragments()
+    # analyze_basic_uniprot_id_groups()
+    analyze_uniprot_groups_joined_fragments()
