@@ -9,11 +9,13 @@ import pandas as pd
 from Bio.PDB import PDBList, MMCIFParser
 
 from Bio.PDB.Chain import Chain
+from Bio.PDB.Polypeptide import Polypeptide
 from Bio.PDB.Structure import Structure
 
-from apo_holo_structure_stats.core.analyses import ChainResidues, ChainResidueData, ResidueId, DomainResidues
+from apo_holo_structure_stats.core.analyses import ChainResidues, ChainResidueData, ResidueId, DomainResidues, DomainResidueData
 from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
+from apo_holo_structure_stats.input.download import APIException
 from apo_holo_structure_stats.pipeline.run_analyses import chain_to_polypeptide, aligner, AnalysisHandler, JSONAnalysisSerializer
 
 get_rotation_matrix
@@ -82,24 +84,60 @@ def compare_chains(chain1: Chain, chain2: Chain,
         serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
 
     # domain-level analyses
-    c1_domains = sorted(get_domains(s1_pdb_code), key=lambda d: d.domain_id)
-    c2_domains = sorted(get_domains(s2_pdb_code), key=lambda d: d.domain_id)
 
-    c1_domains__residues = [DomainResidues.from_domain(d, chain1.get_parent(), lambda id: id not in pp1_auth_seq_ids) for d in c1_domains]
-    c2_domains__residues = [DomainResidues.from_domain(d, chain2.get_parent(), lambda id: id not in pp2_auth_seq_ids) for d in c2_domains]
+    # get domains (set of auth_seq_id), sort them by domain id and hope they will correspond to each other
+    # or could map corresponding domains by choosing the ones that have the most overlap?
+    try:
+        c1_domains = sorted(filter(lambda d: d.chain_id == chain1.id, get_domains(s1_pdb_code)), key=lambda d: d.domain_id)
+        c2_domains = sorted(filter(lambda d: d.chain_id == chain2.id, get_domains(s2_pdb_code)), key=lambda d: d.domain_id)
+    except APIException as e:
+        if e.__cause__ and '404' in str(e.__cause__):
+            logging.warning('no domains found, skip the domain-level analysis')
+            return  # no domains found, skip the domain-level analysis
+        raise
+
+
+    assert len(c1_domains) == len(c2_domains)
+
+    # SequenceMatcher on domain resiudes
+    c1_domains__residues = []
+    c2_domains__residues = []
+
+    for c1_d, c2_d in zip(c1_domains, c2_domains):
+        c1_d_residues = DomainResidues.from_domain(c1_d, chain1.get_parent(), lambda id: id not in pp1_auth_seq_ids)
+        c2_d_residues = DomainResidues.from_domain(c2_d, chain2.get_parent(), lambda id: id not in pp2_auth_seq_ids)
+
+        c1_d_pp = Polypeptide(c1_d_residues)
+        c2_d_pp = Polypeptide(c2_d_residues)
+
+        # find longest common substring of domains
+        i1, i2, length = SequenceMatcher(a=c1_d_pp.get_sequence(), b=c2_d_pp.get_sequence(), autojunk=False).find_longest_match(0, len(c1_d_pp), 0,
+                                                                                                                        len(c2_d_pp))
+        logging.info(f'domain substring to original ratio: {length / min(len(c1_d_pp), len(c2_d_pp))}')
+
+        if length < MIN_SUBSTRING_LENGTH_RATIO * min(len(c1_d_pp), len(c2_d_pp)):
+            alignment = next(aligner.align(c1_d_pp.get_sequence(), c2_d_pp.get_sequence()))
+            logging.info('Sequences differ, alignment:')
+            logging.info(f'\n{alignment}')
+            logging.warning(f'does not meet the threshold for substring length')
+
+        # todo reflect domain cropping in the object id (domain id) somehow?
+        c1_domains__residues.append(DomainResidues(c1_d_residues[i1:i1+length], c1_d_residues.structure_id, c1_d_residues.chain_id, c1_d_residues.domain_id))
+        c2_domains__residues.append(DomainResidues(c2_d_residues[i2:i2+length], c2_d_residues.structure_id, c2_d_residues.chain_id, c2_d_residues.domain_id))
 
     # assert domains equal in sequence
-    # todo domain might contain the cropped residues! Fix that
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
+        assert len(d_chain1) == len(d_chain2)
         assert all(r1.get_resname() == r2.get_resname() for r1, r2 in zip(d_chain1, d_chain2))
 
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         for a in comparators__domains__residues_param:
             serializer_or_analysis_handler.handle(a, a(d_chain1, d_chain2), d_chain1, d_chain2)
 
-    for d_chain1, d_chain2 in zip(c1_domains, c2_domains):
-        d_chain1 = d_chain1.to_set_of_residue_ids(s1_pdb_code, lambda id: id not in pp1_auth_seq_ids)
-        d_chain2 = d_chain2.to_set_of_residue_ids(s2_pdb_code, lambda id: id not in pp2_auth_seq_ids)
+    for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
+        # Convert DomainResidues to DomainResidueData[ResidueId]
+        d_chain1 = DomainResidueData[ResidueId]([ResidueId.from_bio_residue(r) for r in d_chain1], d_chain1.structure_id, d_chain1.chain_id, d_chain1.domain_id)
+        d_chain2 = DomainResidueData[ResidueId]([ResidueId.from_bio_residue(r) for r in d_chain2], d_chain2.structure_id, d_chain2.chain_id, d_chain2.domain_id)
 
         for a in comparators__domains__residue_ids_param:
             serializer_or_analysis_handler.handle(a, a(d_chain1, d_chain2), d_chain1, d_chain2)
@@ -175,11 +213,14 @@ if __name__ == '__main__':
 
     found = False
     for index, row in df.iterrows():
-        # if row.apo[:4] == '1k2x':
-        #     found = True
-        #
-        # if not found:
-        #     continue
+        if row.apo[:4] == '1cgj':
+            continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
+
+        if row.apo[:4] == '1ehd':
+            found = True
+
+        if not found:
+            continue
 
         logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
 

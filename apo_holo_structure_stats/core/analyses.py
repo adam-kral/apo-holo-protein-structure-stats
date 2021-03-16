@@ -175,16 +175,20 @@ class GetSecondaryStructureForStructure(CachedAnalyzer):
             for chain in molecule['chains']:
                 helices_start = []
                 helices_end = []
-                for helix_segment in chain['secondary_structure']['helices']:
-                    helices_start.append(helix_segment['start']['author_residue_number'])  # or 'residue_number', but I don't have label_seq_id in BioPython-parsed Structures, Also I ignore 'author_insertion_code'
-                    helices_end.append(helix_segment['end']['author_residue_number'])
+
+                if 'helices' in chain['secondary_structure']:  # otherwise got error (with strands below), seems (some) fields are optional
+                    for helix_segment in chain['secondary_structure']['helices']:
+                        helices_start.append(helix_segment['start']['author_residue_number'])  # or 'residue_number', but I don't have label_seq_id in BioPython-parsed Structures, Also I ignore 'author_insertion_code'
+                        helices_end.append(helix_segment['end']['author_residue_number'])
 
                 strands_start = []
                 strands_end = []
-                for helix_segment in chain['secondary_structure']['strands']:
-                    strands_start.append(helix_segment['start']['author_residue_number'])
-                    strands_end.append(helix_segment['end']['author_residue_number'])
-                    # todo sheet_id important?
+
+                if 'strands' in chain['secondary_structure']:
+                    for helix_segment in chain['secondary_structure']['strands']:
+                        strands_start.append(helix_segment['start']['author_residue_number'])
+                        strands_end.append(helix_segment['end']['author_residue_number'])
+                        # todo sheet_id important?
 
                 # don't know if the segment order from api guaranteed ascending, so check that
                 assert is_sorted(helices_start)
@@ -396,7 +400,17 @@ class CompareSecondaryStructure(SerializableAnalyzer):
 
 class GetCAlphaCoords(CachedAnalyzer):
     def run(self, residues: SetOfResidues) -> np.ndarray:
-        return np.array([res['CA'].get_coord() for res in residues])
+        ca_coords = []
+
+        for res in residues:
+            try:
+                ca_coords.append(res['CA'].get_coord())
+            except KeyError:
+                # 1b0iA HIS 269 has only N atom coords
+                # use any atom coords then... (BioPython parser includes ("sees") a residue in Structure, if it has >= one specified atom coordinates)
+                ca_coords.append(next(iter(res)).get_coord())
+
+        return np.array(ca_coords)
 
 """ nevyhody tohoto postupu --> neda se moc composovat (volat) s parametry zjistenymi ruznymi fcemi. Napr. do GetCentroid nemuzu jednou
 poslat souradnice CA podruhy napr vsech atomu, protoze GetCentroid si musi volat tu funkci get coords samo. Ale vlastne bych tam mohl poslat jinou

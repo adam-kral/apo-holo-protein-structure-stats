@@ -105,6 +105,8 @@ def get_secondary_structure(struct_code: str):
 
     :return: list of molecule objects (loaded json at "molecules")
 
+    docs: https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/#api-PDB-GetPDBSecondaryStructures
+
     Example API json response:
     {
         "1cbs": {
@@ -165,9 +167,9 @@ def get_secondary_structure(struct_code: str):
 
 
 def get_domains(struct_code: str):
-    """ Get CATH domains from pdbe API.
+    """ Get CATH-B domains from pdbe API.
 
-    docs: https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/#api-SIFTS-GetPDBCATHMapping
+    docs: https://www.ebi.ac.uk/pdbe/api/doc/sifts.html#sifts_apidiv_call_5_calltitle
 
     How are the domains represented?
 
@@ -181,43 +183,45 @@ def get_domains(struct_code: str):
 
     Example API json response:
     {
-        "1cbs": {
-            "CATH": {
-                "2.40.128.20": {
-                    "homology": "Lipocalin",
-                    "name": "Cellular retinoic acid binding protein type ii. Chain:a. Engineered:yes",
-                    "class": "Mainly Beta",
-                    "architecture": "Beta Barrel",
-                    "identifier": "Lipocalin",
-                    "topology": "Lipocalin",
-                    "mappings": [
-                        {
-                            "domain": "1cbsA00",
-                            "end": {
-                                "author_residue_number": 137,
-                                "author_insertion_code": "",
-                                "residue_number": 137
-                            },
-                            "segment_id": 1,
-                            "entity_id": 1,
-                            "chain_id": "A",
-                            "start": {
-                                "author_residue_number": 1,
-                                "author_insertion_code": "",
-                                "residue_number": 1
-                            },
-                            "struct_asym_id": "A"
-                        }
-                    ]
-                }
-            }
+      "1cbs": {
+        "CATH-B": {
+          "2.40.128.20": {
+            "homology": "Calycin beta-barrel core domain",
+            "mappings": [
+              {
+                "domain": "1cbsA00",
+                "end": {
+                  "author_residue_number": 137,
+                  "author_insertion_code": "",
+                  "residue_number": 137
+                },
+                "segment_id": 1,
+                "entity_id": 1,
+                "chain_id": "A",
+                "start": {
+                  "author_residue_number": 1,
+                  "author_insertion_code": "",
+                  "residue_number": 1
+                },
+                "struct_asym_id": "A"
+              }
+            ],
+            "topology": "Lipocalin",
+            "architecture": "Beta Barrel",
+            "identifier": "Lipocalin",
+            "class": "Mainly Beta",
+            "name": "Cellular retinoic acid binding protein type ii. Chain: a. Engineered:yes"
+          }
         }
+      }
     }
+
+
     """
     try:
-        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/cath/{struct_code}', timeout=REQUESTS_TIMEOUT)
+        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/api/mappings/cath_b/{struct_code}', timeout=REQUESTS_TIMEOUT)
         r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested with new release -- sifts mapping exists but there is no cath data yet)
-    except RequestException:
-        raise APIException()
+    except RequestException as e:
+        raise APIException() from e
 
-    return r.json()[struct_code]['CATH']
+    return r.json()[struct_code]['CATH-B']
