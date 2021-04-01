@@ -156,9 +156,9 @@ def download_structure(pdb_code: str) -> str:
 
     filename = None
 
-    for i in range(5):
+    for i in range(1):
         try:
-            filename = PDBList(pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif')
+            filename = PDBList(pdb='pdb_structs', obsolete_pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif')
             break
         except OSError as e:
             if 'Too many connections' in str(e):
@@ -168,15 +168,19 @@ def download_structure(pdb_code: str) -> str:
 
             # structure obsolete
             try:
-                logging.warning(f'{pdb_code} error: ' + str(e))
-                filename = PDBList(pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif', obsolete=True)  # 1seo is obsolete, but we want to replicate the paper?
+                logging.info(f'trying dl structure {pdb_code} as obsolete...')
+                filename = PDBList(pdb='pdb_structs', obsolete_pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif', obsolete=True)  # 1seo is obsolete, but we want to replicate the paper?
+                logging.info('success')
                 break
             except OSError as e:
                 logging.warning(f'{pdb_code} error: ' + str(e))
 
     if filename is None:
-        logging.warning(f'downloading {pdb_code} failed: ' + str(e))
+        logging.exception(f'downloading {pdb_code} failed: ')
         raise
+    # else:
+    #     print(filename)
+    #     logging.info('no more too many connections, success')
 
     # logging.info(f'finished downloading structure {pdb_code}')
     return filename
@@ -196,7 +200,7 @@ def get_chain_by_chain_code(s: Structure, paper_chain_code: str) -> Chain:
         if len(s[0]) != 1 or chain.id != 'A':
             logging.warning(f'{paper_chain_code}, underscore is not what I thought. {chain.id}, {len(s[0])}')
             return get_main_chain(s[0])  # sometime there is also chain B with ligands.
-            # Get the long aa chain (probably always A, but rather use GetMainChain (with >= 50 aas))
+            # Get the long aa chain (probably always A, but rather todo use GetMainChain (with >= 50 aas)), then update this warning if more then 1 50+aa chain
 
         return chain
     return s[0][paper_chain_code]
@@ -209,17 +213,22 @@ if __name__ == '__main__':
                      names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
 
 
-    serializer = JSONAnalysisSerializer('output.json')
+    serializer = JSONAnalysisSerializer('outputnevsechno.json')
+
+
 
     found = False
     for index, row in df.iterrows():
-        if row.apo[:4] == '1cgj':
-            continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
+        # if row.apo[:4] == '1cgj':
+        #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
 
-        if row.apo[:4] == '1ehd':
-            found = True
+        # if row.apo[:4] == '1ehd':
+        #     found = True
+        #
+        # if not found:
+        #     continue
 
-        if not found:
+        if row.apo[:4] != '1gyj':
             continue
 
         logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
@@ -230,14 +239,17 @@ if __name__ == '__main__':
         apo_chain = get_chain_by_chain_code(apo, row.apo[4:])
         holo_chain = get_chain_by_chain_code(holo, row.holo[4:])
 
-
-        compare_chains(apo_chain, holo_chain,
-                       [get_rmsd, get_interdomain_surface],
-                       [get_ss],
-                       [get_rmsd, get_interdomain_surface],
-                       [get_ss],
-                       [get_hinge_angle],
-                       serializer)
+        try:
+            compare_chains(apo_chain, holo_chain,
+                           [get_rmsd, get_interdomain_surface],
+                           [get_ss],
+                           [get_rmsd, get_interdomain_surface],
+                           [get_ss],
+                           [get_hinge_angle],
+                           serializer)
+        except Exception as e:
+            logging.exception('compare chains failed with: ')
+            raise
 
     serializer.dump_data()
     pass

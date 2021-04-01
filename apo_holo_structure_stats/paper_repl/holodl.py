@@ -1,5 +1,6 @@
 import concurrent.futures
 import logging
+import time
 import urllib.request
 
 import pandas as pd
@@ -19,3 +20,4 @@ if __name__ == '__main__':
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:  # >= 1 workers 421 too many connections, dneska už nic nestáhnu..
        executor.map(download_structure, pdb_codes)
+       time.sleep(1)  # avoid too many connections

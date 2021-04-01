@@ -1,0 +1,2958 @@
+/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/bin/python /home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py
+INFO:root:1a0s, 1a0t
+INFO:root:running analyses for (1a0s, 1a0t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1a3y, 1dzj
+INFO:root:running analyses for (1a3y, 1dzj) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1a7u, 1a8u
+INFO:root:running analyses for (1a7u, 1a8u) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1a8d, 1d0h
+INFO:root:running analyses for (1a8d, 1d0h) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1a8f, 1ryo
+INFO:root:running analyses for (1a8f, 1ryo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1afd, 1afa
+INFO:root:running analyses for (1afd, 1afa) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ak1, 1c1h
+INFO:root:running analyses for (1ak1, 1c1h) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1alv, 1alw
+INFO:root:running analyses for (1alv, 1alw) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ao6, 1e7a
+INFO:root:running analyses for (1ao6, 1e7a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ap2, 1mvu
+INFO:root:running analyses for (1ap2, 1mvu) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1auo, 1aur
+INFO:root:running analyses for (1auo, 1aur) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ayd, 1aya
+INFO:root:running analyses for (1ayd, 1aya) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1b0i, 1aqm
+INFO:root:running analyses for (1b0i, 1aqm) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1b49, 1b5e
+INFO:root:running analyses for (1b49, 1b5e) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1bq8, 1bq9
+INFO:root:running analyses for (1bq8, 1bq9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1bs7, 1bs4
+INFO:root:running analyses for (1bs7, 1bs4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1btl, 1axb
+INFO:root:running analyses for (1btl, 1axb) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1bue, 1bul
+INFO:root:running analyses for (1bue, 1bul) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1byi, 1bs1
+INFO:root:running analyses for (1byi, 1bs1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1c3i, 1hfs
+INFO:root:running analyses for (1c3i, 1hfs) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1c48, 1cqf
+INFO:root:running analyses for (1c48, 1cqf) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1c5h, 1c5i
+INFO:root:running analyses for (1c5h, 1c5i) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1c62, 1c60
+INFO:root:running analyses for (1c62, 1c60) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1cb6, 1bka
+INFO:root:running analyses for (1cb6, 1bka) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.5078534031413613
+INFO:root:Sequences differ, alignment:
+INFO:root:
+ARRARVVWCAVGEQELRKCNQWSGLSEGSVTCSSASTTEDCIALVLKGEADAMSLDGGYVYTAGKCGLVPVLAENYKSQQSSDPDPNCVDRPVEGPNHAVVSRMDKVERLKQVLLHQQAKFGRNGSDCPDKFCLFQSETKNLLFNDNTECLARLHGKTTYEKYLGPQYVAGITNLKKCSTSPLLEACEFLRK
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ARRARVVWCAVGEQELRKCNQWSGLSEGSVTCSSASTTEDCIALVLKGEADAMSLDGGYVYTAGKCGLVPVLAENYKSQQSSDPDPNCVDRPVE-PNHAVVSRMDKVERLKQVLLHQQAKFGRNGSDCPDKFCLFQSETKNLLFNDNTECLARLHGKTTYEKYLGPQYVAGITNLKKCSTSPLLEACEFLRK
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1cex, 1oxm
+INFO:root:running analyses for (1cex, 1oxm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1cgj, 1ab9
+INFO:root:running analyses for (1cgj, 1ab9) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1cjd, 1hx6
+INFO:root:running analyses for (1cjd, 1hx6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1cpj, 1cte
+INFO:root:running analyses for (1cpj, 1cte) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ct0, 1ds2
+INFO:root:running analyses for (1ct0, 1ds2) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1cz1, 1eqc
+INFO:root:running analyses for (1cz1, 1eqc) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1cz3, 1d1g
+INFO:root:running analyses for (1cz3, 1d1g) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1czp, 1ewy
+INFO:root:running analyses for (1czp, 1ewy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1d1q, 1d2a
+INFO:root:running analyses for (1d1q, 1d2a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1d6o, 1d7i
+INFO:root:running analyses for (1d6o, 1d7i) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1d7f, 1ded
+INFO:root:running analyses for (1d7f, 1ded) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dc3, 1dc6
+INFO:root:running analyses for (1dc3, 1dc6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dji, 1djw
+INFO:root:running analyses for (1dji, 1djw) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dk7, 1dkd
+INFO:root:running analyses for (1dk7, 1dkd) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dqw, 1dqx
+INFO:root:running analyses for (1dqw, 1dqx) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dub, 1ey3
+INFO:root:running analyses for (1dub, 1ey3) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dun, 1duc
+INFO:root:running analyses for (1dun, 1duc) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dup, 1dud
+INFO:root:running analyses for (1dup, 1dud) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1dzr, 1dzt
+INFO:root:running analyses for (1dzr, 1dzt) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1e0w, 1e0v
+INFO:root:running analyses for (1e0w, 1e0v) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1e3a, 1gm9
+INFO:root:running analyses for (1e3a, 1gm9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1e43, 1e3z
+INFO:root:running analyses for (1e43, 1e3z) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1e5l, 1e5q
+INFO:root:running analyses for (1e5l, 1e5q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1e6e, 2bt6
+INFO:root:running analyses for (1e6e, 2bt6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1e89, 1e8d
+INFO:root:running analyses for (1e89, 1e8d) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1e9g, 1e6a
+INFO:root:running analyses for (1e9g, 1e6a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1eay, 1f4v
+INFO:root:running analyses for (1eay, 1f4v) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1edq, 1ffq
+INFO:root:running analyses for (1edq, 1ffq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1egu, 1c82
+INFO:root:running analyses for (1egu, 1c82) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ehd, 1ehh
+INFO:root:running analyses for (1ehd, 1ehh) pair...
+INFO:root:substring to original ratio: 1.0
+WARNING:root:no domains found, skip the domain-level analysis
+INFO:root:1eil, 1eir
+INFO:root:running analyses for (1eil, 1eir) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1eo2, 1eoa
+INFO:root:running analyses for (1eo2, 1eoa) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1eo2, 1eoa
+INFO:root:running analyses for (1eo2, 1eoa) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1eun, 1eua
+INFO:root:running analyses for (1eun, 1eua) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1evk, 1evl
+INFO:root:running analyses for (1evk, 1evl) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ex6, 1ex7
+INFO:root:running analyses for (1ex6, 1ex7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1f14, 1f17
+INFO:root:running analyses for (1f14, 1f17) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1f1u, 1f1v
+INFO:root:running analyses for (1f1u, 1f1v) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1f2f, 1f1w
+INFO:root:running analyses for (1f2f, 1f1w) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1f60, 1ije
+INFO:root:running analyses for (1f60, 1ije) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1f6p, 1f74
+INFO:root:running analyses for (1f6p, 1f74) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fgk, 2fgi
+INFO:root:running analyses for (1fgk, 2fgi) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fi2, 2et1
+INFO:root:running analyses for (1fi2, 2et1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fic, 2fib
+INFO:root:running analyses for (1fic, 2fib) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fm8, 1eyq
+INFO:root:running analyses for (1fm8, 1eyq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fny, 1fnz
+INFO:root:running analyses for (1fny, 1fnz) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fr9, 1frw
+INFO:root:running analyses for (1fr9, 1frw) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ft1, 1n4q
+INFO:root:running analyses for (1ft1, 1n4q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ft1, 1n95
+INFO:root:running analyses for (1ft1, 1n95) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ftr, 2fhj
+INFO:root:running analyses for (1ftr, 2fhj) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fxj, 1fwy
+INFO:root:running analyses for (1fxj, 1fwy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fy6, 1fwt
+INFO:root:running analyses for (1fy6, 1fwt) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fyd, 1ee1
+INFO:root:running analyses for (1fyd, 1ee1) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fz6, 1xve
+INFO:root:running analyses for (1fz6, 1xve) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1fzw, 1fxo
+INFO:root:running analyses for (1fzw, 1fxo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1g4c, 1f9h
+INFO:root:running analyses for (1g4c, 1f9h) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1g5x, 1fj4
+INFO:root:running analyses for (1g5x, 1fj4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1g6w, 1k0b
+INFO:root:running analyses for (1g6w, 1k0b) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1g9g, 1f9o
+INFO:root:running analyses for (1g9g, 1f9o) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gcg, 1gca
+INFO:root:running analyses for (1gcg, 1gca) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ghi, 1ghm
+INFO:root:running analyses for (1ghi, 1ghm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gkb, 1cvn
+INFO:root:running analyses for (1gkb, 1cvn) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gl1, 1ab9
+INFO:root:running analyses for (1gl1, 1ab9) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1gou, 1goy
+INFO:root:running analyses for (1gou, 1goy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gpf, 1e6r
+INFO:root:running analyses for (1gpf, 1e6r) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gqn, 1l9w
+INFO:root:running analyses for (1gqn, 1l9w) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gqz, 2gke
+INFO:root:running analyses for (1gqz, 2gke) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gud, 1rpj
+INFO:root:running analyses for (1gud, 1rpj) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gwg, 1xz1
+INFO:root:running analyses for (1gwg, 1xz1) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gwy, 1o71
+INFO:root:running analyses for (1gwy, 1o71) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gx3, 1w6f
+INFO:root:running analyses for (1gx3, 1w6f) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gy0, 1gxy
+INFO:root:running analyses for (1gy0, 1gxy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1gyj, 1gyx
+INFO:root:running analyses for (1gyj, 1gyx) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1gyk, 2a3w
+INFO:root:running analyses for (1gyk, 2a3w) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1h13, 1h12
+INFO:root:running analyses for (1h13, 1h12) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1h1p, 1h24
+INFO:root:running analyses for (1h1p, 1h24) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1h2e, 1ebb
+INFO:root:running analyses for (1h2e, 1ebb) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1h7e, 1h7f
+INFO:root:running analyses for (1h7e, 1h7f) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1h9b, 1h9a
+INFO:root:running analyses for (1h9b, 1h9a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hcb, 1azm
+INFO:root:running analyses for (1hcb, 1azm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hfk, 1hg1
+INFO:root:running analyses for (1hfk, 1hg1) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 0.9514563106796117
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hjs, 1hju
+INFO:root:running analyses for (1hjs, 1hju) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hm5, 1dqr
+INFO:root:running analyses for (1hm5, 1dqr) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hno, 1hnu
+INFO:root:running analyses for (1hno, 1hnu) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hoo, 1cg0
+INFO:root:running analyses for (1hoo, 1cg0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1htl, 1djr
+INFO:root:running analyses for (1htl, 1djr) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hw1, 1h9g
+INFO:root:running analyses for (1hw1, 1h9g) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1hzw, 1i00
+INFO:root:running analyses for (1hzw, 1i00) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i04, 1i05
+INFO:root:running analyses for (1i04, 1i05) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i1d, 1i12
+INFO:root:running analyses for (1i1d, 1i12) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i2h, 1ddv
+INFO:root:running analyses for (1i2h, 1ddv) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i39, 1i3a
+INFO:root:running analyses for (1i39, 1i3a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i3v, 1i3u
+INFO:root:running analyses for (1i3v, 1i3u) pair...
+INFO:root:substring to original ratio: 0.9921259842519685
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i40, 1i6t
+INFO:root:running analyses for (1i40, 1i6t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i6w, 1isp
+INFO:root:running analyses for (1i6w, 1isp) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i8f, 1lnx
+INFO:root:running analyses for (1i8f, 1lnx) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1i9y, 1i9z
+INFO:root:running analyses for (1i9y, 1i9z) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ib6, 1ie3
+INFO:root:running analyses for (1ib6, 1ie3) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ikp, 1xk9
+INFO:root:running analyses for (1ikp, 1xk9) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1inl, 1jq3
+INFO:root:running analyses for (1inl, 1jq3) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ips, 1hb1
+INFO:root:running analyses for (1ips, 1hb1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1iuo, 1iup
+INFO:root:running analyses for (1iuo, 1iup) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1iwm, 1iwn
+INFO:root:running analyses for (1iwm, 1iwn) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ixp, 1ho4
+INFO:root:running analyses for (1ixp, 1ho4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1iz9, 1y7t
+INFO:root:running analyses for (1iz9, 1y7t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1izd, 1ize
+INFO:root:running analyses for (1izd, 1ize) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j0h, 1j0i
+INFO:root:running analyses for (1j0h, 1j0i) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j1q, 1j1r
+INFO:root:running analyses for (1j1q, 1j1r) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j2a, 1v9t
+INFO:root:running analyses for (1j2a, 1v9t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j2w, 1ub3
+INFO:root:running analyses for (1j2w, 1ub3) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j3p, 1j3r
+INFO:root:running analyses for (1j3p, 1j3r) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j4s, 1j4t
+INFO:root:running analyses for (1j4s, 1j4t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j85, 1mxi
+INFO:root:running analyses for (1j85, 1mxi) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1j9j, 1j9k
+INFO:root:running analyses for (1j9j, 1j9k) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jax, 1jay
+INFO:root:running analyses for (1jax, 1jay) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jda, 1jdc
+WARNING:root:_, underscore is not what I thought. A, 2
+INFO:root:running analyses for (1jda, 1jdc) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jej, 1jg6
+INFO:root:running analyses for (1jej, 1jg6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jfa, 1jfg
+INFO:root:running analyses for (1jfa, 1jfg) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jks, 1ig1
+INFO:root:running analyses for (1jks, 1ig1) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.9230769230769231
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jly, 1jlx
+INFO:root:running analyses for (1jly, 1jlx) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jou, 1bhx
+INFO:root:running analyses for (1jou, 1bhx) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1jrk, 1k26
+INFO:root:running analyses for (1jrk, 1k26) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jrl, 1v2g
+INFO:root:running analyses for (1jrl, 1v2g) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1js0, 1cjr
+INFO:root:running analyses for (1js0, 1cjr) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1jw9, 1jwb
+INFO:root:running analyses for (1jw9, 1jwb) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1k04, 1ow6
+INFO:root:running analyses for (1k04, 1ow6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1k1x, 1k1y
+INFO:root:running analyses for (1k1x, 1k1y) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1k2x, 1seo
+WARNING:root:1seo error: <urlopen error ftp error: URLError('ftp error: error_perm("550 Can\'t change directory to 1seo.cif.gz: No such file or directory")')>
+hovno
+INFO:root:running analyses for (1k2x, 1seo) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1seo
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 391, in run
+    ss2 = get_ss(residues2.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1k5h, 1q0q
+INFO:root:running analyses for (1k5h, 1q0q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1k5p, 1k6e
+INFO:root:running analyses for (1k5p, 1k6e) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1k6w, 1k70
+INFO:root:running analyses for (1k6w, 1k70) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.5306122448979592
+INFO:root:Sequences differ, alignment:
+INFO:root:
+----------------------------------------------------56
+---------------------------------------------------55-365
+ALQTIINARLPGEEGLWQIHLQDGKISAIDAQSGVMPITENSLDAEQGLVIPP-DYGIAAGNSANLIILPAENGFDALRRQVPVRYSVRGGKVIASTQP-----------------
+||||||||||||||||||||||||||||||||||||||||||||||||||||.-|||||||||||||||||||||||||||||||||||||||||||||-----------------
+ALQTIINARLPGEEGLWQIHLQDGKISAIDAQSGVMPITENSLDAEQGLVIPLQDYGIAAGNSANLIILPAENGFDALRRQVPVRYSVRGGKVIASTQPAQTTVYLEQPEAIDYKR
+----------------------------------------------------363
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 0.996742671009772
+INFO:root:1k9z, 1k9y
+INFO:root:running analyses for (1k9z, 1k9y) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1kbl, 1kc7
+INFO:root:running analyses for (1kbl, 1kc7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1kbz, 1n2s
+INFO:root:running analyses for (1kbz, 1n2s) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ke4, 1c3b
+INFO:root:running analyses for (1ke4, 1c3b) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1kh1, 1j1z
+INFO:root:running analyses for (1kh1, 1j1z) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1khg, 1khb
+INFO:root:running analyses for (1khg, 1khb) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.7142857142857143
+INFO:root:Sequences differ, alignment:
+INFO:root:
+NLSAKVVQGSLDSLPQAVREFLENNAELCQPDHIHICDGSEEENGRLLGQMEEEGIRDVARIESKTVIVTQEQRDTVPIPKTGLSQLGRWMSEEDFEKAFNARFPGCMKGRTMYVIPFSMGPLGSPLSKIGIELTDSPYVVASMRIMTRMGTPVLEALGDGEFVKCLHSVGCPLPLQKPLVNNWPCNPELTLIAHLPDRREIISFGSGYGGNSLLGK---------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||---------|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||---------------
+NLSAKVVQGSLDSLPQAVREFLENNAELCQPDHIHICDGSEEENGRLLGQMEE---------ESKTVIVTQEQRDTVPIPKTGLSQLGRWMSEEDFEKAFNARFPGCMKGRTMYVIPFSMGPLGSPLSKIGIELTDSPYVVASMRIMTRMGTPVLEALGDGEFVKCLHSVGCPLPLQKPLVNNWPCNPELTLIAHLPDRREIISFGSGYGGNSLLGKKCFALRMASRLAKEE
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 0.803921568627451
+INFO:root:Sequences differ, alignment:
+INFO:root:
+LRRLKKYDNCWLALTDPENGFFGVAPGTSVKTNPNAIKTIQKNTIFTNVAETSDGGVYWEGIDEPLASGVTITSWKNKEWSSEDGEPCAHPNSRFCTPASQCPI
+|||||||||||||||||...||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||--
+LRRLKKYDNCWLALTDPRDVFFGVAPGTSVKTNPNAIKTIQKNTIFTNVAETSDGGVYWEGIDEPLASGVTITSWKNKEWSSEDGEPCAHPNSRFCTPASQC--
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 0.7330827067669173
+INFO:root:Sequences differ, alignment:
+INFO:root:
+KCFALRMASRLAKEEGWLAEHMLVLGITNPEGEKKYLAAAFPSACGKTNLAMMNPSLPGWKVECVGDDIAWMKFDAQGHLRAINP--IDAAWESPEGVPIEGIIFGGRRPAGVPLVYEALSWQHGVFVGAAMRSEAKIIMHDPFAMRPFFGYNFGKYLAHWLSMAQHPAAKLPKIFHVNWFRKDKEGKFLWPGFGENSRVLEWMFNRIDGSTKLTPIGYIPKEDALNLKGLGHINMMELFSISKEFWDKEVEDIEKYLVDQVNADLPCEIEREILALKQRISQM
+----------------|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||--|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||--
+----------------WLAEHMLVLGITNPEGEKKYLAAAFPSACGKTNLAMMNPSLPGWKVECVGDDIAWMKFDAQGHLRAINPENIDAAWESPEGVPIEGIIFGGRRPAGVPLVYEALSWQHGVFVGAAMRSEAKIIMHDPFAMRPFFGYNFGKYLAHWLSMAQHPAAKLPKIFHVNWFRKDKEGKFLWPGFGENSRVLEWMFNRIDGSTKLTPIGYIPKEDALNLKGLGHINMMELFSISKEFWDKEVEDIEKYLVDQVNADLPCEIEREILALKQRIS--
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:1kuf, 1kui
+INFO:root:running analyses for (1kuf, 1kui) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1kv8, 1kw1
+INFO:root:running analyses for (1kv8, 1kw1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1kyw, 1kyz
+INFO:root:running analyses for (1kyw, 1kyz) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1l0w, 1g51
+INFO:root:running analyses for (1l0w, 1g51) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1l3f, 1gxw
+INFO:root:running analyses for (1l3f, 1gxw) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1l5n, 1jha
+INFO:root:running analyses for (1l5n, 1jha) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1l9b, 1kby
+INFO:root:running analyses for (1l9b, 1kby) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lbv, 1lbx
+INFO:root:running analyses for (1lbv, 1lbx) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1le6, 1le7
+INFO:root:running analyses for (1le6, 1le7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lf6, 1lf9
+INFO:root:running analyses for (1lf6, 1lf9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lk5, 1lk7
+INFO:root:running analyses for (1lk5, 1lk7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lkr, 1b0d
+INFO:root:running analyses for (1lkr, 1b0d) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lls, 1dmb
+WARNING:root:_, underscore is not what I thought. A, 2
+INFO:root:running analyses for (1lls, 1dmb) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lr9, 1lr8
+INFO:root:running analyses for (1lr9, 1lr8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lu9, 1lua
+INFO:root:running analyses for (1lu9, 1lua) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1lz7, 1r80
+INFO:root:running analyses for (1lz7, 1r80) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1m35, 1n51
+INFO:root:running analyses for (1m35, 1n51) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1m3k, 1m1o
+INFO:root:running analyses for (1m3k, 1m1o) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1m44, 1m4d
+INFO:root:running analyses for (1m44, 1m4d) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1m4l, 1arm
+INFO:root:running analyses for (1m4l, 1arm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1m6h, 1m6w
+INFO:root:running analyses for (1m6h, 1m6w) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1m73, 1rr6
+INFO:root:running analyses for (1m73, 1rr6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1m9f, 1awq
+INFO:root:running analyses for (1m9f, 1awq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1mh9, 1q91
+INFO:root:running analyses for (1mh9, 1q91) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1mix, 1miz
+INFO:root:running analyses for (1mix, 1miz) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1mmi, 1ok7
+INFO:root:running analyses for (1mmi, 1ok7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1mri, 1f8q
+INFO:root:running analyses for (1mri, 1f8q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1muw, 1s5m
+INFO:root:running analyses for (1muw, 1s5m) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1mzl, 1fk0
+INFO:root:running analyses for (1mzl, 1fk0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1n13, 1mt1
+INFO:root:running analyses for (1n13, 1mt1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1n5v, 1lq9
+INFO:root:running analyses for (1n5v, 1lq9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1n7e, 1n7f
+INFO:root:running analyses for (1n7e, 1n7f) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1n9g, 1gu7
+INFO:root:running analyses for (1n9g, 1gu7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1n9k, 1rmt
+INFO:root:running analyses for (1n9k, 1rmt) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1njg, 1njf
+INFO:root:running analyses for (1njg, 1njf) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.0958904109589041
+INFO:root:Sequences differ, alignment:
+INFO:root:
+VLARKWR----LDVEQIRHQL-----EHILNEEHIA---HEPR-------ALQLLA--------------------RAAE-G---SL--RDALS---------LTD--Q-AIASGDGQV-STQAV------S--AMLGT-----------------------------------
+|||||||----.||....|.|-----...|...|.|---...|-------|-.|||--------------------|..|-|---.|--.||.|---------|.|--|-|.|.|...|-....|------|--|.|.|-----------------------------------
+VLARKWRPQTFADVVGQEHVLTALANGLSLGRIHHAYLFSGTRGVGKTSIA-RLLAKGLNCETGITATPCGVCDNCREIEQGRFVDLIEIDAASRTKVEDTRDLLDNVQYAPARGRFKVYLIDEVHMLSRHSFNALLKTLEEPPEHVKFLLATTDPQKLPVTILSRCLQFHLKA
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 0.045454545454545456
+INFO:root:Sequences differ, alignment:
+INFO:root:
+QTFADVVGQEHVLTALANGLSLGRIHHAYLFSGTRGVGKTSIARLLAKGLNCETGITATPCGVCDNCREIEQGRFVDLIEIDAASRTKVEDTRDLLDNVQYAPARGRFKVYLIDEVHMLSRHSFNALLKTLEEPPEHVKFLLATTDPQKLPVTILSRCLQFHLKA
+-----------------------------|-----.|--..|...|...||-|..|...|.......|..|-|---.|--.||.|---------|.|--|-|.|.|...|-....|------|--|.|.|-----------------------------------
+-----------------------------L-----DV--EQIRHQLEHILN-EEHIAHEPRALQLLARAAE-G---SL--RDALS---------LTD--Q-AIASGDGQV-STQAV------S--AMLGT-----------------------------------
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:1nmc, 1f8b
+INFO:root:running analyses for (1nmc, 1f8b) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1nnr, 1lqp
+INFO:root:running analyses for (1nnr, 1lqp) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1nsr, 1ns8
+INFO:root:running analyses for (1nsr, 1ns8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1nur, 1nup
+INFO:root:running analyses for (1nur, 1nup) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1nvv, 1ctq
+INFO:root:running analyses for (1nvv, 1ctq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1nwg, 1nf5
+INFO:root:running analyses for (1nwg, 1nf5) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1nxm, 1nyw
+INFO:root:running analyses for (1nxm, 1nyw) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o05, 1nzx
+INFO:root:running analyses for (1o05, 1nzx) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o17, 1zyk
+INFO:root:running analyses for (1o17, 1zyk) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o24, 1o26
+INFO:root:running analyses for (1o24, 1o26) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o62, 1o61
+INFO:root:running analyses for (1o62, 1o61) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o6v, 1o6t
+INFO:root:running analyses for (1o6v, 1o6t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o7h, 1eg9
+INFO:root:running analyses for (1o7h, 1eg9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o83, 1o82
+INFO:root:running analyses for (1o83, 1o82) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1o8p, 1nae
+INFO:root:running analyses for (1o8p, 1nae) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1obu, 1i4u
+INFO:root:running analyses for (1obu, 1i4u) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1oc3, 1h4o
+INFO:root:running analyses for (1oc3, 1h4o) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1od0, 1oif
+INFO:root:running analyses for (1od0, 1oif) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1odk, 1odi
+INFO:root:running analyses for (1odk, 1odi) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1oem, 1jf7
+INFO:root:running analyses for (1oem, 1jf7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ogm, 1ogo
+INFO:root:running analyses for (1ogm, 1ogo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1oi3, 1oi2
+INFO:root:running analyses for (1oi3, 1oi2) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ojx, 1ok4
+INFO:root:running analyses for (1ojx, 1ok4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1okt, 1q4j
+INFO:root:running analyses for (1okt, 1q4j) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1oqe, 1kxg
+INFO:root:running analyses for (1oqe, 1kxg) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1otj, 1gy9
+INFO:root:running analyses for (1otj, 1gy9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1otv, 1otw
+INFO:root:running analyses for (1otv, 1otw) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ous, 1gzt
+INFO:root:running analyses for (1ous, 1gzt) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1oxq, 1oxn
+INFO:root:running analyses for (1oxq, 1oxn) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1oyv, 1be6
+INFO:root:running analyses for (1oyv, 1be6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ozm, 1ozq
+INFO:root:running analyses for (1ozm, 1ozq) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1ozm
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1p1x, 1jcl
+INFO:root:running analyses for (1p1x, 1jcl) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1p3c, 1p3e
+INFO:root:running analyses for (1p3c, 1p3e) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.8365384615384616
+INFO:root:Sequences differ, alignment:
+INFO:root:
+VVIGDDGRTKVANTRVASIRQVTNLTGTTIKISGYPGDKMRSTGKVSQWEMSGSVTREDTNLAYYTIDTFSGNSGSAMLDQNQQIVGVHNAGYSNGTINGGPKAT
+|||||||||||||||||-|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+VVIGDDGRTKVANTRVA-IRQVTNLTGTTIKISGYPGDKMRSTGKVSQWEMSGSVTREDTNLAYYTIDTFSGNSGSAMLDQNQQIVGVHNAGYSNGTINGGPKAT
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 0.8818181818181818
+INFO:root:Sequences differ, alignment:
+INFO:root:
+PYNSIAYITFGGSSCTGTLIAPNKILTNGHCVYNTASRSYSAKGSVYPGMNDSTAVNGSANMTEFYVPSGYINTGASQYDFAVIKTDTNIGNTVGYR-AAFVEFINYAKAQ
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-|||||||||||||
+PYNSIAYITFGGSSCTGTLIAPNKILTNGHCVYNTASRSYSAKGSVYPGMNDSTAVNGSANMTEFYVPSGYINTGASQYDFAVIKTDTNIGNTVGYRSAAFVEFINYAKAQ
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:1p4v, 1p4k
+INFO:root:running analyses for (1p4v, 1p4k) pair...
+INFO:root:substring to original ratio: 1.0
+WARNING:root:no domains found, skip the domain-level analysis
+INFO:root:1p5h, 1p5r
+INFO:root:running analyses for (1p5h, 1p5r) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pah, 1dmw
+INFO:root:running analyses for (1pah, 1dmw) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pd5, 1q23
+INFO:root:running analyses for (1pd5, 1q23) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pdb, 1kms
+INFO:root:running analyses for (1pdb, 1kms) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pjr, 1qhh
+INFO:root:running analyses for (1pjr, 1qhh) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1pnz, 1kmo
+INFO:root:running analyses for (1pnz, 1kmo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pp4, 1deo
+INFO:root:running analyses for (1pp4, 1deo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ppn, 1khp
+INFO:root:running analyses for (1ppn, 1khp) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pu5, 1tjj
+INFO:root:running analyses for (1pu5, 1tjj) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pw2, 1hck
+INFO:root:running analyses for (1pw2, 1hck) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pwx, 1pwz
+INFO:root:running analyses for (1pwx, 1pwz) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1pzt, 1pzy
+INFO:root:running analyses for (1pzt, 1pzy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1q2v, 1q3q
+INFO:root:running analyses for (1q2v, 1q3q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1q3o, 1q3p
+INFO:root:running analyses for (1q3o, 1q3p) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1q5u, 1q5h
+INFO:root:running analyses for (1q5u, 1q5h) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1q7m, 1q8j
+INFO:root:running analyses for (1q7m, 1q8j) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1qba, 1qbb
+WARNING:root:_, underscore is not what I thought. A, 2
+INFO:root:running analyses for (1qba, 1qbb) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1qcd, 1qb7
+INFO:root:running analyses for (1qcd, 1qb7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1qhz, 1e5j
+INFO:root:running analyses for (1qhz, 1e5j) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1qj9, 1qj8
+INFO:root:running analyses for (1qj9, 1qj8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1qqj, 1hyo
+INFO:root:running analyses for (1qqj, 1hyo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r0w, 1q3h
+INFO:root:running analyses for (1r0w, 1q3h) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1r0w
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1r12, 1r15
+INFO:root:running analyses for (1r12, 1r15) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r3c, 1ove
+INFO:root:running analyses for (1r3c, 1ove) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r3u, 1yfz
+INFO:root:running analyses for (1r3u, 1yfz) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r6y, 1tuv
+INFO:root:running analyses for (1r6y, 1tuv) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r7i, 1r31
+INFO:root:running analyses for (1r7i, 1r31) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r8a, 1r89
+INFO:root:running analyses for (1r8a, 1r89) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r8h, 2aye
+INFO:root:running analyses for (1r8h, 2aye) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1r9e, 1r9d
+hovno
+WARNING:root:1r9e error: <urlopen error ftp error: URLError('ftp error: error_perm("550 Can\'t change directory to 1r9e.cif.gz: No such file or directory")')>
+INFO:root:running analyses for (1r9e, 1r9d) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1r9e
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1rb7, 1uaq
+INFO:root:running analyses for (1rb7, 1uaq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1rf5, 1rf4
+INFO:root:running analyses for (1rf5, 1rf4) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1rgx, 1rfx
+INFO:root:running analyses for (1rgx, 1rfx) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1rgx
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1ri5, 1ri1
+INFO:root:running analyses for (1ri5, 1ri1) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1ri5
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1rka, 1gqt
+INFO:root:running analyses for (1rka, 1gqt) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1rm6, 1sb3
+INFO:root:running analyses for (1rm6, 1sb3) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1rrl, 1hu9
+INFO:root:running analyses for (1rrl, 1hu9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1rtp, 1rwy
+INFO:root:running analyses for (1rtp, 1rwy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ruq, 1a3l
+INFO:root:running analyses for (1ruq, 1a3l) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1rur, 1a3l
+INFO:root:running analyses for (1rur, 1a3l) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1rwk, 1bmq
+INFO:root:running analyses for (1rwk, 1bmq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1s2l, 1s2g
+INFO:root:running analyses for (1s2l, 1s2g) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1s2o, 1tj5
+INFO:root:running analyses for (1s2o, 1tj5) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1s2t, 1m1b
+INFO:root:running analyses for (1s2t, 1m1b) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1s5z, 1kdn
+INFO:root:running analyses for (1s5z, 1kdn) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1s7v, 1fzj
+INFO:root:running analyses for (1s7v, 1fzj) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sfc, 1hvv
+INFO:root:running analyses for (1sfc, 1hvv) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sgk, 1ddt
+INFO:root:running analyses for (1sgk, 1ddt) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sll, 1sli
+INFO:root:running analyses for (1sll, 1sli) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sml, 2aio
+INFO:root:running analyses for (1sml, 2aio) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sn7, 1sio
+INFO:root:running analyses for (1sn7, 1sio) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1snz, 1so0
+INFO:root:running analyses for (1snz, 1so0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sux, 1ci1
+INFO:root:running analyses for (1sux, 1ci1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sw5, 1sw2
+INFO:root:running analyses for (1sw5, 1sw2) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1swv, 1sww
+INFO:root:running analyses for (1swv, 1sww) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1sz9, 1sza
+INFO:root:running analyses for (1sz9, 1sza) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1t0r, 1t0s
+INFO:root:running analyses for (1t0r, 1t0s) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1t0u, 1rxc
+INFO:root:running analyses for (1t0u, 1rxc) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1t60, 1m3d
+INFO:root:running analyses for (1t60, 1m3d) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1t6k, 1u1w
+INFO:root:running analyses for (1t6k, 1u1w) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tb4, 1ta4
+INFO:root:running analyses for (1tb4, 1ta4) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tbe, 1s1q
+INFO:root:running analyses for (1tbe, 1s1q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tcz, 1c5e
+INFO:root:running analyses for (1tcz, 1c5e) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1te6, 2akm
+INFO:root:running analyses for (1te6, 2akm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tf4, 1js4
+INFO:root:running analyses for (1tf4, 1js4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tfo, 1tfk
+INFO:root:running analyses for (1tfo, 1tfk) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tg0, 1zuk
+INFO:root:running analyses for (1tg0, 1zuk) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tjd, 1eej
+INFO:root:running analyses for (1tjd, 1eej) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tje, 1tke
+INFO:root:running analyses for (1tje, 1tke) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tjv, 1tjw
+INFO:root:running analyses for (1tjv, 1tjw) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tks, 1tku
+INFO:root:running analyses for (1tks, 1tku) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tqi, 1tqm
+INFO:root:running analyses for (1tqi, 1tqm) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ts8, 1nwz
+INFO:root:running analyses for (1ts8, 1nwz) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1tzb, 1x9i
+INFO:root:running analyses for (1tzb, 1x9i) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1tzw, 1tzx
+INFO:root:running analyses for (1tzw, 1tzx) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1u0v, 1u0w
+INFO:root:running analyses for (1u0v, 1u0w) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1u20, 2a8t
+INFO:root:running analyses for (1u20, 2a8t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1u2p, 1u2q
+INFO:root:running analyses for (1u2p, 1u2q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1u6d, 2flu
+INFO:root:running analyses for (1u6d, 2flu) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1u6e, 1u6s
+INFO:root:running analyses for (1u6e, 1u6s) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uc7, 2fwh
+INFO:root:running analyses for (1uc7, 2fwh) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uf4, 1uf5
+INFO:root:running analyses for (1uf4, 1uf5) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ugs, 1ire
+INFO:root:running analyses for (1ugs, 1ire) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ujq, 1o5q
+INFO:root:running analyses for (1ujq, 1o5q) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ul9, 1uld
+INFO:root:running analyses for (1ul9, 1uld) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1um9, 1umb
+INFO:root:running analyses for (1um9, 1umb) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1umf, 1um0
+INFO:root:running analyses for (1umf, 1um0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1une, 1fdk
+INFO:root:running analyses for (1une, 1fdk) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uoj, 1oko
+INFO:root:running analyses for (1uoj, 1oko) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1uoj
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1upq, 1upr
+INFO:root:running analyses for (1upq, 1upr) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1urn, 1nu4
+INFO:root:running analyses for (1urn, 1nu4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uro, 1r3q
+INFO:root:running analyses for (1uro, 1r3q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1usg, 1usi
+INFO:root:running analyses for (1usg, 1usi) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1usl, 2bes
+INFO:root:running analyses for (1usl, 2bes) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1usl
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1ut1, 1usq
+INFO:root:running analyses for (1ut1, 1usq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uwq, 1uws
+INFO:root:running analyses for (1uwq, 1uws) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uxe, 1uxa
+INFO:root:running analyses for (1uxe, 1uxa) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uxz, 1uy0
+INFO:root:running analyses for (1uxz, 1uy0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1uyl, 1uy6
+INFO:root:running analyses for (1uyl, 1uy6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1v19, 1v1a
+INFO:root:running analyses for (1v19, 1v1a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1v3u, 1v3t
+INFO:root:running analyses for (1v3u, 1v3t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1v6h, 1nza
+INFO:root:running analyses for (1v6h, 1nza) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1v7p, 1ukm
+INFO:root:running analyses for (1v7p, 1ukm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1v7v, 1v7w
+INFO:root:running analyses for (1v7v, 1v7w) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1v82, 1v83
+INFO:root:running analyses for (1v82, 1v83) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vcd, 1vc8
+INFO:root:running analyses for (1vcd, 1vc8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vet, 1veu
+INFO:root:running analyses for (1vet, 1veu) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vf4, 1vf1
+INFO:root:running analyses for (1vf4, 1vf1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vf8, 1e9l
+INFO:root:running analyses for (1vf8, 1e9l) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vfl, 1o5r
+INFO:root:running analyses for (1vfl, 1o5r) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vhj, 1vhw
+INFO:root:running analyses for (1vhj, 1vhw) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1viy, 1vhl
+INFO:root:running analyses for (1viy, 1vhl) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vjm, 1ap9
+INFO:root:running analyses for (1vjm, 1ap9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vpn, 1vps
+INFO:root:running analyses for (1vpn, 1vps) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vr6, 1rzm
+INFO:root:running analyses for (1vr6, 1rzm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vsm, 1a5v
+INFO:root:running analyses for (1vsm, 1a5v) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1vzi, 1vzg
+INFO:root:running analyses for (1vzi, 1vzg) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w0j, 1e1r
+INFO:root:running analyses for (1w0j, 1e1r) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/1w0j
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1w0n, 1ux7
+INFO:root:running analyses for (1w0n, 1ux7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w17, 1w1a
+INFO:root:running analyses for (1w17, 1w1a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w4c, 1w44
+INFO:root:running analyses for (1w4c, 1w44) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w6n, 1w6m
+INFO:root:running analyses for (1w6n, 1w6m) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w75, 1dx6
+INFO:root:running analyses for (1w75, 1dx6) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w79, 1w8y
+INFO:root:running analyses for (1w79, 1w8y) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w93, 1w96
+INFO:root:running analyses for (1w93, 1w96) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w9p, 1w9u
+INFO:root:running analyses for (1w9p, 1w9u) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1w9q, 1obx
+INFO:root:running analyses for (1w9q, 1obx) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1wd7, 1wcw
+INFO:root:running analyses for (1wd7, 1wcw) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.752
+INFO:root:Sequences differ, alignment:
+INFO:root:
+AVRVAYAGLRRKEAFKALAEKLGFTPLLFPVQATEHLPDPEGILRLEEALLRGEVDALAFVAAIQVEFLFEGAKDPKALREALNTRVKALAVGRVTADALREWGVKPFYVDETERLGSLLQGFKRALQKEVA
+|||||||||||||||||||||||||||||||-------||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+AVRVAYAGLRRKEAFKALAEKLGFTPLLFPV-------DPEGILRLEEALLRGEVDALAFVAAIQVEFLFEGAKDPKALREALNTRVKALAVGRVTADALREWGVKPFYVDETERLGSLLQGFKRALQKEVA
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wdp, 1bfn
+WARNING:root:_, underscore is not what I thought. A, 2
+INFO:root:running analyses for (1wdp, 1bfn) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wgt, 1k7t
+INFO:root:running analyses for (1wgt, 1k7t) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wka, 1wk9
+INFO:root:running analyses for (1wka, 1wk9) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wm6, 1wlu
+INFO:root:running analyses for (1wm6, 1wlu) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wm9, 1wuq
+INFO:root:running analyses for (1wm9, 1wuq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wme, 1wmd
+INFO:root:running analyses for (1wme, 1wmd) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1woh, 1wog
+INFO:root:running analyses for (1woh, 1wog) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ws9, 2d29
+INFO:root:running analyses for (1ws9, 2d29) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wxd, 2cy0
+INFO:root:running analyses for (1wxd, 2cy0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1wyt, 1wyv
+INFO:root:running analyses for (1wyt, 1wyv) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1x0a, 1vbi
+INFO:root:running analyses for (1x0a, 1vbi) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1x13, 1x15
+INFO:root:running analyses for (1x13, 1x15) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1x1h, 1x1i
+INFO:root:running analyses for (1x1h, 1x1i) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1x6m, 1xa8
+INFO:root:running analyses for (1x6m, 1xa8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xgv, 1tyo
+INFO:root:running analyses for (1xgv, 1tyo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xik, 1mxr
+INFO:root:running analyses for (1xik, 1mxr) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xix, 1p4n
+INFO:root:running analyses for (1xix, 1p4n) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xmf, 1xu3
+INFO:root:running analyses for (1xmf, 1xu3) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xmt, 2gdb
+WARNING:root:2gdb error: <urlopen error ftp error: URLError('ftp error: error_perm("550 Can\'t change directory to 2gdb.cif.gz: No such file or directory")')>
+hovno
+INFO:root:running analyses for (1xmt, 2gdb) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/2gdb
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 391, in run
+    ss2 = get_ss(residues2.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:1xo6, 1xny
+INFO:root:running analyses for (1xo6, 1xny) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xph, 1k9j
+INFO:root:running analyses for (1xph, 1k9j) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xqo, 1xqp
+INFO:root:running analyses for (1xqo, 1xqp) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xqz, 1xr1
+INFO:root:running analyses for (1xqz, 1xr1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1xsk, 1xsi
+INFO:root:running analyses for (1xsk, 1xsi) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1y0m, 1ywo
+INFO:root:running analyses for (1y0m, 1ywo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1y2q, 2hkz
+INFO:root:running analyses for (1y2q, 2hkz) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1y2t, 1y2u
+INFO:root:running analyses for (1y2t, 1y2u) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1y3q, 1y3n
+INFO:root:running analyses for (1y3q, 1y3n) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1y6v, 1ew8
+INFO:root:running analyses for (1y6v, 1ew8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ya7, 1yau
+INFO:root:running analyses for (1ya7, 1yau) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ye5, 1v96
+INFO:root:running analyses for (1ye5, 1v96) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1yft, 1yfr
+INFO:root:running analyses for (1yft, 1yfr) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1yhh, 2g16
+INFO:root:running analyses for (1yhh, 2g16) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1yhi, 2g16
+INFO:root:running analyses for (1yhi, 2g16) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1yl5, 1yl7
+INFO:root:running analyses for (1yl5, 1yl7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.9927536231884058
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1yrt, 1zot
+INFO:root:running analyses for (1yrt, 1zot) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1yv2, 1yvx
+INFO:root:running analyses for (1yv2, 1yvx) pair...
+INFO:root:substring to original ratio: 1.0
+WARNING:root:no domains found, skip the domain-level analysis
+INFO:root:1yxc, 1yxd
+INFO:root:running analyses for (1yxc, 1yxd) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1z2x, 1z2w
+INFO:root:running analyses for (1z2x, 1z2w) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1z7x, 2bex
+INFO:root:running analyses for (1z7x, 2bex) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1z9p, 1z9n
+INFO:root:running analyses for (1z9p, 1z9n) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1za1, 1q95
+INFO:root:running analyses for (1za1, 1q95) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zal, 1zai
+INFO:root:running analyses for (1zal, 1zai) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zcr, 1bm7
+INFO:root:running analyses for (1zcr, 1bm7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zcu, 1zdf
+INFO:root:running analyses for (1zcu, 1zdf) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zhq, 1zhs
+INFO:root:running analyses for (1zhq, 1zhs) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:1zk3, 1zjy
+INFO:root:running analyses for (1zk3, 1zjy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zn9, 1ore
+INFO:root:running analyses for (1zn9, 1ore) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zol, 1o03
+INFO:root:running analyses for (1zol, 1o03) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zsz, 1ou8
+INFO:root:running analyses for (1zsz, 1ou8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1ztz, 1a30
+INFO:root:running analyses for (1ztz, 1a30) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zz0, 1zz1
+INFO:root:running analyses for (1zz0, 1zz1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zz9, 1zz8
+INFO:root:running analyses for (1zz9, 1zz8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:1zze, 1y1p
+INFO:root:running analyses for (1zze, 1y1p) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2a5a, 1uk4
+INFO:root:running analyses for (2a5a, 1uk4) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:2a69, 2be5
+INFO:root:running analyses for (2a69, 2be5) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2a6q, 2a6r
+INFO:root:running analyses for (2a6q, 2a6r) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2a6z, 2a70
+INFO:root:running analyses for (2a6z, 2a70) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2a78, 1gzf
+INFO:root:running analyses for (2a78, 1gzf) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2a8f, 2aib
+INFO:root:running analyses for (2a8f, 2aib) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2aag, 2aal
+INFO:root:running analyses for (2aag, 2aal) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2afm, 2afw
+INFO:root:running analyses for (2afm, 2afw) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2aft, 2aij
+INFO:root:running analyses for (2aft, 2aij) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2air, 1tug
+INFO:root:running analyses for (2air, 1tug) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2ajg, 2ajh
+INFO:root:running analyses for (2ajg, 2ajh) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2aq6, 1y30
+INFO:root:running analyses for (2aq6, 1y30) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2awy, 2avk
+INFO:root:running analyses for (2awy, 2avk) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2b4i, 2b4h
+INFO:root:running analyses for (2b4i, 2b4h) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/2b4h
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 391, in run
+    ss2 = get_ss(residues2.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:2b6p, 1ymg
+INFO:root:running analyses for (2b6p, 1ymg) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2b98, 2b99
+INFO:root:running analyses for (2b98, 2b99) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2be5, 2a68
+INFO:root:running analyses for (2be5, 2a68) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bex, 2bzz
+INFO:root:running analyses for (2bex, 2bzz) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bf5, 2bf3
+INFO:root:running analyses for (2bf5, 2bf3) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2blg, 1bso
+INFO:root:running analyses for (2blg, 1bso) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bmq, 2bmo
+INFO:root:running analyses for (2bmq, 2bmo) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bnu, 2bnq
+INFO:root:running analyses for (2bnu, 2bnq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bsd, 1zru
+INFO:root:running analyses for (2bsd, 1zru) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bv9, 2bvd
+INFO:root:running analyses for (2bv9, 2bvd) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bw1, 1umn
+INFO:root:running analyses for (2bw1, 1umn) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bw4, 1rzp
+INFO:root:running analyses for (2bw4, 1rzp) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2bw8, 2bwa
+INFO:root:running analyses for (2bw8, 2bwa) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2c1m, 1y2a
+INFO:root:running analyses for (2c1m, 1y2a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2c2u, 2c2f
+INFO:root:running analyses for (2c2u, 2c2f) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2c3g, 2c3h
+INFO:root:running analyses for (2c3g, 2c3h) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2c3t, 2c3q
+INFO:root:running analyses for (2c3t, 2c3q) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2c4e, 2c49
+INFO:root:running analyses for (2c4e, 2c49) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2c7i, 2c8m
+INFO:root:running analyses for (2c7i, 2c8m) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2cc9, 2cc8
+INFO:root:running analyses for (2cc9, 2cc8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2ce9, 2ce8
+INFO:root:running analyses for (2ce9, 2ce8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2cey, 2cex
+INFO:root:running analyses for (2cey, 2cex) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2cgk, 2cgj
+INFO:root:running analyses for (2cgk, 2cgj) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2ci6, 2c6z
+INFO:root:running analyses for (2ci6, 2c6z) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2cj8, 1rj4
+INFO:root:running analyses for (2cj8, 1rj4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2co6, 2cny
+INFO:root:running analyses for (2co6, 2cny) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2d5j, 1vd5
+INFO:root:running analyses for (2d5j, 1vd5) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2d6l, 2d6m
+INFO:root:running analyses for (2d6l, 2d6m) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2ddr, 2ddt
+INFO:root:running analyses for (2ddr, 2ddt) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2dea, 1igb
+INFO:root:running analyses for (2dea, 1igb) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2dec, 2df8
+INFO:root:running analyses for (2dec, 2df8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2dek, 1wng
+INFO:root:running analyses for (2dek, 1wng) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2drw, 2dns
+INFO:root:running analyses for (2drw, 2dns) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2dvt, 2dvu
+INFO:root:running analyses for (2dvt, 2dvu) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2f5c, 2ev6
+INFO:root:running analyses for (2f5c, 2ev6) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2f6l, 2ao2
+INFO:root:running analyses for (2f6l, 2ao2) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2f82, 2fa0
+INFO:root:running analyses for (2f82, 2fa0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2f9r, 1xx1
+INFO:root:running analyses for (2f9r, 1xx1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fae, 2fac
+INFO:root:running analyses for (2fae, 2fac) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fao, 2faq
+INFO:root:running analyses for (2fao, 2faq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fbt, 2fc0
+INFO:root:running analyses for (2fbt, 2fc0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fjy, 1dqe
+INFO:root:running analyses for (2fjy, 1dqe) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fn0, 2fn1
+INFO:root:running analyses for (2fn0, 2fn1) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fpr, 2fpu
+INFO:root:running analyses for (2fpr, 2fpu) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fs5, 2ft0
+INFO:root:running analyses for (2fs5, 2ft0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fs7, 1cbq
+INFO:root:running analyses for (2fs7, 1cbq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fua, 4fua
+INFO:root:running analyses for (2fua, 4fua) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fw1, 1u11
+INFO:root:running analyses for (2fw1, 1u11) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fxi, 1jf8
+INFO:root:running analyses for (2fxi, 1jf8) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2fz6, 2gvm
+INFO:root:running analyses for (2fz6, 2gvm) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2g26, 2fs4
+INFO:root:running analyses for (2g26, 2fs4) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2g2o, 2g1h
+INFO:root:running analyses for (2g2o, 2g1h) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2g5h, 2f2a
+INFO:root:running analyses for (2g5h, 2f2a) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2g5t, 1n1m
+INFO:root:running analyses for (2g5t, 1n1m) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2g67, 2g28
+INFO:root:running analyses for (2g67, 2g28) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2g74, 1x83
+INFO:root:running analyses for (2g74, 1x83) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2g7p, 2g7q
+INFO:root:running analyses for (2g7p, 2g7q) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2ggg, 2ggh
+INFO:root:running analyses for (2ggg, 2ggh) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2gp3, 2gp5
+INFO:root:running analyses for (2gp3, 2gp5) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2gp7, 1s9p
+INFO:root:running analyses for (2gp7, 1s9p) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2gsn, 2gso
+INFO:root:running analyses for (2gsn, 2gso) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2gty, 2guc
+INFO:root:running analyses for (2gty, 2guc) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2gvw, 2gvv
+INFO:root:running analyses for (2gvw, 2gvv) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2gxu, 2gxq
+INFO:root:running analyses for (2gxu, 2gxq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2h2n, 1s18
+INFO:root:running analyses for (2h2n, 1s18) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2h68, 2h13
+INFO:root:running analyses for (2h68, 2h13) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2hbj, 2hbl
+INFO:root:running analyses for (2hbj, 2hbl) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2hf0, 2hez
+INFO:root:running analyses for (2hf0, 2hez) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2hle, 2bba
+INFO:root:running analyses for (2hle, 2bba) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2hmq, 2hmz
+INFO:root:running analyses for (2hmq, 2hmz) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 162, in get_secondary_structure
+    r.raise_for_status()
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/venv/lib/python3.8/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/2hmq
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 84, in compare_chains
+    serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 390, in run
+    ss1 = get_ss(residues1.structure_id)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 61, in __call__
+    return self.analysis_cached_run(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 65, in analysis_cached_run
+    return super().__call__(*args, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/base_analyses.py", line 47, in __call__
+    return self.run(*args, *self.dependencies, **kwargs)
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/core/analyses.py", line 174, in run
+    for molecule in get_secondary_structure(pdb_code):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/input/download.py", line 164, in get_secondary_structure
+    raise APIException()
+apo_holo_structure_stats.input.download.APIException
+INFO:root:2hvm, 1hvq
+WARNING:root:_, underscore is not what I thought. A, 2
+INFO:root:running analyses for (2hvm, 1hvq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2hyw, 2hyu
+INFO:root:running analyses for (2hyw, 2hyu) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2i42, 1qz0
+INFO:root:running analyses for (2i42, 1qz0) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2i87, 2i80
+INFO:root:running analyses for (2i87, 2i80) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2iur, 2agl
+INFO:root:running analyses for (2iur, 2agl) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2izd, 1hqq
+INFO:root:running analyses for (2izd, 1hqq) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2j0a, 2j0b
+INFO:root:running analyses for (2j0a, 2j0b) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2j1r, 2j1s
+INFO:root:running analyses for (2j1r, 2j1s) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2lip, 1hqd
+INFO:root:running analyses for (2lip, 1hqd) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2pgd, 1pgn
+INFO:root:running analyses for (2pgd, 1pgn) pair...
+INFO:root:substring to original ratio: 1.0
+ERROR:root:compare chains failed with:
+Traceback (most recent call last):
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 234, in <module>
+    compare_chains(apo_chain, holo_chain,
+  File "/home/adam/pschool/bakalarka/apo-holo-protein-structure-stats/apo_holo_structure_stats/paper_repl/main.py", line 100, in compare_chains
+    assert len(c1_domains) == len(c2_domains)
+AssertionError
+INFO:root:2sar, 1gmp
+INFO:root:running analyses for (2sar, 1gmp) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2tgt, 1aq7
+WARNING:root:_, underscore is not what I thought. A, 2
+INFO:root:running analyses for (2tgt, 1aq7) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 0.8974358974358975
+INFO:root:Sequences differ, alignment:
+INFO:root:
+IVGGYTCGANTVISLPTSCASAGTQCLISGWGNTKSSGTSYPDVLKCLKAPILSDSSCKSAYPGQITSNMFCAYLEGKDSCQGDSGGPVVCSGKLQGIVSWGSGCQKNKPGVYTKVC
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||.|||||||||||
+IVGGYTCGANTVISLPTSCASAGTQCLISGWGNTKSSGTSYPDVLKCLKAPILSDSSCKSAYPGQITSNMFCAYLEGKDSCQGDSGGPVVCSGKLQGIVSWGSGCAKNKPGVYTKVC
+
+WARNING:root:does not meet the threshold for substring length
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2thi, 4thi
+INFO:root:running analyses for (2thi, 4thi) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:2ts1, 4ts1
+INFO:root:running analyses for (2ts1, 4ts1) pair...
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:parsed f{len(polypeptides)} polypeptides from one chain, concatenating
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:3ezm, 1l5b
+INFO:root:running analyses for (3ezm, 1l5b) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:3ng1, 1ng1
+INFO:root:running analyses for (3ng1, 1ng1) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:3pfk, 4pfk
+INFO:root:running analyses for (3pfk, 4pfk) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:4ake, 1ake
+INFO:root:running analyses for (4ake, 1ake) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:4eug, 5eug
+INFO:root:running analyses for (4eug, 5eug) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:4mat, 1c21
+INFO:root:running analyses for (4mat, 1c21) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:4pgm, 1bq4
+INFO:root:running analyses for (4pgm, 1bq4) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:6rhn, 1rzy
+INFO:root:running analyses for (6rhn, 1rzy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:6taa, 2guy
+INFO:root:running analyses for (6taa, 2guy) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:7req, 1req
+INFO:root:running analyses for (7req, 1req) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+INFO:root:9rnt, 1bvi
+INFO:root:running analyses for (9rnt, 1bvi) pair...
+INFO:root:substring to original ratio: 1.0
+INFO:root:domain substring to original ratio: 1.0
+
+Process finished with exit code 0

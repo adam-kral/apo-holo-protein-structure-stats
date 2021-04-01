@@ -12,7 +12,7 @@ from Bio.PDB.PDBExceptions import PDBConstructionWarning
 from Bio.PDB.Structure import Structure
 
 from apo_holo_structure_stats.core.analyses import GetChains, GetMainChain
-from apo_holo_structure_stats.pipeline.logging import add_loglevel_args
+from apo_holo_structure_stats.pipeline.log import add_loglevel_args
 from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
 
 
@@ -42,8 +42,8 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
         logging.warning(f'could not determine polymers of structure {s.id}, structure allowed, might contain RNA or DNA, though')
 
     # skip non-single-chain structure (too short chain or too many chains)
-    if len(get_chains(s)) != 1:
-        logging.info(f'skipping structure {s.id}: not a single-chain structure')
+    if len(get_chains(s)) < 1:
+        logging.info(f'skipping structure {s.id}: not a enough chains')
         return False
 
     return True
@@ -91,6 +91,7 @@ def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     # verbose: BioPython prints to stdout, determine verbose by root logger level (I could also have a settings variable
     # which also could be reset by a commandline argument)
 
+
 def parse_structure(structure_file, structure_code=None):
     # bipythoní parser neni ideální, využívá legacy PDB fieldy (ATOM/HETATM) a auth_seq_id (s fallbackem na label_seq_id == problém při mapování z pdbe api), auth_asym_id. Pokud by např.
     # nebyl u HETATM auth_seq_id (nepovinný ale, in about 100.0 % of entries), spadlo by to
@@ -99,7 +100,11 @@ def parse_structure(structure_file, structure_code=None):
     # ovšem ty auth_ položky nemusí být číslem, ale např. tento parser je převádí na int() -- může spadnout
     mmcif_parser = CustomMMCIFParser()
 
-    structure = mmcif_parser.get_structure(structure_file, structure_code)
+    # remove warnings like: PDBConstructionWarning: WARNING: Chain C is discontinuous at line
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        structure = mmcif_parser.get_structure(structure_file, structure_code)
+
     mmcif_dict_undocumented = mmcif_parser._mmcif_dict
 
     return structure, mmcif_parser.header, mmcif_dict_undocumented
@@ -208,11 +213,15 @@ if __name__ == '__main__':
 
         structure_filenames = (retrieve_structure_file_from_pdb(pdb_code) for pdb_code in pdb_codes)
 
+    structure_filenames = list(structure_filenames)
+    logging.info(f'total structures to process: {len(structure_filenames)}')
+
     # load and filter structures
     structures_passed = []
 
-    for filename in structure_filenames:
+    for i, filename in enumerate(structure_filenames):
         s, s_header, mmcif_dict = parse_structure(filename)
+        logging.info(f'processing {i}-th structure {s.id} at {filename}')
 
         get_chains_analyzer = GetChains()
 

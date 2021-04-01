@@ -11,7 +11,7 @@ from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetCha
     GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterdomainSurface, GetSASAForStructure, ChainResidueData, ResidueId, \
     DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
 from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
-from apo_holo_structure_stats.pipeline.logging import add_loglevel_args
+from apo_holo_structure_stats.pipeline.log import add_loglevel_args
 
 from apo_holo_structure_stats.core.analysesinstances import *
 

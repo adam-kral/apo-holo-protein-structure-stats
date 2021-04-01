@@ -121,7 +121,7 @@ def equivalence_partition(iterable, relation):
                 found = True
                 break
         if not found:  # it is in a new class
-            classes.append(set([o]))
+            classes.append({o})
             partitions[o] = classes[-1]
     return classes, partitions
 
@@ -141,6 +141,7 @@ def get_basic_uniprot_groups(uniprot_segments_observed_df=None):
         for row in group.to_records(index=False):
             up_group[row.pdb_code].append(row.chain_id)
 
+        # we want at least 2 structures in the group (so that an apo-holo pair could exist in the group)
         if len(up_group) > 1:
             uniprot_groups[uniprotkb_id] = up_group
 
@@ -148,6 +149,9 @@ def get_basic_uniprot_groups(uniprot_segments_observed_df=None):
 
 
 def analyze_basic_uniprot_id_groups():
+    """ Makes groups that consist of chains mapped to the same uniprot. This gives the upper bound of
+    structures/chains/groups (and can estimate than the number of pairs) we would analyse
+    """
     uniprot_segments_observed_df, _ = get_uniprot_segments_observed_dataset()
 
     uniprot_groups = get_basic_uniprot_groups(uniprot_segments_observed_df)
@@ -177,12 +181,23 @@ def analyze_basic_uniprot_id_groups():
     # single-chain (one chain > 50) structures:  groups:  9159 unique_structures:  60294
     # single-chain (one chain > 15) structures:  groups:  8683 unique_structures:  57308
 
+    # #chains in a group, usually < 30, rarely > 100
+    # (max 959, P00918, probably most of the structures are holo?, so there wouldn't be 500x500 pairs)
+
 
 # použít místo uniprot_segments_observed.csv.gz tohle: pdb_chain_uniprot.csv.gz, tam jsou extendlý ty alignmenty, a pokud je na jeden chain víc fragmentů od jednoho uniprotu,
 # znamená to rozdíl v sekvenci (ale i jen v SEQRES, nemusí být ten rozdíl observed).
 def analyze_uniprot_groups_joined_fragments():
+    """ Makes groups that require all uniprot segments mapped to a chain to be equal, for each chain in a group.
+    That probably was not the case of the structures in the paper. Structures had leading/trailing residues, along
+    the LCS which was used for the analysis. These trailing residues would probably be in uniprot, the segments
+    woulnd't be equal, so they wouldn't be in the group. So this estimate is lower than 'analyze_basic_uniprot_id_groups',
+    but still the actual number of groups/pairs will probably be lower (due to filtering criteria like resolution, ligand-free
+    and ligand-bound in one group,...)
+    """
     pdbchain_to_uniprot, _ = get_uniprot_segments_observed_dataset()
-    # pdbchain_to_uniprot, _ = get_uniprot_mappings_dataset()
+
+    # pdbchain_to_uniprot, _ = get_uniprot_mappings_dataset()1111
 
     # chains having same segment (but how do I go to same segmentS)
 
@@ -292,10 +307,10 @@ def analyze_uniprot_groups_joined_fragments():
 
     ## pdb_chain_uniprot.csv
     # groups same fragments len >1 54328
-    # multiple-struct-groups: 31126  # proč je těch prvních dvou míň?
+    # multiple-struct-groups: 31126  # proč je těch prvních dvou míň? Protože tam možná můžou být mutace a moje groupovani segmentu neni tak prisne (nezna sekvence, jen indexy), jako je algoritmus sifts
     # unique_structures multiple-struct-groups 122018
     # single-chain structures:  groups:  8214 unique_structures:  47936
 
 if __name__ == '__main__':
-    # analyze_basic_uniprot_id_groups()
-    analyze_uniprot_groups_joined_fragments()
+    analyze_basic_uniprot_id_groups()
+    # analyze_uniprot_groups_joined_fragments()

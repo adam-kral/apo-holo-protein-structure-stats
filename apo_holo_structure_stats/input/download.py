@@ -25,6 +25,7 @@ class RequestsSessionFactory:
         s = requests.Session()
         s.mount('http://', HTTPAdapter(max_retries=cls.retries))
         s.mount('https://', HTTPAdapter(max_retries=cls.retries))
+        s.headers.update({'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/87.0'})
         return s
 
 
@@ -69,8 +70,8 @@ def get_best_isoform_for_chains(struct_code):
     try:
         r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}', timeout=REQUESTS_TIMEOUT)
         r.raise_for_status()
-    except RequestException:
-        raise APIException()
+    except RequestException as e:
+        raise APIException() from e
 
     data = r.json()[struct_code]['UniProt']
 
@@ -160,8 +161,8 @@ def get_secondary_structure(struct_code: str):
         r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
         # if I knew entity id (not with biopython's parser), I could append it to the url
         r.raise_for_status()
-    except RequestException:
-        raise APIException()
+    except RequestException as e:
+        raise APIException() from e
 
     return r.json()[struct_code]['molecules']
 

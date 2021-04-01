@@ -133,5 +133,6 @@ dmypy.json
 
 scratch_files/
 todo.txt
+paper_vysledky.md
 .idea/
 pdb_structs/
