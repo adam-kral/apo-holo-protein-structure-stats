@@ -88,6 +88,10 @@ class IsHolo(CachedAnalyzer):
                 main_chain_atoms_in_contact = ns.search(ligand_atom.get_coord(), RADIUS)
 
                 for atom in main_chain_atoms_in_contact:
+                    # exclude hydrogen atoms (as in paper)
+                    if atom.element == 'H':
+                        continue
+
                     residues_in_contact_with_ligand.add(atom.get_parent())
 
             if len(residues_in_contact_with_ligand) >= MIN_RESIDUES_WITHIN_LIGAND:
@@ -286,6 +290,13 @@ class DomainResidueMapping:
     chain_id: str
     segment_beginnings: List[int]
     segment_ends: List[int]
+
+    @classmethod
+    def from_domain_on_another_chain(cls, domain: 'DomainResidueMapping', new_domain_chain_id: str, auth_seq_id_offset: int):
+        return cls(domain.domain_id, new_domain_chain_id,
+                   [a+auth_seq_id_offset for a in domain.segment_beginnings],
+                   [a+auth_seq_id_offset for a in domain.segment_ends],
+       )
 
     def __iter__(self) -> Iterator[int]:
         """ Returns a sequence of residue auth_seq_id in a domain """

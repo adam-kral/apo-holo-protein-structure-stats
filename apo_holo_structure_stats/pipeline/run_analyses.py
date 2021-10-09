@@ -56,7 +56,7 @@ def chain_to_polypeptide(chain):
     polypeptides = ppb.build_peptides(chain, aa_only=0)  # allow non-standard aas?
 
     if len(polypeptides) != 1:
-        logging.info('parsed f{len(polypeptides)} polypeptides from one chain, concatenating')
+        logging.info(f'parsed {len(polypeptides)} polypeptides from one chain, concatenating')
 
         for pp in polypeptides[1:]:
             polypeptides[0].extend(pp)

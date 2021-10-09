@@ -46,7 +46,7 @@ def get_uniprot_mappings_dataset():
     the csv contains fused observed segments (aa stretches with coordinates) together to cover the whole pdb chain sequence (incl. unobserved
     residues); the uniprot sequence maps to the pdb chain sequence even if those residues don't have coordinates observed """
 
-    url = 'ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/csv/pdb_chain_uniprot.csv.gz'
+        url = 'ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/csv/pdb_chain_uniprot.csv.gz'
 
     with urllib.request.urlopen(url) as response:  # ~60 MB
         with gzip.open(response, 'rt', newline='', encoding='utf-8') as f:  # todo get encoding from response.headers? https://docs.python.org/3/library/urllib.request.html#urllib.response.addinfourl.headers
@@ -182,7 +182,8 @@ def analyze_basic_uniprot_id_groups():
     # single-chain (one chain > 15) structures:  groups:  8683 unique_structures:  57308
 
     # #chains in a group, usually < 30, rarely > 100
-    # (max 959, P00918, probably most of the structures are holo?, so there wouldn't be 500x500 pairs)
+
+    # of all groups: (max 959, P00918, probably most of the structures are holo?, so there wouldn't be 500x500 pairs)
 
 
 # použít místo uniprot_segments_observed.csv.gz tohle: pdb_chain_uniprot.csv.gz, tam jsou extendlý ty alignmenty, a pokud je na jeden chain víc fragmentů od jednoho uniprotu,

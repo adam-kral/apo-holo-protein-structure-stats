@@ -12,13 +12,12 @@ from Bio.PDB.Chain import Chain
 from Bio.PDB.Polypeptide import Polypeptide
 from Bio.PDB.Structure import Structure
 
-from apo_holo_structure_stats.core.analyses import ChainResidues, ChainResidueData, ResidueId, DomainResidues, DomainResidueData
+from apo_holo_structure_stats.core.analyses import ChainResidues, ChainResidueData, ResidueId, DomainResidues, DomainResidueData, \
+    DomainResidueMapping
 from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
 from apo_holo_structure_stats.input.download import APIException
 from apo_holo_structure_stats.pipeline.run_analyses import chain_to_polypeptide, aligner, AnalysisHandler, JSONAnalysisSerializer
-
-get_rotation_matrix
 
 
 MIN_SUBSTRING_LENGTH_RATIO = 0.90
@@ -47,7 +46,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
         pp1 = chain_to_polypeptide(chain1)
         pp2 = chain_to_polypeptide(chain2)
 
-    # find longest common substring
+    # find longest common substring TODO uplne 100% nefunguje, neb get_sequence() vrací pro MET i FME stejny one-letter code: M, ale nespadne to dal.?
     i1, i2, length = SequenceMatcher(a=pp1.get_sequence(), b=pp2.get_sequence(), autojunk=False).find_longest_match(0, len(pp1), 0, len(pp2))
 
     logging.info(f'substring to original ratio: {length/min(len(pp1), len(pp2))}')
@@ -97,38 +96,45 @@ def compare_chains(chain1: Chain, chain2: Chain,
         raise
 
 
-    assert len(c1_domains) == len(c2_domains)
+    # assert len(c1_domains) == len(c2_domains) # not always true, as expected, but now OK
 
     # SequenceMatcher on domain resiudes
     c1_domains__residues = []
     c2_domains__residues = []
 
-    for c1_d, c2_d in zip(c1_domains, c2_domains):
+    for c1_d in c1_domains:  # or c2_domains:
+        c1_domain_mapped_to_c2 = DomainResidueMapping.from_domain_on_another_chain(c1_d, chain2.id, auth_seq_id_offset=pp2[0].id[1] - pp1[0].id[1])
+
         c1_d_residues = DomainResidues.from_domain(c1_d, chain1.get_parent(), lambda id: id not in pp1_auth_seq_ids)
-        c2_d_residues = DomainResidues.from_domain(c2_d, chain2.get_parent(), lambda id: id not in pp2_auth_seq_ids)
+        c2_d_residues = DomainResidues.from_domain(c1_domain_mapped_to_c2, chain2.get_parent(), lambda id: id not in pp2_auth_seq_ids)
 
         c1_d_pp = Polypeptide(c1_d_residues)
         c2_d_pp = Polypeptide(c2_d_residues)
+        #
+        # # find longest common substring of domains
+        # i1, i2, length = SequenceMatcher(a=c1_d_pp.get_sequence(), b=c2_d_pp.get_sequence(), autojunk=False).find_longest_match(0, len(c1_d_pp), 0,
+        #                                                                                                                 len(c2_d_pp))
+        # logging.info(f'domain substring to original ratio: {length / min(len(c1_d_pp), len(c2_d_pp))}')
 
-        # find longest common substring of domains
-        i1, i2, length = SequenceMatcher(a=c1_d_pp.get_sequence(), b=c2_d_pp.get_sequence(), autojunk=False).find_longest_match(0, len(c1_d_pp), 0,
-                                                                                                                        len(c2_d_pp))
-        logging.info(f'domain substring to original ratio: {length / min(len(c1_d_pp), len(c2_d_pp))}')
+        if not c1_d_pp or not c2_d_pp:
+            # the domain is not within the processed LCS of both chains (empty intersection with chain residues)
+            continue
 
-        if length < MIN_SUBSTRING_LENGTH_RATIO * min(len(c1_d_pp), len(c2_d_pp)):
+        if c1_d_pp.get_sequence() != c2_d_pp.get_sequence():
             alignment = next(aligner.align(c1_d_pp.get_sequence(), c2_d_pp.get_sequence()))
             logging.info('Sequences differ, alignment:')
             logging.info(f'\n{alignment}')
-            logging.warning(f'does not meet the threshold for substring length')
+            logging.warning(f'error when mapping domain {c1_d} to second structure')
 
         # todo reflect domain cropping in the object id (domain id) somehow?
-        c1_domains__residues.append(DomainResidues(c1_d_residues[i1:i1+length], c1_d_residues.structure_id, c1_d_residues.chain_id, c1_d_residues.domain_id))
-        c2_domains__residues.append(DomainResidues(c2_d_residues[i2:i2+length], c2_d_residues.structure_id, c2_d_residues.chain_id, c2_d_residues.domain_id))
+        c1_domains__residues.append(DomainResidues(c1_d_residues.data, c1_d_residues.structure_id, c1_d_residues.chain_id, c1_d_residues.domain_id))
+        c2_domains__residues.append(DomainResidues(c2_d_residues.data, c2_d_residues.structure_id, c2_d_residues.chain_id, c2_d_residues.domain_id))
 
     # assert domains equal in sequence
-    for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
-        assert len(d_chain1) == len(d_chain2)
-        assert all(r1.get_resname() == r2.get_resname() for r1, r2 in zip(d_chain1, d_chain2))
+    # already done above, plus TODO FME != MET that threw an error, but in get_sequence they're equal
+    # for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
+    #     assert len(d_chain1) == len(d_chain2)
+    #     assert all(r1.get_resname() == r2.get_resname() for r1, r2 in zip(d_chain1, d_chain2))
 
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         for a in comparators__domains__residues_param:
@@ -205,51 +211,95 @@ def get_chain_by_chain_code(s: Structure, paper_chain_code: str) -> Chain:
         return chain
     return s[0][paper_chain_code]
 
-
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
 
-    df = pd.read_csv('apo_holo.dat', delimiter=r'\s+', comment='#', header=None,
-                     names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
+    def run_apo_analyses():
+        df = pd.read_csv('apo_holo.dat', delimiter=r'\s+', comment='#', header=None,
+                         names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
 
 
-    serializer = JSONAnalysisSerializer('outputnevsechno.json')
+        serializer = JSONAnalysisSerializer('output_apo_holo_all3.json')
+
+        found = False
+        for index, row in df.iterrows():
+            # if row.apo[:4] == '1cgj':
+            #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
+
+            if row.apo[:4] == '1ikp':
+                found = True
+
+            if not found:
+                continue
+
+            logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
+
+            apo = get_structure(row.apo[:4])
+            holo = get_structure(row.holo[:4])
+
+            apo_chain = get_chain_by_chain_code(apo, row.apo[4:])
+            holo_chain = get_chain_by_chain_code(holo, row.holo[4:])
+
+            try:
+                compare_chains(apo_chain, holo_chain,
+                               [get_rmsd, get_interdomain_surface],
+                               [get_ss],
+                               [get_rmsd, get_interdomain_surface],
+                               [get_ss],
+                               [get_hinge_angle],
+                               serializer)
+            except Exception as e:
+                logging.exception('compare chains failed with: ')
+                # raise
+
+        serializer.dump_data()
+
+    def run_holo_analyses():
+        df = pd.read_csv('holo.dat', delimiter=r'\s+', comment='#', header=None,
+                         names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
 
 
+        serializer = JSONAnalysisSerializer('output_holo_all.json')
 
-    found = False
-    for index, row in df.iterrows():
-        # if row.apo[:4] == '1cgj':
-        #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
 
-        # if row.apo[:4] == '1ehd':
-        #     found = True
-        #
-        # if not found:
-        #     continue
+        found = False
+        for index, row in df.iterrows():
+            # if row.apo[:4] == '1cgj':
+            #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
+            #
+            # if row.apo[:4] == '1bq8':
+            #     found = True
+            #
+            # if not found:
+            #     continue
 
-        if row.apo[:4] != '1gyj':
-            continue
+            # if row.apo[:4] != '1bq8':
+            #     continue
 
-        logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
+            logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
 
-        apo = get_structure(row.apo[:4])
-        holo = get_structure(row.holo[:4])
+            apo = get_structure(row.apo[:4])
+            holo = get_structure(row.holo[:4])
 
-        apo_chain = get_chain_by_chain_code(apo, row.apo[4:])
-        holo_chain = get_chain_by_chain_code(holo, row.holo[4:])
+            apo_chain = get_chain_by_chain_code(apo, row.apo[4:])
+            holo_chain = get_chain_by_chain_code(holo, row.holo[4:])
 
-        try:
-            compare_chains(apo_chain, holo_chain,
-                           [get_rmsd, get_interdomain_surface],
-                           [get_ss],
-                           [get_rmsd, get_interdomain_surface],
-                           [get_ss],
-                           [get_hinge_angle],
-                           serializer)
-        except Exception as e:
-            logging.exception('compare chains failed with: ')
-            raise
+            try:
+                compare_chains(apo_chain, holo_chain,
+                               [get_rmsd, get_interdomain_surface],
+                               [get_ss],
+                               [get_rmsd, get_interdomain_surface],
+                               [get_ss],
+                               [get_hinge_angle],
+                               serializer)
+            except Exception as e:
+                logging.exception('compare chains failed with: ')
+                # raise
 
-    serializer.dump_data()
-    pass
+        pass
+
+
+    # run_apo_analyses()
+    run_holo_analyses()
+
+

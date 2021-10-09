@@ -217,7 +217,9 @@ def get_domains(struct_code: str):
       }
     }
 
-
+    Could not use newer API https://www.ebi.ac.uk/pdbe/graph-api/mappings/cath/1bs4, as for this particular structure for example
+    it returns wrong domain end residue numbers - 168 instead of 1168 -  so it reports the segment is 1001 - 168. As of 7/23/2021.
+    TODO!! Už to snad spravili, můžu použít nový. Ne je to nějak divně, místo 168, 500něco, 1168 tam je furt 1168
     """
     try:
         r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/api/mappings/cath_b/{struct_code}', timeout=REQUESTS_TIMEOUT)
