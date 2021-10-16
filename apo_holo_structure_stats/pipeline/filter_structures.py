@@ -4,8 +4,7 @@ import json
 import os
 import warnings
 import logging
-from collections import defaultdict
-from typing import Iterable, List, Any
+from typing import Iterable, Any
 
 from Bio.PDB import PDBList, MMCIFParser
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
@@ -91,108 +90,6 @@ def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     # (mmCif is the default for file_format, but implicit = warning, this way no warning)
     # verbose: BioPython prints to stdout, determine verbose by root logger level (I could also have a settings variable
     # which also could be reset by a commandline argument)
-
-
-class BioPdbToModernMmcifMapping:
-    def __init__(self, mmcif_dict, pdbx_PDB_model_num=None):
-
-        # dictionaries: chain_id -> dict(label_seq_id -> biopython residue id; and vice versa)
-        self.label_seq_id__to__bio_pdb = defaultdict(dict)
-        self.bio_pdb__to__label_seq_id = defaultdict(dict)
-
-        poly_sequence = SeqIO()
-
-        # mmcif atom list spec: https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v40.dic/Categories/atom_site.html
-
-        chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]  # not required in spec, but is in 100.0 % entries
-        resname_list = mmcif_dict["_atom_site.label_comp_id"]
-        icode_list = mmcif_dict["_atom_site.pdbx_PDB_ins_code"]  # not required in spec, in about 3.2 % of entries (probably means the field is present but with
-        group_PDB_list = mmcif_dict["_atom_site.group_PDB"]  # ATOM or HETATM, not required in spec, but is in 100.0 % entries
-
-        # all list are the same length - number of atoms in _atom_site loop
-        total_atoms = len(chain_id_list)
-
-        try:
-            model_id_list = [int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]]
-        except KeyError:
-            # No model number column
-            model_id_list = None
-
-        # this is the key data that we need and is not present in BioPython.PDB.Residue
-        label_seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
-
-        try:
-            auth_seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
-        except KeyError:
-            # this try-except block matches BioPython's MMCIFParser behavior
-            auth_seq_id_list = label_seq_id_list
-
-        # two special chars as placeholders in the mmCIF format
-        # for item values that cannot be explicitly assigned
-        # see: pdbx/mmcif syntax web page
-        _unassigned = {".", "?"}
-
-        last_label_seq_id = None
-
-        for i in range(total_atoms):
-            # continue if _atom_site.pdbx_PDB_model_num is not the model we want (if not set, everything is in a single BioPython's model)
-            if model_id_list and model_id_list[i] != pdbx_PDB_model_num:
-                continue
-
-            # skip HETATMs (not part of polypeptide, label_seq_id is undefined, unassigned)
-            if group_PDB_list[i] == "HETATM":
-                continue
-
-            # see if this atom begins a new residue
-            if label_seq_id_list[i] == last_label_seq_id:
-                continue
-
-            last_label_seq_id = label_seq_id_list[i]
-
-            chain_id = chain_id_list[i]
-
-            # prepare Residue attributes as in BioPython
-            resname = resname_list[i]
-            int_resseq = int(auth_seq_id_list[i])
-            hetatm_flag = " "
-
-            icode = icode_list[i]
-            if icode in _unassigned:
-                icode = " "
-
-            biopython_residue_id = (hetatm_flag, int_resseq, icode)
-
-            self.label_seq_id__to__bio_pdb[chain_id][last_label_seq_id] = biopython_residue_id
-            self.bio_pdb__to__label_seq_id[chain_id][biopython_residue_id] = last_label_seq_id
-
-            # todo add building polypeptide sequence ("microheterogeneity" - have to use resname to resolve ambiguities)
-            # teď nevim, co dělat s label_alt_id... a taky sekvence neni povinna
-            # navic     _entity_poly.pdbx_seq_one_letter_code_can nema moznost heterogenity jako entity_poly_seq, tak si tam jeden zbytek asi vyberou?
-            # viděl jsem jenom příklad 5ZA2 (z prikladu, kdy jde o jiny residue), tak nevim, jak jinde. Tam byl zrovna alt. residue s jinym cmpd_id oznacen jako HETATM, takže
-            # by to v biopython parseru nevadilo.
-
-            # nejde alignovat ne-python-stringy, takže to umi jenom one-letter-code NE pry jde, když to je list, ale je to o dost pomalejsi
-
-            # CifSeqresIterator maj napsany spatne. 1) chain id je to label_asym_id, tj. to mmcifovsky (nekompatibilni s modulem BioPython.PDB),
-            # 2) heterogenita to rozbije, sekvence je pak delší
-
-            # varianta 2 - udelat to jak rikal, s tim mapovanim na uniprot. Musel bych kontrolovat, ze tam nejsou zadny
-            # gapy ani mismatche, to by celkem slo. A pak vzdy vzal minimum z těch rozměrů 2 sekv do toho porovnání.
-            # Ale když jsou unobserved, nepoznam, jestli jde o gap, nebo ne, pak bych musel věřit tomu namapovaní, i když
-            # by mohlo být špatně - mluvěj tam o seq. identity>95? Takze tam muzou byt i gapy, ktery nemuzu detekovat?
-            # a mismatche v tech unobserved bych taky nezdetekoval
-            #   - ne to mozna jo, kdybych se podival na unp->pdb, ten segment nebo cely, nevim, nikde nepisou, jestli dovolujou gapy
-            #  - je to trochu nepruhledny (jen pisou this complex procedure also enables annotation of differences, such as variants, isoforms, modified residues, microheterogeneity or engineered mutations, between the sample sequence and the UniProtKB sequence. )
-            #  -  a srovnavani s druhou sekvenci by bylo slozity a moc nedavalo smysl, kdyz muzu jednoduse srovnat sekvenci z experimentu..
-            #  - jenze to ma taky problem
-
-
-
-
-
-
-
-
 
 
 def parse_structure(structure_file, structure_code=None):

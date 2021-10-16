@@ -1,28 +1,93 @@
+import gzip
 import itertools
 import logging
+import os
 import time
 import warnings
+from datetime import datetime
 from difflib import SequenceMatcher
-from typing import List
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import List, Dict, Iterable
 
 import pandas as pd
 from Bio.PDB import PDBList, MMCIFParser
 
 from Bio.PDB.Chain import Chain
+from Bio.PDB.Model import Model
 from Bio.PDB.Polypeptide import Polypeptide
 from Bio.PDB.Structure import Structure
 
-from apo_holo_structure_stats.core.analyses import ChainResidues, ChainResidueData, ResidueId, DomainResidues, DomainResidueData, \
-    DomainResidueMapping
+from apo_holo_structure_stats.core.analyses import DomainResidues
+from apo_holo_structure_stats.core.dataclasses import ChainResidueData, DomainResidueData, ChainResidues, DomainResidueMapping
 from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
-from apo_holo_structure_stats.input.download import APIException
+from apo_holo_structure_stats.input.download import APIException, download_and_save_file
+from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId, BioResidueId
 from apo_holo_structure_stats.pipeline.run_analyses import chain_to_polypeptide, aligner, AnalysisHandler, JSONAnalysisSerializer
+
+
+
+def get_longest_common_polypeptide(
+        apo_seq: Dict[int, str], holo_seq: Dict[int, str],  # in 3-letter codes
+    ):
+    """ Substring """
+
+    # find longest common substring, works even with the 3-letter codes (sequence of strings), e.g. MET and FME will get treated differently
+    apo_residue_codes = list(apo_seq.values())
+    holo_residue_codes = list(holo_seq.values())
+    i1, i2, length = SequenceMatcher(a=apo_residue_codes, b=holo_residue_codes, autojunk=False)\
+        .find_longest_match(0, len(apo_seq), 0, len(holo_seq))
+
+    logging.info(f'substring to original ratio: {length/min(len(apo_seq), len(holo_seq))}')
+
+    if length < MIN_SUBSTRING_LENGTH_RATIO * min(len(apo_seq), len(holo_seq)):
+        alignment = next(aligner.align(apo_seq, holo_seq))
+        logging.info('Sequences differ, alignment:')
+        logging.info(f'\n{alignment}')
+        logging.warning(f'does not meet the threshold for substring length')
+
+    # crop polypeptides to longest common substring
+    apo_common_seq = dict(itertools.islice(apo_seq.items(), i1, i1+length))
+    holo_common_seq = dict(itertools.islice(holo_seq.items(), i2, i2+length))
+
+    # return the sequences (values will be same, but not the keys, label_seq_ids, they might be offset, or depending on its definition
+    # (which I find ambiguous), in a more complicated relation)
+    return apo_common_seq, holo_common_seq
+
+
+def get_observed_residues(
+        chain1: Chain, c1_label_seq_ids: Iterable[int], c1_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
+        chain2: Chain, c2_label_seq_ids: Iterable[int], c2_residue_mapping: BiopythonToMmcifResidueIds.Mapping):
+
+    c1_residues = []
+    c1_residue_ids = []
+    c2_residues = []
+    c2_residue_ids = []
+
+    for r1_seq_id, r2_seq_id in zip(c1_label_seq_ids, c2_label_seq_ids):
+        try:
+            r1_bio_id = c1_residue_mapping.to_bio(r1_seq_id)
+            r2_bio_id = c2_residue_mapping.to_bio(r2_seq_id)
+        except KeyError:
+            # a residue unobserved (wasn't in atom list) -> skip the whole pair
+            continue
+
+        c1_residues.append(chain1[r1_bio_id])
+        c1_residue_ids.append(r1_seq_id)
+
+        c2_residues.append(chain2[r2_bio_id])
+        c2_residue_ids.append(r2_seq_id)
+
+    return c1_residues, c1_residue_ids, c2_residues, c2_residue_ids
 
 
 MIN_SUBSTRING_LENGTH_RATIO = 0.90
 
 def compare_chains(chain1: Chain, chain2: Chain,
+                   c1_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
+                   c2_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
+                   c1_seq: Dict[int, str], c2_seq: Dict[int, str],  # in 3-letter codes
                    comparators__residues_param: List[Analyzer],
                    comparators__residue_ids_param: List[Analyzer],
                    comparators__domains__residues_param: List[Analyzer],
@@ -30,45 +95,53 @@ def compare_chains(chain1: Chain, chain2: Chain,
                    comparators__2domains__residues_param: List[Analyzer],
                    serializer_or_analysis_handler: AnalysisHandler,
 
-) -> None:
+                   ) -> None:
     """ Runs comparisons between two chains. E.g. one ligand-free (apo) and another ligand-bound (holo).
-
     :param chain1: A Bio.PDB Chain, obtained as a part of BioPython Structure object as usual
     :param chain2: A corresponding chain (same sequence), typically from a different PDB structure. See chain1.
+
+    :param c1_residue_mapping:
+    :param apo_poly_seqs:
     """
     s1_pdb_code = chain1.get_parent().get_parent().id
     s2_pdb_code = chain2.get_parent().get_parent().id
 
     logging.info(f'running analyses for ({s1_pdb_code}, {s2_pdb_code}) pair...')
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        pp1 = chain_to_polypeptide(chain1)
-        pp2 = chain_to_polypeptide(chain2)
-
-    # find longest common substring TODO uplne 100% nefunguje, neb get_sequence() vrací pro MET i FME stejny one-letter code: M, ale nespadne to dal.?
-    i1, i2, length = SequenceMatcher(a=pp1.get_sequence(), b=pp2.get_sequence(), autojunk=False).find_longest_match(0, len(pp1), 0, len(pp2))
-
-    logging.info(f'substring to original ratio: {length/min(len(pp1), len(pp2))}')
-
-    if length < MIN_SUBSTRING_LENGTH_RATIO * min(len(pp1), len(pp2)):
-        alignment = next(aligner.align(pp1.get_sequence(), pp2.get_sequence()))
-        logging.info('Sequences differ, alignment:')
-        logging.info(f'\n{alignment}')
-        logging.warning(f'does not meet the threshold for substring length')
+    #
+    # with warnings.catch_warnings():
+    #     warnings.simplefilter("ignore")
+    #     pp1 = chain_to_polypeptide(chain1)
+    #     pp2 = chain_to_polypeptide(chain2)
 
     # crop polypeptides to longest common substring
-    pp1 = pp1[i1:i1+length]
-    pp2 = pp2[i2:i2+length]
+    c1_common_seq, c2_common_seq = get_longest_common_polypeptide(c1_seq, c2_seq)
+    c1_label_seq_ids = list(c1_common_seq.keys())
+    c2_label_seq_ids = list(c2_common_seq.keys())
 
-    pp1_auth_seq_ids = {r.get_id()[1] for r in pp1}
-    pp2_auth_seq_ids = {r.get_id()[1] for r in pp2}
+    # up to this point, we have residue ids of the protein sequence in the experiment. This also includes unobserved
+    # residues, but those we will exclude from our analysis as their positions weren't determined
+    c1_residues, c1_residue_ids, c2_residues, c2_residue_ids = get_observed_residues(
+        chain1,
+        c1_label_seq_ids,
+        c1_residue_mapping,
+        chain2,
+        c2_label_seq_ids,
+        c2_residue_mapping,
+    )
 
-    c1_residues = ChainResidues(list(pp1), s1_pdb_code, chain1.id)
-    c2_residues = ChainResidues(list(pp2), s2_pdb_code, chain2.id)
+    c1_residues = ChainResidues(c1_residues, s1_pdb_code, chain1.id)
+    c2_residues = ChainResidues(c2_residues, s2_pdb_code, chain2.id)
 
-    c1_residue_ids = ChainResidueData[ResidueId]([ResidueId.from_bio_residue(r) for r in c1_residues], s1_pdb_code, chain1.id)
-    c2_residue_ids = ChainResidueData[ResidueId]([ResidueId.from_bio_residue(r) for r in c2_residues], s2_pdb_code, chain2.id)
+    # todo trochu nesikovny
+    c1_residue_ids = ChainResidueData[ResidueId]([ResidueId(label_seq_id, chain1.id) for label_seq_id in
+                                                  c1_residue_ids], s1_pdb_code, chain1.id)
+    c2_residue_ids = ChainResidueData[ResidueId]([ResidueId(label_seq_id, chain2.id) for label_seq_id in
+                                                  c2_residue_ids], s2_pdb_code, chain2.id)
+
+    # [done] tady nahradit pp pomocí apo_seq nějak
+    # [done] v analyzerech (APIs) nahradit author_seq_id
+    # todo tady matchovaní domén pomocí tohodle - zas mohu pouzit Sequence Matcher
+    #   - ale spany, je to složitější -> zatím přeindexovat apo nebo holo do druhý...
 
     for a in comparators__residues_param:
         # this fn (run_analyses_for_isoform_group) does not know anything about serialization?
@@ -81,6 +154,9 @@ def compare_chains(chain1: Chain, chain2: Chain,
 
     for c in comparators__residue_ids_param:
         serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+
+    return  # zatim neni hotovy
+    # todo driv nez zacnu domeny, otestovat ten download (truncatenout i file) a commitnout co zatim funguje
 
     # domain-level analyses
 
@@ -103,6 +179,8 @@ def compare_chains(chain1: Chain, chain2: Chain,
     c2_domains__residues = []
 
     for c1_d in c1_domains:  # or c2_domains:
+        # first remap first domain to second (or in future use longest common substrings, but not trivial since domains can be composed of multiple segments)
+        # offset nemusí být všude stejný
         c1_domain_mapped_to_c2 = DomainResidueMapping.from_domain_on_another_chain(c1_d, chain2.id, auth_seq_id_offset=pp2[0].id[1] - pp1[0].id[1])
 
         c1_d_residues = DomainResidues.from_domain(c1_d, chain1.get_parent(), lambda id: id not in pp1_auth_seq_ids)
@@ -157,59 +235,82 @@ def compare_chains(chain1: Chain, chain2: Chain,
         serializer_or_analysis_handler.handle(get_rmsd, get_rmsd(d1d2_chain1, d1d2_chain2), d1d2_chain1, d1d2_chain1)  # todo hardcoded analysis
 
 
+# def download_structure(pdb_code: str) -> str:
+#     # logging.info(f'downloading structure {pdb_code}..')
+#
+#     filename = None
+#
+#     for i in range(1):
+#         try:
+#             filename = PDBList(pdb='pdb_structs', obsolete_pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif')
+#             break
+#         except OSError as e:
+#             if 'Too many connections' in str(e):
+#                 print('too many connections')  # furt too many connections, i když stahuju přes 1 thread. Asi si to pamatuje dlouho..
+#                 time.sleep(4)
+#                 continue
+#
+#             # structure obsolete
+#             try:
+#                 logging.info(f'trying dl structure {pdb_code} as obsolete...')
+#                 filename = PDBList(pdb='pdb_structs', obsolete_pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif', obsolete=True)  # 1seo is obsolete, but we want to replicate the paper?
+#                 logging.info('success')
+#                 break
+#             except OSError as e:
+#                 logging.warning(f'{pdb_code} error: ' + str(e))
+#
+#     if filename is None:
+#         logging.exception(f'downloading {pdb_code} failed: ')
+#         raise
+#     # else:
+#     #     print(filename)
+#     #     logging.info('no more too many connections, success')
+#
+#     # logging.info(f'finished downloading structure {pdb_code}')
+#     return filename
+#
+#
+#
+# def get_structure(pdb_code: str) -> Structure:
+#     filename = download_structure(pdb_code)
+#     return MMCIFParser(QUIET=True).get_structure(pdb_code, filename)
+
 def download_structure(pdb_code: str) -> str:
-    # logging.info(f'downloading structure {pdb_code}..')
+    """ Download structure file and return its path. Use existing file, if path already exists. """
+    filename = f'{pdb_code}.cif.gz'
+    url = f'https://files.rcsb.org/download/{filename}'
 
-    filename = None
+    local_path = Path('pdb_structs') / filename
 
-    for i in range(1):
-        try:
-            filename = PDBList(pdb='pdb_structs', obsolete_pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif')
-            break
-        except OSError as e:
-            if 'Too many connections' in str(e):
-                print('too many connections')  # furt too many connections, i když stahuju přes 1 thread. Asi si to pamatuje dlouho..
-                time.sleep(4)
-                continue
+    download_and_save_file(url, local_path)
 
-            # structure obsolete
-            try:
-                logging.info(f'trying dl structure {pdb_code} as obsolete...')
-                filename = PDBList(pdb='pdb_structs', obsolete_pdb='pdb_structs', verbose=False).retrieve_pdb_file(pdb_code, file_format='mmCif', obsolete=True)  # 1seo is obsolete, but we want to replicate the paper?
-                logging.info('success')
-                break
-            except OSError as e:
-                logging.warning(f'{pdb_code} error: ' + str(e))
+    logging.info(f'finished downloading structure {pdb_code}, to {local_path}')
 
-    if filename is None:
-        logging.exception(f'downloading {pdb_code} failed: ')
-        raise
-    # else:
-    #     print(filename)
-    #     logging.info('no more too many connections, success')
-
-    # logging.info(f'finished downloading structure {pdb_code}')
-    return filename
+    return local_path
 
 
+def get_structure(pdb_code: str):
+    local_path = download_structure(pdb_code)
 
-def get_structure(pdb_code: str) -> Structure:
-    filename = download_structure(pdb_code)
-    return MMCIFParser(QUIET=True).get_structure(pdb_code, filename)
+    with gzip.open(local_path, 'rt', newline='', encoding='utf-8') as text_file:
+        mmcif_parser = MMCIFParser(QUIET=True)
+        return mmcif_parser.get_structure(pdb_code, text_file), \
+               BiopythonToMmcifResidueIds.create(mmcif_parser._mmcif_dict)  # reuse already parsed mmcifdict (albeit undocumented)
 
 
-def get_chain_by_chain_code(s: Structure, paper_chain_code: str) -> Chain:
+def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
     if paper_chain_code == '_':
         # seems that this is the code when there's only a single chain (probably named A?)
-        chain = next(iter(s[0]))
+        chain = next(iter(model))
 
-        if len(s[0]) != 1 or chain.id != 'A':
-            logging.warning(f'{paper_chain_code}, underscore is not what I thought. {chain.id}, {len(s[0])}')
-            return get_main_chain(s[0])  # sometime there is also chain B with ligands.
+        if len(model) != 1 or chain.id != 'A':
+            logging.warning(f'{paper_chain_code}, underscore is not what I thought. {chain.id}, {len(model)}')
+            return get_main_chain(model)  # sometime there is also chain B with ligands.
             # Get the long aa chain (probably always A, but rather todo use GetMainChain (with >= 50 aas)), then update this warning if more then 1 50+aa chain
 
         return chain
-    return s[0][paper_chain_code]
+    return model[paper_chain_code]
+
 
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
@@ -219,29 +320,38 @@ if __name__ == '__main__':
                          names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
 
 
-        serializer = JSONAnalysisSerializer('output_apo_holo_all3.json')
+        serializer = JSONAnalysisSerializer(f'output_apo_holo_{datetime.now().isoformat()}.json')
 
         found = False
         for index, row in df.iterrows():
             # if row.apo[:4] == '1cgj':
             #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
 
-            if row.apo[:4] == '1ikp':
-                found = True
-
-            if not found:
-                continue
+            # if row.apo[:4] == '1ikp':
+            #     found = True
+            #
+            # if not found:
+            #     continue
 
             logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
 
-            apo = get_structure(row.apo[:4])
-            holo = get_structure(row.holo[:4])
+            apo, (apo_residue_id_mappings, apo_poly_seqs) = get_structure(row.apo[:4])
+            holo, (holo_residue_id_mappings, holo_poly_seqs) = get_structure(row.holo[:4])
+
+            # get the first model (s[0]), (in x-ray structures there is probably a single model)
+            apo, apo_residue_id_mappings = map(lambda s: s[0], (apo, apo_residue_id_mappings))
+            holo, holo_residue_id_mappings = map(lambda s: s[0], (holo, holo_residue_id_mappings))
 
             apo_chain = get_chain_by_chain_code(apo, row.apo[4:])
             holo_chain = get_chain_by_chain_code(holo, row.holo[4:])
 
+            apo_mapping = apo_residue_id_mappings[apo_chain.id]
+            holo_mapping = holo_residue_id_mappings[holo_chain.id]
+
             try:
                 compare_chains(apo_chain, holo_chain,
+                               apo_mapping, holo_mapping,
+                               apo_poly_seqs[apo_mapping.entity_poly_id], holo_poly_seqs[holo_mapping.entity_poly_id],
                                [get_rmsd, get_interdomain_surface],
                                [get_ss],
                                [get_rmsd, get_interdomain_surface],
@@ -299,7 +409,7 @@ if __name__ == '__main__':
         pass
 
 
-    # run_apo_analyses()
-    run_holo_analyses()
+    run_apo_analyses()
+    # run_holo_analyses()
 
 

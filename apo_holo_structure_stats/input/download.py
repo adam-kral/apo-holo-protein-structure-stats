@@ -1,9 +1,11 @@
 import gzip
 import logging
+import os
 import urllib.request
 from collections import defaultdict, namedtuple
 from io import StringIO
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 import requests
 from requests import RequestException
@@ -33,12 +35,24 @@ def get_requests_session():
     return RequestsSessionFactory.create()
 
 
-def download_and_save_file(url, filename):
+def download_and_save_file(url, file_path):
+    """ Download file and return the path. Use existing file if path exists.
+
+    Tempfile is linked to resulting file only if the download was successful, so it should be valíd. """
+
     r = get_requests_session().get(url, stream=True, timeout=REQUESTS_TIMEOUT)
 
-    with open(filename, 'wb') as f:
+    # if file already exists, don't download anything
+    if os.path.exists(file_path):
+        return  # todo won't work if file is broken, that is possible, as I added the tempfile below
+        # just recently
+
+    # download to temp file, link to actual filename only if completed
+    with NamedTemporaryFile('wb', dir=os.path.dirname(file_path)) as temp:  # same dir so that os.link always works
         for chunk in r.iter_content(chunk_size=1024 * 1024):
-            f.write(chunk)
+            temp.write(chunk)
+
+        os.link(temp.name, file_path)  # will fail if file exists
 
 
 def download_file_stringio(url):

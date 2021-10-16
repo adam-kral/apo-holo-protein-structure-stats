@@ -6,8 +6,9 @@ from Bio.PDB import MMCIFParser, is_aa
 import numpy as np
 from scipy.spatial.transform.rotation import Rotation
 
-from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInterdomainSurface, ChainResidues, GetRMSD, \
-    GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle, DomainResidueMapping, DomainResidues
+from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInterdomainSurface, GetRMSD, \
+    GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle, DomainResidues
+from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping
 from apo_holo_structure_stats.pipeline.run_analyses import sequences_same, chain_to_polypeptide
 
 

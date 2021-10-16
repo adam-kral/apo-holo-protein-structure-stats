@@ -7,9 +7,10 @@ from typing import List, TypeVar, Generic
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
 from Bio.PDB.Chain import Chain
 
-from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, ChainResidues, CompareSecondaryStructure, \
-    GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterdomainSurface, GetSASAForStructure, ChainResidueData, ResidueId, \
-    DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
+from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, CompareSecondaryStructure, \
+    GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterdomainSurface, GetSASAForStructure, DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
+from apo_holo_structure_stats.core.dataclasses import ChainResidueData, ChainResidues
+from apo_holo_structure_stats.core.biopython_to_mmcif import ResidueId
 from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
 from apo_holo_structure_stats.pipeline.log import add_loglevel_args
 
