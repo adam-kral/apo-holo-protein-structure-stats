@@ -5,7 +5,7 @@ import urllib.request
 
 import pandas as pd
 
-from apo_holo_structure_stats.paper_repl.main import download_structure
+from apo_holo_structure_stats.paper_repl.main import find_or_download_structure
 
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
@@ -19,5 +19,5 @@ if __name__ == '__main__':
     # opener.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11.2; rv:86.0) Gecko/20100101 Firefox/86.0')]
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:  # >= 1 workers 421 too many connections, dneska už nic nestáhnu..
-       executor.map(download_structure, pdb_codes)
+       executor.map(find_or_download_structure, pdb_codes)
        # time.sleep(1)  # avoid too many connections

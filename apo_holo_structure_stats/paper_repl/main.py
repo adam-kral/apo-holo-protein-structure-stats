@@ -61,8 +61,8 @@ def get_observed_residues(
         chain2: Chain, c2_label_seq_ids: Iterable[int], c2_residue_mapping: BiopythonToMmcifResidueIds.Mapping):
 
     c1_residues = []
-    c1_residue_ids = []
     c2_residues = []
+    c1_residue_ids = []
     c2_residue_ids = []
 
     for r1_seq_id, r2_seq_id in zip(c1_label_seq_ids, c2_label_seq_ids):
@@ -74,9 +74,9 @@ def get_observed_residues(
             continue
 
         c1_residues.append(chain1[r1_bio_id])
-        c1_residue_ids.append(r1_seq_id)
-
         c2_residues.append(chain2[r2_bio_id])
+
+        c1_residue_ids.append(r1_seq_id)
         c2_residue_ids.append(r2_seq_id)
 
     return c1_residues, c1_residue_ids, c2_residues, c2_residue_ids
@@ -94,7 +94,6 @@ def compare_chains(chain1: Chain, chain2: Chain,
                    comparators__domains__residue_ids_param: List[Analyzer],
                    comparators__2domains__residues_param: List[Analyzer],
                    serializer_or_analysis_handler: AnalysisHandler,
-
                    ) -> None:
     """ Runs comparisons between two chains. E.g. one ligand-free (apo) and another ligand-bound (holo).
     :param chain1: A Bio.PDB Chain, obtained as a part of BioPython Structure object as usual
@@ -113,14 +112,20 @@ def compare_chains(chain1: Chain, chain2: Chain,
     #     pp1 = chain_to_polypeptide(chain1)
     #     pp2 = chain_to_polypeptide(chain2)
 
+    # c1_seq, c2_seq todo, is the order in atom_site loop guaranteed? If not, I should sort the dict by label_seq_id
+    # also todo, is label_seq_id sequential, that is one-by-one always +1?
+    # todo assert entity_poly_seq have no gaps (always +1), they say they're sequential, I think they mean exactly this
+
     # crop polypeptides to longest common substring
     c1_common_seq, c2_common_seq = get_longest_common_polypeptide(c1_seq, c2_seq)
     c1_label_seq_ids = list(c1_common_seq.keys())
     c2_label_seq_ids = list(c2_common_seq.keys())
 
+    label_seq_id_offset = c2_label_seq_ids[0] - c1_label_seq_ids[0]
+
     # up to this point, we have residue ids of the protein sequence in the experiment. This also includes unobserved
     # residues, but those we will exclude from our analysis as their positions weren't determined
-    c1_residues, c1_residue_ids, c2_residues, c2_residue_ids = get_observed_residues(
+    c1_residues, c1_label_seq_ids, c2_residues, c2_label_seq_ids = get_observed_residues(
         chain1,
         c1_label_seq_ids,
         c1_residue_mapping,
@@ -134,9 +139,9 @@ def compare_chains(chain1: Chain, chain2: Chain,
 
     # todo trochu nesikovny
     c1_residue_ids = ChainResidueData[ResidueId]([ResidueId(label_seq_id, chain1.id) for label_seq_id in
-                                                  c1_residue_ids], s1_pdb_code, chain1.id)
+                                                  c1_label_seq_ids], s1_pdb_code, chain1.id)
     c2_residue_ids = ChainResidueData[ResidueId]([ResidueId(label_seq_id, chain2.id) for label_seq_id in
-                                                  c2_residue_ids], s2_pdb_code, chain2.id)
+                                                  c2_label_seq_ids], s2_pdb_code, chain2.id)
 
     # [done] tady nahradit pp pomocí apo_seq nějak
     # [done] v analyzerech (APIs) nahradit author_seq_id
@@ -154,9 +159,6 @@ def compare_chains(chain1: Chain, chain2: Chain,
 
     for c in comparators__residue_ids_param:
         serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
-
-    return  # zatim neni hotovy
-    # todo driv nez zacnu domeny, otestovat ten download (truncatenout i file) a commitnout co zatim funguje
 
     # domain-level analyses
 
@@ -181,10 +183,13 @@ def compare_chains(chain1: Chain, chain2: Chain,
     for c1_d in c1_domains:  # or c2_domains:
         # first remap first domain to second (or in future use longest common substrings, but not trivial since domains can be composed of multiple segments)
         # offset nemusí být všude stejný
-        c1_domain_mapped_to_c2 = DomainResidueMapping.from_domain_on_another_chain(c1_d, chain2.id, auth_seq_id_offset=pp2[0].id[1] - pp1[0].id[1])
+        c1_domain_mapped_to_c2 = DomainResidueMapping.from_domain_on_another_chain(c1_d, chain2.id, label_seq_id_offset)
 
-        c1_d_residues = DomainResidues.from_domain(c1_d, chain1.get_parent(), lambda id: id not in pp1_auth_seq_ids)
-        c2_d_residues = DomainResidues.from_domain(c1_domain_mapped_to_c2, chain2.get_parent(), lambda id: id not in pp2_auth_seq_ids)
+        # todo hodne divny, proc chain.get_parent??
+        c1_d_residues = DomainResidues.from_domain(c1_d, chain1.get_parent(), c1_residue_mapping,
+                                                   lambda id: id not in c1_label_seq_ids)
+        c2_d_residues = DomainResidues.from_domain(c1_domain_mapped_to_c2, chain2.get_parent(), c2_residue_mapping,
+                                                   lambda id: id not in c2_label_seq_ids)
 
         c1_d_pp = Polypeptide(c1_d_residues)
         c2_d_pp = Polypeptide(c2_d_residues)
@@ -196,32 +201,31 @@ def compare_chains(chain1: Chain, chain2: Chain,
 
         if not c1_d_pp or not c2_d_pp:
             # the domain is not within the processed LCS of both chains (empty intersection with chain residues)
+            logging.warning(f'domain {c1_d.id} is not within the processed LCS of both chains (empty intersection with '
+                            f'chain residues)')
             continue
 
-        if c1_d_pp.get_sequence() != c2_d_pp.get_sequence():
-            alignment = next(aligner.align(c1_d_pp.get_sequence(), c2_d_pp.get_sequence()))
-            logging.info('Sequences differ, alignment:')
-            logging.info(f'\n{alignment}')
-            logging.warning(f'error when mapping domain {c1_d} to second structure')
+        # todo not possible, delete this (and the Polypeptide) (after entire run)
+        assert c1_d_pp.get_sequence() == c2_d_pp.get_sequence()
 
         # todo reflect domain cropping in the object id (domain id) somehow?
         c1_domains__residues.append(DomainResidues(c1_d_residues.data, c1_d_residues.structure_id, c1_d_residues.chain_id, c1_d_residues.domain_id))
         c2_domains__residues.append(DomainResidues(c2_d_residues.data, c2_d_residues.structure_id, c2_d_residues.chain_id, c2_d_residues.domain_id))
 
-    # assert domains equal in sequence
-    # already done above, plus TODO FME != MET that threw an error, but in get_sequence they're equal
-    # for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
-    #     assert len(d_chain1) == len(d_chain2)
-    #     assert all(r1.get_resname() == r2.get_resname() for r1, r2 in zip(d_chain1, d_chain2))
-
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         for a in comparators__domains__residues_param:
             serializer_or_analysis_handler.handle(a, a(d_chain1, d_chain2), d_chain1, d_chain2)
 
+    # todo vyres ty divny idcka
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         # Convert DomainResidues to DomainResidueData[ResidueId]
-        d_chain1 = DomainResidueData[ResidueId]([ResidueId.from_bio_residue(r) for r in d_chain1], d_chain1.structure_id, d_chain1.chain_id, d_chain1.domain_id)
-        d_chain2 = DomainResidueData[ResidueId]([ResidueId.from_bio_residue(r) for r in d_chain2], d_chain2.structure_id, d_chain2.chain_id, d_chain2.domain_id)
+        # asi zas přes mapping... lepší by to bylo, kdyby byl implicitně schovaný třeba na to biopython residue (
+        # jinak by to nešlo moc ani, leda mit CustomResidue s fieldama bioresidue a label_seq_id, to je ale celkem
+        # naprd, nebo ne? Nefungovalo by to s chainem, ale to stejně nikde nepoužívám...
+        d_chain1 = DomainResidueData[ResidueId]([ResidueId.from_bio_residue(r, c1_residue_mapping) for r in d_chain1],
+                                                d_chain1.structure_id, d_chain1.chain_id, d_chain1.domain_id)
+        d_chain2 = DomainResidueData[ResidueId]([ResidueId.from_bio_residue(r, c2_residue_mapping) for r in d_chain2],
+                                                d_chain2.structure_id, d_chain2.chain_id, d_chain2.domain_id)
 
         for a in comparators__domains__residue_ids_param:
             serializer_or_analysis_handler.handle(a, a(d_chain1, d_chain2), d_chain1, d_chain2)
@@ -275,7 +279,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
 #     filename = download_structure(pdb_code)
 #     return MMCIFParser(QUIET=True).get_structure(pdb_code, filename)
 
-def download_structure(pdb_code: str) -> str:
+def find_or_download_structure(pdb_code: str) -> str:
     """ Download structure file and return its path. Use existing file, if path already exists. """
     filename = f'{pdb_code}.cif.gz'
     url = f'https://files.rcsb.org/download/{filename}'
@@ -290,7 +294,7 @@ def download_structure(pdb_code: str) -> str:
 
 
 def get_structure(pdb_code: str):
-    local_path = download_structure(pdb_code)
+    local_path = find_or_download_structure(pdb_code)
 
     with gzip.open(local_path, 'rt', newline='', encoding='utf-8') as text_file:
         mmcif_parser = MMCIFParser(QUIET=True)
@@ -360,7 +364,7 @@ if __name__ == '__main__':
                                serializer)
             except Exception as e:
                 logging.exception('compare chains failed with: ')
-                # raise
+                raise
 
         serializer.dump_data()
 

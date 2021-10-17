@@ -13,7 +13,7 @@ from Bio.PDB.Residue import Residue
 from apo_holo_structure_stats.input.download import get_secondary_structure, get_domains
 from .base_analyses import CachedAnalyzer, SerializableCachedAnalyzer, SerializableAnalyzer
 from .dataclasses import SSForChain, SSForStructure, SetOfResidueData, DomainResidueData, SetOfResidues, DomainResidueMapping
-from .biopython_to_mmcif import ResidueId
+from .biopython_to_mmcif import ResidueId, BiopythonToMmcifResidueIds
 
 freesasa.setVerbosity(freesasa.nowarnings)  # FreeSASA: warning: guessing that atom 'CB' is symbol ' C' ..., or todo can set a custom classifier?
 
@@ -144,7 +144,7 @@ class GetDomainsForStructure(CachedAnalyzer):
     """ caches Domain mappings for the whole structure """
 
     def run(self, pdb_code: str) -> List[DomainResidueMapping]:
-        domains = DefaultDict[str, DomainResidueMapping]()
+        domains: Dict[str, DomainResidueMapping] = {}
 
         for superfamily_id, superfamily in get_domains(pdb_code).items():
             for domain_segment in superfamily['mappings']:
@@ -165,16 +165,14 @@ class GetDomainsForStructure(CachedAnalyzer):
 
 
 class DomainResidues(DomainResidueData[Residue]):
+    # todo pošlu sem chainresidues a jejich label_seq_id (chci jen observed v obou sekvencich, podvybrat domenu)
     @classmethod
-    def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model, skip_auth_seq_id=lambda id: False):
-        bio_chain = bio_structure[domain.chain_id]
+    def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model,
+                    residue_id_mapping: BiopythonToMmcifResidueIds.Mapping, skip_label_seq_id=lambda id: False):
+        bio_chain = bio_structure[domain.chain_id]  # todo wtf proč???
 
-        try:
-            domain_residues = [bio_chain[' ', auth_seq_id, ' '] for auth_seq_id in domain if not skip_auth_seq_id(auth_seq_id)]
-        except KeyError:
-            # a residue probably has a hetero flag (!= ' '), e.g. 'H_CSU' (CYSTEINE-S-SULFONIC ACID)
-            # formally this could be the only code (try not needed), I don't know which is faster
-            domain_residues = [residue for residue in bio_chain if residue.get_id()[1] in domain if not skip_auth_seq_id(residue.get_id()[1])]
+        domain_residues = [bio_chain[residue_id_mapping.to_bio(label_seq_id)]
+                           for label_seq_id in domain if not skip_label_seq_id(label_seq_id)]
 
         return cls(domain_residues, bio_structure.get_parent().id, domain.chain_id, domain.domain_id)
 

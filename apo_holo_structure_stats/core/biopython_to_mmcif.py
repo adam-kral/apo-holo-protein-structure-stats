@@ -15,8 +15,8 @@ class ResidueId(NamedTuple):
     # simplest, ok)
 
     @classmethod
-    def from_bio_residue(cls, residue: Residue):
-        return ResidueId(residue.id[1], residue.id[2], residue.get_parent().id)
+    def from_bio_residue(cls, residue: Residue, residue_id_mapping: 'BiopythonToMmcifResidueIds.Mapping'):
+        return ResidueId(residue_id_mapping.to_label_seq_id(BioResidueId(*residue.id)), residue.get_parent().id)
 
 
 class BioResidueId(NamedTuple):

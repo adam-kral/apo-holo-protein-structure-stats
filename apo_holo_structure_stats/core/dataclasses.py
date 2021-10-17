@@ -155,20 +155,25 @@ class DomainResidueMapping:
     segment_ends: List[int]
 
     @classmethod
-    def from_domain_on_another_chain(cls, domain: 'DomainResidueMapping', new_domain_chain_id: str, auth_seq_id_offset: int):
+    def from_domain_on_another_chain(cls, domain: 'DomainResidueMapping', new_domain_chain_id: str,
+                                     label_seq_id_offset: int):
+
+        # todo nebo bych mohl vybrat třeba pomocí těch segmentů (a +1 garance by nebyla třeba), kdybych mohl
+        #  indexovat od do label seq id, ale to by bylo ordered dict, jestli to vubec jde.
         return cls(domain.domain_id, new_domain_chain_id,
-                   [a+auth_seq_id_offset for a in domain.segment_beginnings],
-                   [a+auth_seq_id_offset for a in domain.segment_ends],
+                   [i + label_seq_id_offset for i in domain.segment_beginnings],
+                   [i + label_seq_id_offset for i in domain.segment_ends],
        )
 
     def __iter__(self) -> Iterator[int]:
-        """ Returns a sequence of residue auth_seq_id in a domain """
+        """ Returns a sequence of residue label_seq_id in a domain """
+        # todo again here I suppose label_seq_id is +1 sequential..
         for segment_start, segment_end in zip(self.segment_beginnings, self.segment_ends):
             yield from range(segment_start, segment_end + 1)
 
-    def __contains__(self, auth_seq_id):
-        domain_segment_index = -1 + bisect(self.segment_beginnings, auth_seq_id)
-        return domain_segment_index >= 0 and auth_seq_id <= self.segment_ends[domain_segment_index]
+    def __contains__(self, label_seq_id):
+        domain_segment_index = -1 + bisect(self.segment_beginnings, label_seq_id)
+        return domain_segment_index >= 0 and label_seq_id <= self.segment_ends[domain_segment_index]
 
     def __len__(self):
         residue_count = 0

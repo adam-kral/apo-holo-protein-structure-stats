@@ -172,7 +172,9 @@ def get_secondary_structure(struct_code: str):
     """
 
     try:
-        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
+        # r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{
+        # struct_code}', timeout=REQUESTS_TIMEOUT)  # the new api endpoint was 3x slower! replaced with the old one:
+        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/api/pdb/entry/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
         # if I knew entity id (not with biopython's parser), I could append it to the url
         r.raise_for_status()
     except RequestException as e:
