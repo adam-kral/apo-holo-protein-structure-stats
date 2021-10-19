@@ -76,6 +76,9 @@ class SetOfResidueData(Generic[TResidueData]):
     def __getitem__(self, item):
         return self.data[item]
 
+    def __bool__(self):
+        return bool(self.data)
+
     def serialize(self):
         return self.get_full_id()
 

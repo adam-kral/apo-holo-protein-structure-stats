@@ -1,3 +1,4 @@
+import concurrent.futures
 import gzip
 import itertools
 import logging
@@ -24,8 +25,8 @@ from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
 from apo_holo_structure_stats.input.download import APIException, download_and_save_file
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId, BioResidueId
-from apo_holo_structure_stats.pipeline.run_analyses import chain_to_polypeptide, aligner, AnalysisHandler, JSONAnalysisSerializer
-
+from apo_holo_structure_stats.pipeline.run_analyses import chain_to_polypeptide, aligner, AnalysisHandler, \
+    JSONAnalysisSerializer, ConcurrentJSONAnalysisSerializer
 
 
 def get_longest_common_polypeptide(
@@ -93,7 +94,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
                    comparators__domains__residues_param: List[Analyzer],
                    comparators__domains__residue_ids_param: List[Analyzer],
                    comparators__2domains__residues_param: List[Analyzer],
-                   serializer_or_analysis_handler: AnalysisHandler,
+                       serializer_or_analysis_handler: AnalysisHandler,
                    ) -> None:
     """ Runs comparisons between two chains. E.g. one ligand-free (apo) and another ligand-bound (holo).
     :param chain1: A Bio.PDB Chain, obtained as a part of BioPython Structure object as usual
@@ -167,9 +168,10 @@ def compare_chains(chain1: Chain, chain2: Chain,
     try:
         c1_domains = sorted(filter(lambda d: d.chain_id == chain1.id, get_domains(s1_pdb_code)), key=lambda d: d.domain_id)
         c2_domains = sorted(filter(lambda d: d.chain_id == chain2.id, get_domains(s2_pdb_code)), key=lambda d: d.domain_id)
+        # todo zaznamenat total počet domén (pro obě struktury), zapsat do jinýho jsonu třeba
     except APIException as e:
         if e.__cause__ and '404' in str(e.__cause__):
-            logging.warning('no domains found, skip the domain-level analysis')
+            logging.warning(f'{s1_pdb_code} {s2_pdb_code} no domains found, skip the domain-level analysis')
             return  # no domains found, skip the domain-level analysis
         raise
 
@@ -185,32 +187,29 @@ def compare_chains(chain1: Chain, chain2: Chain,
         # offset nemusí být všude stejný
         c1_domain_mapped_to_c2 = DomainResidueMapping.from_domain_on_another_chain(c1_d, chain2.id, label_seq_id_offset)
 
-        # todo hodne divny, proc chain.get_parent??
+        # todo proc chain.get_parent??
         c1_d_residues = DomainResidues.from_domain(c1_d, chain1.get_parent(), c1_residue_mapping,
                                                    lambda id: id not in c1_label_seq_ids)
         c2_d_residues = DomainResidues.from_domain(c1_domain_mapped_to_c2, chain2.get_parent(), c2_residue_mapping,
                                                    lambda id: id not in c2_label_seq_ids)
 
-        c1_d_pp = Polypeptide(c1_d_residues)
-        c2_d_pp = Polypeptide(c2_d_residues)
-        #
-        # # find longest common substring of domains
-        # i1, i2, length = SequenceMatcher(a=c1_d_pp.get_sequence(), b=c2_d_pp.get_sequence(), autojunk=False).find_longest_match(0, len(c1_d_pp), 0,
-        #                                                                                                                 len(c2_d_pp))
-        # logging.info(f'domain substring to original ratio: {length / min(len(c1_d_pp), len(c2_d_pp))}')
-
-        if not c1_d_pp or not c2_d_pp:
+        if not c1_d_residues or not c2_d_residues:
             # the domain is not within the processed LCS of both chains (empty intersection with chain residues)
-            logging.warning(f'domain {c1_d.id} is not within the processed LCS of both chains (empty intersection with '
+            logging.warning(f'domain {c1_d.domain_id} is not within the processed LCS of both chains (empty '
+                            f'intersection with '
                             f'chain residues)')
             continue
 
-        # todo not possible, delete this (and the Polypeptide) (after entire run)
-        assert c1_d_pp.get_sequence() == c2_d_pp.get_sequence()
+        # todo zaznamenat počet domén jdoucích do analýz
 
         # todo reflect domain cropping in the object id (domain id) somehow?
         c1_domains__residues.append(DomainResidues(c1_d_residues.data, c1_d_residues.structure_id, c1_d_residues.chain_id, c1_d_residues.domain_id))
         c2_domains__residues.append(DomainResidues(c2_d_residues.data, c2_d_residues.structure_id, c2_d_residues.chain_id, c2_d_residues.domain_id))
+
+    for chain_domains in (c1_domains__residues, c2_domains__residues):
+        for d1, d2 in itertools.combinations(chain_domains, 2):
+            serializer_or_analysis_handler.handle(get_interdomain_surface, get_interdomain_surface(d1, d2), d1, d2)
+
 
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         for a in comparators__domains__residues_param:
@@ -308,9 +307,12 @@ def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
         chain = next(iter(model))
 
         if len(model) != 1 or chain.id != 'A':
-            logging.warning(f'{paper_chain_code}, underscore is not what I thought. {chain.id}, {len(model)}')
-            return get_main_chain(model)  # sometime there is also chain B with ligands.
-            # Get the long aa chain (probably always A, but rather todo use GetMainChain (with >= 50 aas)), then update this warning if more then 1 50+aa chain
+            logging.warning(f'{model.get_parent().id} {paper_chain_code}, underscore is not what I thought. {chain.id}'
+                            f', {len(model)}')
+            long_chains = get_chains(model)
+            if len(long_chains) > 1:
+                logging.warning(f'model contains {len(long_chains)} chains with 50+ aa')
+            return long_chains[0]  # sometime there is also chain B with ligands.
 
         return chain
     return model[paper_chain_code]
@@ -319,54 +321,70 @@ def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
 
-    def run_apo_analyses():
-        df = pd.read_csv('apo_holo.dat', delimiter=r'\s+', comment='#', header=None,
-                         names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
+    def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_paper_chain_code: str, s2_paper_chain_code: str,
+                     serializer):
 
+        # raise ValueError('hovna')
+        logging.info(f'{s1_pdb_code}, {s2_pdb_code}')
 
-        serializer = JSONAnalysisSerializer(f'output_apo_holo_{datetime.now().isoformat()}.json')
-
-        found = False
-        for index, row in df.iterrows():
-            # if row.apo[:4] == '1cgj':
-            #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
-
-            # if row.apo[:4] == '1ikp':
-            #     found = True
-            #
-            # if not found:
-            #     continue
-
-            logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
-
-            apo, (apo_residue_id_mappings, apo_poly_seqs) = get_structure(row.apo[:4])
-            holo, (holo_residue_id_mappings, holo_poly_seqs) = get_structure(row.holo[:4])
+        try:
+            apo, (apo_residue_id_mappings, apo_poly_seqs) = get_structure(s1_pdb_code)
+            holo, (holo_residue_id_mappings, holo_poly_seqs) = get_structure(s2_pdb_code)
 
             # get the first model (s[0]), (in x-ray structures there is probably a single model)
             apo, apo_residue_id_mappings = map(lambda s: s[0], (apo, apo_residue_id_mappings))
             holo, holo_residue_id_mappings = map(lambda s: s[0], (holo, holo_residue_id_mappings))
 
-            apo_chain = get_chain_by_chain_code(apo, row.apo[4:])
-            holo_chain = get_chain_by_chain_code(holo, row.holo[4:])
+            apo_chain = get_chain_by_chain_code(apo, s1_paper_chain_code)
+            holo_chain = get_chain_by_chain_code(holo, s2_paper_chain_code)
 
-            apo_mapping = apo_residue_id_mappings[apo_chain.id]
+            apo_mapping = apo_residue_id_mappings[apo_chain.id]  # todo chyba KeyError chain D
             holo_mapping = holo_residue_id_mappings[holo_chain.id]
 
-            try:
-                compare_chains(apo_chain, holo_chain,
-                               apo_mapping, holo_mapping,
-                               apo_poly_seqs[apo_mapping.entity_poly_id], holo_poly_seqs[holo_mapping.entity_poly_id],
-                               [get_rmsd, get_interdomain_surface],
-                               [get_ss],
-                               [get_rmsd, get_interdomain_surface],
-                               [get_ss],
-                               [get_hinge_angle],
-                               serializer)
-            except Exception as e:
-                logging.exception('compare chains failed with: ')
-                raise
+            compare_chains(apo_chain, holo_chain,
+                           apo_mapping, holo_mapping,
+                           apo_poly_seqs[apo_mapping.entity_poly_id], holo_poly_seqs[holo_mapping.entity_poly_id],
+                           [get_rmsd],
+                           [get_ss],
+                           [get_rmsd],
+                           [get_ss],
+                           [get_hinge_angle],
+                           serializer)
+        except Exception as e:
+            logging.exception('compare chains failed with: ')
+
+    def run_apo_analyses():
+        df = pd.read_csv('apo_holo.dat', delimiter=r'\s+', comment='#', header=None,
+                         names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
+
+        serializer = ConcurrentJSONAnalysisSerializer(f'output_apo_holo_{datetime.now().isoformat()}.json')
+
+        found = False
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+            for index, row in df.iterrows():
+                # if row.apo[:4] == '1cgj':
+                #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
+
+                # if row.apo[:4] == '1ikp':
+                #     found = True
+                #
+                if row.apo[:4] not in ('2hbj', '2hf0'):
+                    continue
+                #
+                # if not found:
+                #     continue
+
+                future = executor.submit(process_pair,
+                    s1_pdb_code=row.apo[:4],
+                    s2_pdb_code=row.holo[:4],
+                    s1_paper_chain_code=row.apo[4:],
+                    s2_paper_chain_code=row.holo[4:],
+                    serializer=serializer,
+                )
 
         serializer.dump_data()
+        print(datetime.now().isoformat())
 
     def run_holo_analyses():
         df = pd.read_csv('holo.dat', delimiter=r'\s+', comment='#', header=None,
@@ -400,9 +418,9 @@ if __name__ == '__main__':
 
             try:
                 compare_chains(apo_chain, holo_chain,
-                               [get_rmsd, get_interdomain_surface],
+                               [get_rmsd],
                                [get_ss],
-                               [get_rmsd, get_interdomain_surface],
+                               [get_rmsd],
                                [get_ss],
                                [get_hinge_angle],
                                serializer)

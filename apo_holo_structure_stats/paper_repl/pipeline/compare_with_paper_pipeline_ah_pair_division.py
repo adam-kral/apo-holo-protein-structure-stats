@@ -18,7 +18,7 @@ Those proteins with little or no secondary structure have been removed.
 
 Moreover, to avoid unresolved fragments of a structure and
 misnumbering of residues, the amino acid sequences
-used in this study were determined for the __fragments__ of  # takze tim chtej rict, ze to backbone-unobserved implicitne rozdelily na fragmenty? To by bylo dobře.
+used in this study were determined for the __fragments__ of  # takze tim chtej rict, ze to backbone-unobserved implicitne rozdelili na fragmenty? To by bylo dobře.
 structures, for which at least backbone coordinates were
 available.  - co si pamatuju, tak ja jsem to musel upravovat, protoze tam backbone nebyl
  - mozna, že měli LCS pak kratší, TODO zrušit to/porovnat když do LCS budu dávat jen tuhle sekvenci

@@ -37,6 +37,7 @@ def get_all_ligands(struct: Model) -> Iterator[Entity]:
 
 
 class GetChains(CachedAnalyzer):
+    # todo tohle teď můžu zpřesnit využitím entity_poly_seq v BiopythonToMmcif
     def run(self, struct: Model) -> List[Chain]:
         return list(filter(lambda chain: sum(is_aa(residue) for residue in chain) >= 50, struct.get_chains()))
 
@@ -169,7 +170,7 @@ class DomainResidues(DomainResidueData[Residue]):
     @classmethod
     def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model,
                     residue_id_mapping: BiopythonToMmcifResidueIds.Mapping, skip_label_seq_id=lambda id: False):
-        bio_chain = bio_structure[domain.chain_id]  # todo wtf proč???
+        bio_chain = bio_structure[domain.chain_id]  # todo wtf proč??? proč tam nepošlu rovnou chain?
 
         domain_residues = [bio_chain[residue_id_mapping.to_bio(label_seq_id)]
                            for label_seq_id in domain if not skip_label_seq_id(label_seq_id)]
@@ -201,9 +202,10 @@ class GetSASAForStructure(CachedAnalyzer):
         return result.totalArea()
 
 
-class GetInterdomainSurface(SerializableAnalyzer):
+class GetInterfaceBuriedArea(SerializableAnalyzer):
+    """ Returns the area of interface between two domains (or sets of residues). In Angstroms^2. """
     def run(self, residues1: SetOfResidues, residues2: SetOfResidues, get_sasa: GetSASAForStructure) -> float:
-        return 1/2 * (get_sasa(residues1) + get_sasa(residues2) - get_sasa(residues1 + residues2))  # the values in the paper seem not to be multiplied by 1/2
+        return get_sasa(residues1) + get_sasa(residues2) - get_sasa(residues1 + residues2)
 
 
 class CompareSecondaryStructure(SerializableAnalyzer):

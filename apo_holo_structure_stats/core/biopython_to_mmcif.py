@@ -79,7 +79,8 @@ class BiopythonToMmcifResidueIds:
             seq_num = int(seq_num)  # only this field of the three is integer
 
             if seq_num in entity_seqs[entity_id]:
-                logging.warning('Microheterogeneity in sequence. As in https://mmcif.wwpdb.org/dictionaries/mmcif_std.dic/Categories/entity_poly_seq.html '
+                logging.warning(f'{mmcif_dict["_entry.id"]} Microheterogeneity in sequence. As in '
+                                f'https://mmcif.wwpdb.org/dictionaries/mmcif_std.dic/Categories/entity_poly_seq.html '
                                 '(Multiple sequences for the structure.) Skipping...')
                 entity_ids_with_seq_heterogeneity.append(entity_id)
 

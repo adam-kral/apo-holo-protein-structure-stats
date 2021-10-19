@@ -6,7 +6,7 @@ from Bio.PDB import MMCIFParser, is_aa
 import numpy as np
 from scipy.spatial.transform.rotation import Rotation
 
-from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInterdomainSurface, GetRMSD, \
+from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInterfaceBuriedArea, GetRMSD, \
     GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle, DomainResidues
 from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping
 from apo_holo_structure_stats.pipeline.run_analyses import sequences_same, chain_to_polypeptide
@@ -46,13 +46,13 @@ class TestAnalyses(TestCase):
         s2d1 = DomainResidues.from_domain(d1, s2)
         s2d2 = DomainResidues.from_domain(d2, s2)
 
-        interdomain_surface_computer = GetInterdomainSurface((GetSASAForStructure(),))
+        interdomain_surface_computer = GetInterfaceBuriedArea((GetSASAForStructure(),))
         apo__domain_interface_area = interdomain_surface_computer(s1d1, s1d2)
         holo__domain_interface_area = interdomain_surface_computer(s2d1, s2d2)
 
         # *2 = 218, 933 vs paper -- 288, 1024  # oni to asi nedělej dvěma..., ale priblibzne to odpovida
-        self.assertAlmostEqual(288, 2*apo__domain_interface_area, delta=0.3 * 288)  # 218
-        self.assertAlmostEqual(1024, 2*holo__domain_interface_area, delta=0.3 * 1024)  # 933
+        self.assertAlmostEqual(288, apo__domain_interface_area, delta=0.3 * 288)  # 218
+        self.assertAlmostEqual(1024, holo__domain_interface_area, delta=0.3 * 1024)  # 933
 
         # rmsd
         get_c_alpha_coords = GetCAlphaCoords()
@@ -160,7 +160,7 @@ class TestAnalyses(TestCase):
         chain_a = ChainResidues(list(s[0]['A']), s.id, 'A')
         chain_b = ChainResidues(list(s[0]['B']), s.id, 'B')
 
-        interdomain_surface_computer = GetInterdomainSurface((GetSASAForStructure(),))
+        interdomain_surface_computer = GetInterfaceBuriedArea((GetSASAForStructure(),))
         area = interdomain_surface_computer(chain_a, chain_b)
         self.assertGreater(area, 1)
 

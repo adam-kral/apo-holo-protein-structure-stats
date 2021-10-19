@@ -2,13 +2,15 @@
 import itertools
 import json
 import logging
+import queue
+from multiprocessing import Queue, Manager
 from typing import List, TypeVar, Generic
 
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
 from Bio.PDB.Chain import Chain
 
 from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, CompareSecondaryStructure, \
-    GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterdomainSurface, GetSASAForStructure, DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
+    GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterfaceBuriedArea, GetSASAForStructure, DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
 from apo_holo_structure_stats.core.dataclasses import ChainResidueData, ChainResidues
 from apo_holo_structure_stats.core.biopython_to_mmcif import ResidueId
 from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
@@ -41,6 +43,42 @@ class JSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
     def dump_data(self):
         with open(self.output_file_name, 'w') as f:
             json.dump(self.data, f)
+
+
+class ConcurrentJSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
+    """ Works with multiprocessing """
+    # json na to neni uplne vhodny, neda se dumpovat nebo nacitat inkrementalně, jako napr. csvcko -- je treba mit vzdy v pameti celou reprezentaci (vsechny vysledky, nez se to dumpne)
+    def __init__(self, output_file_name):
+        self.output_file_name = output_file_name
+        # self.queue = Queue()  # or I could use Manager.list(), but python docs say that queue should be preferred to
+        m = Manager()
+        self.queue = m.Queue()
+        # sharing state (managers with lists),
+        # I don't need to consume the queue concurrently, only once, at the end, so I use only the putting functionality
+
+        # STACKOVERFLOW:
+        # multiprocessing.Pool already has a shared result-queue, there is no need to additionally involve a
+        # Manager.Queue. Manager.Queue is a queue.Queue (multithreading-queue) under the hood, located on a separate
+        # server-process and exposed via proxies. This adds additional overhead compared to Pool's internal queue.
+
+    def handle(self, analyzer: SerializableAnalyzer, result, *args, **kwargs):
+        """ serializes analysis args and results into a json"""
+
+        o = analyzer.serialize(result, *args, **kwargs)
+        self.queue.put(o)
+          # nejde dumpovat to asi nejde takhle inkrementálně. Musí se pak dumpnout asi nastřádaný všechno
+        # Unlike pickle and marshal, JSON is not a framed protocol, so trying to serialize multiple objects with repeated calls to dump() using the same fp will result in an invalid JSON file.
+
+    def dump_data(self):
+        data = []
+        try:
+            while 1:
+                data.append(self.queue.get_nowait())
+        except queue.Empty:
+            pass
+
+        with open(self.output_file_name, 'w') as f:
+            json.dump(data, f)
 
 
 # debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
@@ -105,7 +143,7 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
     get_rmsd = GetRMSD((get_centered_c_alpha_coords, get_rotation_matrix))
 
     ss_a = CompareSecondaryStructure((GetSecondaryStructureForStructure(),))
-    interdomain_surface_a = GetInterdomainSurface((GetSASAForStructure(),))
+    interdomain_surface_a = GetInterfaceBuriedArea((GetSASAForStructure(),))
 
     comparators_of_apo_holo__residues_param = [get_rmsd, interdomain_surface_a]
     comparators_of_apo_holo__residue_ids_param = [ss_a]
