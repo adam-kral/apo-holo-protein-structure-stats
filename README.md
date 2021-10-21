@@ -1,13 +1,17 @@
 # apo-holo-protein-structure-stats
 
-## Install
+## Everything work-in-progress. In the meantime, you can look at [our alpha results](apo_holo_structure_stats/paper_repl/paper_plots.ipynb) of reproducing [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510)
+First, we are reproducing the results of [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510), <sup>[pdf](http://cssb.biology.gatech.edu/skolnick/publications/pdffiles/273.pdf)</sup>. Next, we'll obtain the results for the up-to-date PDB.
+
+
+## ~~Install~~
 In repository root:
 - Create a new virtual environment (recommended) named 'venv' with Python 3: `python3 -m venv venv` (Python 3 has a built-in `venv` module for that, alternatively you can use virtualenv: `virtualenv -p python3 venv`)
 - Activate the venv: `source venv/bin/activate` on Unix or `venv\Scripts\activate.bat` on Windows
 - Install requirements `pip install -r requirements.txt`
 - todo for easier script running, extract runnable scripts to the repository root/maybe setup.py
 
-## Run (and pipeline description)
+## ~~Run (and pipeline description)~~
 Run following commands in your virtual environment and in repository root.
 (Script are run as Python modules within the package (`-m` flag). That's because they import from the package. In future I could extract
 them to the repository root (just the  `if __name__=='__main__'` code), so they could be run just by their name/path.)
