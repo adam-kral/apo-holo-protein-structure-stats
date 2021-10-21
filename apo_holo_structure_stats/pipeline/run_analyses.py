@@ -22,7 +22,7 @@ TAnalyzer = TypeVar('TAnalyzer')
 
 
 class AnalysisHandler(Generic[TAnalyzer]):
-    def handle(self, analyzer: TAnalyzer, result, *args, **kwargs):
+    def handle(self, level_tag, analyzer: TAnalyzer, result, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -32,10 +32,13 @@ class JSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
         self.output_file_name = output_file_name
         self.data = []
 
-    def handle(self, analyzer: SerializableAnalyzer, result, *args, **kwargs):
-        """ serializes analysis args and results into a json"""
+    def handle(self, level_tag, analyzer: SerializableAnalyzer, result, *args, **kwargs):
+        """ serializes analysis args and results into a json
+        :param level_tag:
+        """
 
         o = analyzer.serialize(result, *args, **kwargs)
+        o['level_tag'] = level_tag
         self.data.append(o)
           # nejde dumpovat to asi nejde takhle inkrementálně. Musí se pak dumpnout asi nastřádaný všechno
         # Unlike pickle and marshal, JSON is not a framed protocol, so trying to serialize multiple objects with repeated calls to dump() using the same fp will result in an invalid JSON file.
@@ -48,11 +51,10 @@ class JSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
 class ConcurrentJSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
     """ Works with multiprocessing """
     # json na to neni uplne vhodny, neda se dumpovat nebo nacitat inkrementalně, jako napr. csvcko -- je treba mit vzdy v pameti celou reprezentaci (vsechny vysledky, nez se to dumpne)
-    def __init__(self, output_file_name):
+    def __init__(self, output_file_name, multiprocessing_manager: Manager):
         self.output_file_name = output_file_name
         # self.queue = Queue()  # or I could use Manager.list(), but python docs say that queue should be preferred to
-        m = Manager()
-        self.queue = m.Queue()
+        self.queue = multiprocessing_manager.Queue()
         # sharing state (managers with lists),
         # I don't need to consume the queue concurrently, only once, at the end, so I use only the putting functionality
 
@@ -61,10 +63,13 @@ class ConcurrentJSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
         # Manager.Queue. Manager.Queue is a queue.Queue (multithreading-queue) under the hood, located on a separate
         # server-process and exposed via proxies. This adds additional overhead compared to Pool's internal queue.
 
-    def handle(self, analyzer: SerializableAnalyzer, result, *args, **kwargs):
-        """ serializes analysis args and results into a json"""
+    def handle(self, level_tag, analyzer: SerializableAnalyzer, result, *args, **kwargs):
+        """ serializes analysis args and results into a json
+        :param level_tag:
+        """
 
         o = analyzer.serialize(result, *args, **kwargs)
+        o['level_tag'] = level_tag
         self.queue.put(o)
           # nejde dumpovat to asi nejde takhle inkrementálně. Musí se pak dumpnout asi nastřádaný všechno
         # Unlike pickle and marshal, JSON is not a framed protocol, so trying to serialize multiple objects with repeated calls to dump() using the same fp will result in an invalid JSON file.
@@ -186,7 +191,8 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
             # this fn (run_analyses_for_isoform_group) does not know anything about serialization?
             # But it will know how nested it is (domain->structure) and can pass full identifiers of structures/domains
 
-            serializer_or_analysis_handler.handle(a, a(apo_chain_residues, holo_chain_residues), apo_chain_residues, holo_chain_residues)  # in future maybe pass apo and holo. Will serialize itself. And output the object in rdf for example?
+            serializer_or_analysis_handler.handle('', a, a(apo_chain_residues, holo_chain_residues), apo_chain_residues,
+                                                  holo_chain_residues)  # in future maybe pass apo and holo. Will serialize itself. And output the object in rdf for example?
             # because what I would like is to output the analysis with objects identifiers, and then output the objects, what they contain (e.g. domain size?)
 
 
@@ -196,7 +202,8 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
         )
 
         for c in comparators_of_apo_holo__residue_ids_param:
-            serializer_or_analysis_handler.handle(c, c(apo_chain_residue_ids, holo_chain_residue_ids), apo_chain_residue_ids, holo_chain_residue_ids)
+            serializer_or_analysis_handler.handle('', c, c(apo_chain_residue_ids, holo_chain_residue_ids),
+                                                  apo_chain_residue_ids, holo_chain_residue_ids)
 
         # domain analysis, asi by mely byt stejny (v sekvenci hopefully)
         #apo_domains = [] #apo.get_domains()  # opět může být cachované, tentokrát to bude malá response z apicka, obdobně SS
@@ -221,22 +228,25 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
         for d_apo, d_holo in zip(apo_domains__residues, holo_domains__residues):
 
             for a in comparators_of_apo_holo_domains__residues_param:
-                serializer_or_analysis_handler.handle(a, a(d_apo, d_holo), d_apo, d_holo)
+                serializer_or_analysis_handler.handle('', a, a(d_apo, d_holo), d_apo, d_holo)
 
         for d_apo, d_holo in zip(apo_domains, holo_domains):
             d_apo = d_apo.to_set_of_residue_ids(apo_code)
             d_holo = d_holo.to_set_of_residue_ids(holo_code)
 
             for a in comparators_of_apo_holo_domains__residue_ids_param:
-                serializer_or_analysis_handler.handle(a, a(d_apo, d_holo), d_apo, d_holo)
+                serializer_or_analysis_handler.handle('', a, a(d_apo, d_holo), d_apo, d_holo)
 
-        for (d1_apo, d1_holo), (d2_apo, d2_holo) in itertools.combinations(zip(apo_domains__residues, holo_domains__residues), 2):
+        for (d1_apo, d1_holo), (d2_apo, d2_holo) in itertools.combinations(zip(apo_domains__residues,
+                                                                               holo_domains__residues), 2):
             for a in comparators_of_apo_holo_2domains__residues_param:
-                serializer_or_analysis_handler.handle(a, a(d1_apo, d2_apo, d1_holo, d2_holo), d1_apo, d2_apo, d1_holo, d2_holo)
+                serializer_or_analysis_handler.handle('', a, a(d1_apo, d2_apo, d1_holo, d2_holo), d1_apo, d2_apo,
+                                                      d1_holo, d2_holo)
 
             d1d2_apo = d1_apo + d2_apo
             d1d2_holo = d1_holo + d2_holo
-            serializer_or_analysis_handler.handle(get_rmsd, get_rmsd(d1d2_apo, d1d2_holo), d1d2_apo, d1d2_apo)  # todo hardcoded analysis
+            serializer_or_analysis_handler.handle('', get_rmsd, get_rmsd(d1d2_apo, d1d2_holo), d1d2_apo,
+                                                  d1d2_apo)  # todo hardcoded analysis
 
     # holo-holo analyses
 

@@ -4,3 +4,4 @@ requests==2.25.0
 rmsd==1.4
 numpy==1.19.4
 freesasa==2.1.0
+ipykernel==6.2.0

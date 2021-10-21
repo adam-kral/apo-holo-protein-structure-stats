@@ -1,12 +1,14 @@
 import concurrent.futures
 import gzip
 import itertools
+import json
 import logging
 import os
 import time
 import warnings
 from datetime import datetime
 from difflib import SequenceMatcher
+from multiprocessing import Manager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List, Dict, Iterable
@@ -95,6 +97,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
                    comparators__domains__residue_ids_param: List[Analyzer],
                    comparators__2domains__residues_param: List[Analyzer],
                        serializer_or_analysis_handler: AnalysisHandler,
+                   domains_info: list,
                    ) -> None:
     """ Runs comparisons between two chains. E.g. one ligand-free (apo) and another ligand-bound (holo).
     :param chain1: A Bio.PDB Chain, obtained as a part of BioPython Structure object as usual
@@ -153,13 +156,14 @@ def compare_chains(chain1: Chain, chain2: Chain,
         # this fn (run_analyses_for_isoform_group) does not know anything about serialization?
         # But it will know how nested it is (domain->structure) and can pass full identifiers of structures/domains
 
-        serializer_or_analysis_handler.handle(a, a(c1_residues, c2_residues), c1_residues,
+        serializer_or_analysis_handler.handle('chain2chain', a, a(c1_residues, c2_residues), c1_residues,
                                               c2_residues)  # in future maybe pass apo and holo. Will serialize itself. And output the object in rdf for example?
         # because what I would like is to output the analysis with objects identifiers, and then output the objects, what they contain (e.g. domain size?)
 
 
     for c in comparators__residue_ids_param:
-        serializer_or_analysis_handler.handle(c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids, c2_residue_ids)
+        serializer_or_analysis_handler.handle('chain2chain', c, c(c1_residue_ids, c2_residue_ids), c1_residue_ids,
+                                              c2_residue_ids)
 
     # domain-level analyses
 
@@ -169,6 +173,10 @@ def compare_chains(chain1: Chain, chain2: Chain,
         c1_domains = sorted(filter(lambda d: d.chain_id == chain1.id, get_domains(s1_pdb_code)), key=lambda d: d.domain_id)
         c2_domains = sorted(filter(lambda d: d.chain_id == chain2.id, get_domains(s2_pdb_code)), key=lambda d: d.domain_id)
         # todo zaznamenat total počet domén (pro obě struktury), zapsat do jinýho jsonu třeba
+        domains_info.append(
+            {'type': 'total_domains_found', 'result': len(c1_domains), 'pdb_code': s1_pdb_code, 'chain_id': chain1.id})
+        domains_info.append(
+            {'type': 'total_domains_found', 'result': len(c2_domains), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
     except APIException as e:
         if e.__cause__ and '404' in str(e.__cause__):
             logging.warning(f'{s1_pdb_code} {s2_pdb_code} no domains found, skip the domain-level analysis')
@@ -200,20 +208,24 @@ def compare_chains(chain1: Chain, chain2: Chain,
                             f'chain residues)')
             continue
 
-        # todo zaznamenat počet domén jdoucích do analýz
-
         # todo reflect domain cropping in the object id (domain id) somehow?
         c1_domains__residues.append(DomainResidues(c1_d_residues.data, c1_d_residues.structure_id, c1_d_residues.chain_id, c1_d_residues.domain_id))
         c2_domains__residues.append(DomainResidues(c2_d_residues.data, c2_d_residues.structure_id, c2_d_residues.chain_id, c2_d_residues.domain_id))
 
+    # todo zaznamenat počet domén jdoucích do analýz
+    domains_info.append({'type': 'analyzed_domain_count', 'result': len(c1_domains__residues), 'pdb_code': s1_pdb_code, 'chain_id': chain1.id})
+    domains_info.append({'type': 'analyzed_domain_count', 'result': len(c2_domains__residues), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
+
+    # todo to tam taky neni v argumentech, ale harcoded.., to je ten muj fix...
     for chain_domains in (c1_domains__residues, c2_domains__residues):
         for d1, d2 in itertools.combinations(chain_domains, 2):
-            serializer_or_analysis_handler.handle(get_interdomain_surface, get_interdomain_surface(d1, d2), d1, d2)
+            serializer_or_analysis_handler.handle('2DA', get_interdomain_surface, get_interdomain_surface(d1, d2),
+                                                  d1, d2)
 
 
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         for a in comparators__domains__residues_param:
-            serializer_or_analysis_handler.handle(a, a(d_chain1, d_chain2), d_chain1, d_chain2)
+            serializer_or_analysis_handler.handle('domain2domain', a, a(d_chain1, d_chain2), d_chain1, d_chain2)
 
     # todo vyres ty divny idcka
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
@@ -227,16 +239,28 @@ def compare_chains(chain1: Chain, chain2: Chain,
                                                 d_chain2.structure_id, d_chain2.chain_id, d_chain2.domain_id)
 
         for a in comparators__domains__residue_ids_param:
-            serializer_or_analysis_handler.handle(a, a(d_chain1, d_chain2), d_chain1, d_chain2)
+            serializer_or_analysis_handler.handle('domain2domain', a, a(d_chain1, d_chain2), d_chain1, d_chain2)
 
+    # two-domain arrangements to two-domain arrangements
     for (d1_chain1, d1_chain2), (d2_chain1, d2_chain2) in itertools.combinations(zip(c1_domains__residues, c2_domains__residues), 2):
+        # (in paper considered if of both apo and holo interdomain iface >= 200 A^2
+        # if get_interdomain_surface(d1_chain1, d2_chain1) < 200 or get_interdomain_surface(d1_chain2, d2_chain2) < 200:
+        #     continue
+
         for a in comparators__2domains__residues_param:
-            serializer_or_analysis_handler.handle(a, a(d1_chain1, d2_chain1, d1_chain2, d2_chain2), d1_chain1, d2_chain1, d1_chain2, d2_chain2)
+            serializer_or_analysis_handler.handle('chain2DA2chain2DA', a, a(d1_chain1, d2_chain1, d1_chain2,
+                                                                            d2_chain2),
+                                                  d1_chain1,
+                                                  d2_chain1, d1_chain2, d2_chain2)
 
         d1d2_chain1 = d1_chain1 + d2_chain1
         d1d2_chain2 = d1_chain2 + d2_chain2
-        serializer_or_analysis_handler.handle(get_rmsd, get_rmsd(d1d2_chain1, d1d2_chain2), d1d2_chain1, d1d2_chain1)  # todo hardcoded analysis
+        serializer_or_analysis_handler.handle('chain2DAset2chain2DAset', get_rmsd, get_rmsd(d1d2_chain1, d1d2_chain2),
+                                              d1d2_chain1,
+                                              d1d2_chain2)  # todo hardcoded analysis
 
+        # chain2DA2chain2DA nema stejny argumenty, asi v pohode, to je jenom pro level a moznost vybrat analyzu
+        #   na danym levelu..
 
 # def download_structure(pdb_code: str) -> str:
 #     # logging.info(f'downloading structure {pdb_code}..')
@@ -322,7 +346,7 @@ if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
 
     def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_paper_chain_code: str, s2_paper_chain_code: str,
-                     serializer):
+                     serializer, domains_info: list):
 
         # raise ValueError('hovna')
         logging.info(f'{s1_pdb_code}, {s2_pdb_code}')
@@ -338,7 +362,7 @@ if __name__ == '__main__':
             apo_chain = get_chain_by_chain_code(apo, s1_paper_chain_code)
             holo_chain = get_chain_by_chain_code(holo, s2_paper_chain_code)
 
-            apo_mapping = apo_residue_id_mappings[apo_chain.id]  # todo chyba KeyError chain D
+            apo_mapping = apo_residue_id_mappings[apo_chain.id]
             holo_mapping = holo_residue_id_mappings[holo_chain.id]
 
             compare_chains(apo_chain, holo_chain,
@@ -349,7 +373,9 @@ if __name__ == '__main__':
                            [get_rmsd],
                            [get_ss],
                            [get_hinge_angle],
-                           serializer)
+                           serializer,
+                           domains_info,
+                           )
         except Exception as e:
             logging.exception('compare chains failed with: ')
 
@@ -357,34 +383,44 @@ if __name__ == '__main__':
         df = pd.read_csv('apo_holo.dat', delimiter=r'\s+', comment='#', header=None,
                          names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
 
-        serializer = ConcurrentJSONAnalysisSerializer(f'output_apo_holo_{datetime.now().isoformat()}.json')
+        with Manager() as multiprocessing_manager:
+            start_datetime = datetime.now()
 
-        found = False
+            serializer = ConcurrentJSONAnalysisSerializer(f'output_apo_holo_{start_datetime.isoformat()}.json',
+                                                          multiprocessing_manager)
+            domains_info = multiprocessing_manager.list()
 
-        with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
-            for index, row in df.iterrows():
-                # if row.apo[:4] == '1cgj':
-                #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
+            found = False
 
-                # if row.apo[:4] == '1ikp':
-                #     found = True
-                #
-                if row.apo[:4] not in ('2hbj', '2hf0'):
-                    continue
-                #
-                # if not found:
-                #     continue
+            with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+                for index, row in df.iterrows():
+                    # if row.apo[:4] == '1cgj':
+                    #     continue  # chymotrypsinogen x chymotrypsin + obojí má ligand... (to 'apo' má 53 aa inhibitor)
 
-                future = executor.submit(process_pair,
-                    s1_pdb_code=row.apo[:4],
-                    s2_pdb_code=row.holo[:4],
-                    s1_paper_chain_code=row.apo[4:],
-                    s2_paper_chain_code=row.holo[4:],
-                    serializer=serializer,
-                )
+                    # if row.apo[:4] == '1ikp':
+                    #     found = True
+                    #
+                    # if row.apo[:4] not in ('2hbj', '2hf0'):
+                    #     continue
+                    #
+                    # if not found:
+                    #     continue
 
-        serializer.dump_data()
-        print(datetime.now().isoformat())
+                    future = executor.submit(process_pair,
+                        s1_pdb_code=row.apo[:4],
+                        s2_pdb_code=row.holo[:4],
+                        s1_paper_chain_code=row.apo[4:],
+                        s2_paper_chain_code=row.holo[4:],
+                        serializer=serializer,
+                        domains_info=domains_info,
+                    )
+
+            serializer.dump_data()
+            with open(f'output_domains_info{start_datetime.isoformat()}.json', 'w') as f:
+                json.dump(list(domains_info), f)
+
+            print(start_datetime.isoformat())
+            print(datetime.now().isoformat())
 
     def run_holo_analyses():
         df = pd.read_csv('holo.dat', delimiter=r'\s+', comment='#', header=None,

@@ -220,6 +220,8 @@ class BiopythonToMmcifResidueIds:
             try:
                 chain_mapping = model[chain_id]
             except KeyError:
+                # todo neni zaruceny, ze auth_asym_id ma jedinou entitu, label_asym_id ano, mozna bych to mohl
+                #  kontrolovat/zjistit
                 model[chain_id] = chain_mapping = BiopythonToMmcifResidueIds.Mapping(entity_id_list[i])
 
             chain_mapping.add_residue(int(label_seq_id), biopython_residue_id)
