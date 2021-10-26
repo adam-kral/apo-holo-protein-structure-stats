@@ -2,6 +2,7 @@ import itertools
 from typing import Iterator, List, Dict, DefaultDict
 
 import freesasa as freesasa
+import more_itertools
 import numpy as np
 import rmsd
 from Bio.PDB import is_aa, NeighborSearch
@@ -99,7 +100,22 @@ class IsHolo(CachedAnalyzer):
 
 
 def is_sorted(lst: List):
-    return all(x <= y for x, y in zip(lst, itertools.islice(lst, 1)))
+    return all(x <= y for x, y in zip(lst, lst[1:]))
+
+
+def sort_bound_lists(*lists, by=0):
+    """ Sort lists as if elements were bound across lists at each index. Sort by `by`th list.
+    """
+    assert 0 <= by < len(lists)
+    tuples = zip(*lists)
+
+    output_lists = [[] for _ in range(len(lists))]
+
+    for tuple in sorted(tuples, key=lambda t: t[by]):
+        for i in range(len(lists)):
+            output_lists[i].append(tuple[i])
+
+    return output_lists
 
 
 class GetSecondaryStructureForStructure(CachedAnalyzer):
@@ -132,9 +148,10 @@ class GetSecondaryStructureForStructure(CachedAnalyzer):
                         strands_end.append(helix_segment['end']['residue_number'])
                         # todo sheet_id important?
 
-                # don't know if the segment order from api guaranteed ascending, so check that
-                assert is_sorted(helices_start)
-                assert is_sorted(strands_start)
+                # segment order from api not guaranteed ascending, and sometimes is NOT
+                helices_start, helices_end = sort_bound_lists(helices_start, helices_end)
+                strands_start, strands_end = sort_bound_lists(strands_start, strands_end)
+
                 # if I wanted to sort that, I would also need to sort helices_end accordingly (as pairs with the start segments), NOT on its own
                 ss_for_chains[chain['chain_id']] = SSForChain(helices_start, helices_end, strands_start, strands_end)
 
@@ -157,10 +174,11 @@ class GetDomainsForStructure(CachedAnalyzer):
                 domains[domain_id].segment_beginnings.append(domain_segment['start']['residue_number'])
                 domains[domain_id].segment_ends.append(domain_segment['end']['residue_number'])
 
-        # don't know if the segment order from api guaranteed ascending, check that
+        # segment order from api not guaranteed ascending
         for domain in domains.values():
-            assert is_sorted(domain.segment_beginnings)
-            # if I wanted to sort that, I would also need to sort segment_ends accordingly (as pairs with the start segments), NOT on its own
+            domain.segment_beginnings, domain.segment_ends = sort_bound_lists(domain.segment_beginnings, domain.segment_ends)
+
+        # if I wanted to sort that, I would also need to sort segment_ends accordingly (as pairs with the start segments), NOT on its own
 
         return list(domains.values())
 

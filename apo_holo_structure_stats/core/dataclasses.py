@@ -33,8 +33,8 @@ class SSForChain:
     strands_end: List[int]
 
     def _is_ss_for_residue(self, residue_serial: int, ss_start: List[int], ss_end: List[int]) -> bool:
-        i = bisect_left(ss_start, residue_serial)
-        return i != len(ss_start) and ss_end[i] >= residue_serial
+        i = -1 + bisect(ss_start, residue_serial)
+        return i >= 0 and ss_end[i] >= residue_serial
 
     def ss_for_residue(self, r: ResidueId):
         residue_serial = r.label_seq_id  #  davam author_seq_id nekam, kde mam mit label_seq (nebo to predelej na author, ale vykaslat se na insertion code)

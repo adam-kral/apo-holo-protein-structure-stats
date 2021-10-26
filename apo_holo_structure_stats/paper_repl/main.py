@@ -177,6 +177,8 @@ def compare_chains(chain1: Chain, chain2: Chain,
             {'type': 'total_domains_found', 'result': len(c1_domains), 'pdb_code': s1_pdb_code, 'chain_id': chain1.id})
         domains_info.append(
             {'type': 'total_domains_found', 'result': len(c2_domains), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
+        # todo  spany domén, hlavně
+
     except APIException as e:
         if e.__cause__ and '404' in str(e.__cause__):
             logging.warning(f'{s1_pdb_code} {s2_pdb_code} no domains found, skip the domain-level analysis')
@@ -255,7 +257,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
 
         d1d2_chain1 = d1_chain1 + d2_chain1
         d1d2_chain2 = d1_chain2 + d2_chain2
-        serializer_or_analysis_handler.handle('chain2DAset2chain2DAset', get_rmsd, get_rmsd(d1d2_chain1, d1d2_chain2),
+        serializer_or_analysis_handler.handle('chain2DA2chain2DA', get_rmsd, get_rmsd(d1d2_chain1, d1d2_chain2),
                                               d1d2_chain1,
                                               d1d2_chain2)  # todo hardcoded analysis
 
@@ -392,6 +394,7 @@ if __name__ == '__main__':
 
             found = False
 
+            # with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
             with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
                 for index, row in df.iterrows():
                     # if row.apo[:4] == '1cgj':
@@ -400,7 +403,7 @@ if __name__ == '__main__':
                     # if row.apo[:4] == '1ikp':
                     #     found = True
                     #
-                    # if row.apo[:4] not in ('2hbj', '2hf0'):
+                    # if row.apo[:4] not in ('2d6l', ):
                     #     continue
                     #
                     # if not found:
