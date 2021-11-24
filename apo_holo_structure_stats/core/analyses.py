@@ -1,8 +1,7 @@
 import itertools
-from typing import Iterator, List, Dict, DefaultDict
+from typing import Iterator, List, Dict
 
 import freesasa as freesasa
-import more_itertools
 import numpy as np
 import rmsd
 from Bio.PDB import is_aa, NeighborSearch
@@ -13,8 +12,9 @@ from Bio.PDB.Residue import Residue
 
 from apo_holo_structure_stats.input.download import get_secondary_structure, get_domains
 from .base_analyses import CachedAnalyzer, SerializableCachedAnalyzer, SerializableAnalyzer
-from .dataclasses import SSForChain, SSForStructure, SetOfResidueData, DomainResidueData, SetOfResidues, DomainResidueMapping
-from .biopython_to_mmcif import ResidueId, BiopythonToMmcifResidueIds
+from .dataclasses import SSForChain, SSForStructure, SetOfResidueData, SetOfResidues, DomainResidueMapping, \
+    ScrewMotionResult
+from .biopython_to_mmcif import ResidueId
 
 freesasa.setVerbosity(freesasa.nowarnings)  # FreeSASA: warning: guessing that atom 'CB' is symbol ' C' ..., or todo can set a custom classifier?
 
@@ -50,7 +50,7 @@ class GetMainChain(CachedAnalyzer):
 
 
 class IsHolo(CachedAnalyzer):
-    def run(self, struct: Model, get_main_chain: GetMainChain):
+    def run(self, struct: Model, chain: Chain):
         def has_at_least_n_non_hydrogen_atoms(ligand, n):
             non_hydrogen_atoms = 0
 
@@ -72,26 +72,34 @@ class IsHolo(CachedAnalyzer):
         # (in original paper they used a program LPC, for ensuring specific interaction of ligand with at least 6 residue, this is a "shortcut",
         #    a temporary condition (simple))
 
-        main_chain_atoms = list(get_main_chain(struct).get_atoms())
-        ns = NeighborSearch(main_chain_atoms)
+        chain_atoms = list(chain.get_atoms())
+        ns = NeighborSearch(chain_atoms)
 
         RADIUS = 4.5
-        MIN_RESIDUES_WITHIN_LIGAND = 4
+        MIN_RESIDUES_WITHIN_LIGAND = 6
+        # todo calculate average number of protein heavy atoms in 4.5 Å within ligand atom (paper says 6)
 
         acceptable_ligands = []
 
         for ligand in ligands:
-            residues_in_contact_with_ligand = set()
+            residues_in_contact_with_ligand = set()  # including the ligand itself (in biopython, non-peptide ligand is
+            # in the same chain usually, but in a different residue)
+
+            ligand_residues = set()  # residues that compose the ligand
+
             for ligand_atom in ligand.get_atoms():  # ligand can be a chain or a residue
+                ligand_residues.add(ligand_atom.get_parent())
+                chain_atoms_in_contact = ns.search(ligand_atom.get_coord(), RADIUS)
 
-                main_chain_atoms_in_contact = ns.search(ligand_atom.get_coord(), RADIUS)
-
-                for atom in main_chain_atoms_in_contact:
-                    # exclude hydrogen atoms (as in paper)
+                for atom in chain_atoms_in_contact:
+                    # exclude hydrogen atoms (as in the paper)
                     if atom.element == 'H':
                         continue
 
                     residues_in_contact_with_ligand.add(atom.get_parent())
+
+            # exclude the ligand itself from the set of contact residues
+            residues_in_contact_with_ligand -= ligand_residues
 
             if len(residues_in_contact_with_ligand) >= MIN_RESIDUES_WITHIN_LIGAND:
                 acceptable_ligands.append(ligand)
@@ -181,19 +189,6 @@ class GetDomainsForStructure(CachedAnalyzer):
         # if I wanted to sort that, I would also need to sort segment_ends accordingly (as pairs with the start segments), NOT on its own
 
         return list(domains.values())
-
-
-class DomainResidues(DomainResidueData[Residue]):
-    # todo pošlu sem chainresidues a jejich label_seq_id (chci jen observed v obou sekvencich, podvybrat domenu)
-    @classmethod
-    def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model,
-                    residue_id_mapping: BiopythonToMmcifResidueIds.Mapping, skip_label_seq_id=lambda id: False):
-        bio_chain = bio_structure[domain.chain_id]  # todo wtf proč??? proč tam nepošlu rovnou chain?
-
-        domain_residues = [bio_chain[residue_id_mapping.to_bio(label_seq_id)]
-                           for label_seq_id in domain if not skip_label_seq_id(label_seq_id)]
-
-        return cls(domain_residues, bio_structure.get_parent().id, domain.chain_id, domain.domain_id)
 
 
 class GetSASAForStructure(CachedAnalyzer):
@@ -319,7 +314,7 @@ class GetHingeAngle(SerializableCachedAnalyzer):
         Angle (movement of a domain between the structures) and translation -> in the direction of the rotation axis
         """
 
-        # superimpose s2d1 on s1d1 (corr. domains, 1st domain chosen arbitrarily), taking s2d2 along with it
+        # superimpose s2d1 on s1d1 (correspoding domains, 1st domain chosen arbitrarily), taking s2d2 along with it
         # -> translate and rotate
 
         # superimpose the moved s2d2 on s1d2, remember translation+rotation. Decompose translation+rotation into rotation along a single
@@ -360,4 +355,4 @@ class GetHingeAngle(SerializableCachedAnalyzer):
         # it could also be possible to calculate here the location of rotation axis --> so we would have the complete screw description
         # of the domain movement, see [ ] above
 
-        return abs(angle), abs(translation_in_axis)
+        return ScrewMotionResult(abs(angle), abs(translation_in_axis), float(np.linalg.norm(d2_translation)))

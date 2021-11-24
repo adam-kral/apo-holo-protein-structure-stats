@@ -1,0 +1,23 @@
+# Jak se liší two-domain arrangements (nalezené - počet, interface area)
+
+(1l0wB	1g51A nesedí interface surface area vůbec)
+
+
+1vr6A 1rzmA - 2x apo interface
+1usgA 1usiA - o dost mensi apo
+1cb6A 1bka - naslo 2 ze 3 (91-250 chybi), offset je 1000 ale, tak jak?, jinak cisla sedi,
+    - bere to od 4, takze to vypada, ze to neni index od LCS, ale normalne auth_seq_id v apo (nikoliv holo, tam zacina od 1, nicmene label_seq zacina taky od 4 v holo)
+    - na druhou stranu, v tetanus toxin 1a8d_ 1d0hA, Maj 1000+ (875–1110)
+                                                               (1111–1315), mozna jenom protoze to prekracuje tisicovku?
+                                                               - v apo je <= 450 asi, tisicovky jsou v holo..
+1g6wD 1k0bC - uplne jina domena
+1l0wB 1g51A - jiny domeny
+
+1za1A 1q95A - tohle naopak vychází skoro stejně
+1jejA 1jg6A - tady nam to vychazi naopak vetsi (je to tak, ale visuelne ok)
+
+1zolA 	1o03A - zas vetsi, spany jsou dost jiny, kratsi vsude
+
+
+Když je interface menší, dá se podle mě říct, že ty domény jsou určený líp (víc kompaktní ve struktuře)
+

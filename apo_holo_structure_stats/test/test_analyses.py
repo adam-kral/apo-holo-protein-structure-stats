@@ -7,8 +7,9 @@ import numpy as np
 from scipy.spatial.transform.rotation import Rotation
 
 from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInterfaceBuriedArea, GetRMSD, \
-    GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle, DomainResidues
-from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping
+    GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle
+from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
+from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping, DomainResidues
 from apo_holo_structure_stats.pipeline.run_analyses import sequences_same, chain_to_polypeptide
 
 
@@ -16,7 +17,8 @@ class TestAnalyses(TestCase):
     TEST_STRUCTURE_DIR = Path(__file__).parent / 'test_data'
 
     def setUp(self) -> None:
-        self.structure = MMCIFParser().get_structure('2gdu', self.TEST_STRUCTURE_DIR / '2gdu.cif')
+        parser = MMCIFParser()
+        self.structure, self.residue_id_mapping = self.load_test_structure('2gdu')
         self.counter = 0
 
     def get_test_structure(self):
@@ -26,25 +28,35 @@ class TestAnalyses(TestCase):
         return s
 
     def load_test_structure(self, pdb_code):
-        return MMCIFParser().get_structure(pdb_code, self.TEST_STRUCTURE_DIR / f'{pdb_code}.cif')
+        mmcif_parser = MMCIFParser(QUIET=True)
+        structure = mmcif_parser.get_structure(pdb_code, self.TEST_STRUCTURE_DIR / f'{pdb_code}.cif')
+
+        return structure, BiopythonToMmcifResidueIds.create(mmcif_parser._mmcif_dict)  # reuse already parsed
+        # mmcifdict (albeit undocumented)
 
     def test_interdomain_surface_paper(self):
-        s1 = self.load_test_structure('1vr6')
-        s2 = self.load_test_structure('1rzm')
+        s1, (s1_mapping, s1_entity_poly_seqs) = self.load_test_structure('1vr6')
+        s2, (s2_mapping, s2_entity_poly_seqs)= self.load_test_structure('1rzm')
 
         # analyze just A chain (like in the paper)
         s1_chain_a = s1[0]['A']
         s2_chain_a = s2[0]['A']
 
+        c1_mapping = s1_mapping[0]['A']
+        c2_mapping = s2_mapping[0]['A']
+
         # divide into domains exactly like in the paper
+        # todo check that label_seq_ids do correspond to those (changed it now) NO they dont, use bio residue mapping
+
+        # todo s1d1, ....
         d1 = DomainResidueMapping('D1', 'A', [1], [64])  # can reuse the domain for both structures (here for testing purposes)
         d2 = DomainResidueMapping('D2', 'A', [65], [338])
 
-        s1d1 = DomainResidues.from_domain(d1, s1)
-        s1d2 = DomainResidues.from_domain(d2, s1)
+        s1d1 = DomainResidues.from_domain(d1, s1[0], c1_mapping)
+        s1d2 = DomainResidues.from_domain(d2, s1[0], c1_mapping)
 
-        s2d1 = DomainResidues.from_domain(d1, s2)
-        s2d2 = DomainResidues.from_domain(d2, s2)
+        s2d1 = DomainResidues.from_domain(d1, s2[0], c2_mapping)
+        s2d2 = DomainResidues.from_domain(d2, s2[0], c2_mapping)
 
         interdomain_surface_computer = GetInterfaceBuriedArea((GetSASAForStructure(),))
         apo__domain_interface_area = interdomain_surface_computer(s1d1, s1d2)
@@ -65,8 +77,8 @@ class TestAnalyses(TestCase):
 
         # hinge
         get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, get_rotation_matrix))
-        angle, translation = get_hinge_angle(s1d1, s1d2, s2d1, s2d2)
-        self.assertAlmostEqual(147, 180/np.pi * angle, delta=2)
+        screw_motion = get_hinge_angle(s1d1, s1d2, s2d1, s2d2)
+        self.assertAlmostEqual(147, 180/np.pi * screw_motion.angle, delta=2)
 
     def test_get_sasa_for_structure(self):
         s = self.get_test_structure()
@@ -125,8 +137,8 @@ class TestAnalyses(TestCase):
         get_rotation_matrix = GetRotationMatrix((get_centered_c_alpha_coords,))
         get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, get_rotation_matrix))
 
-        angle, translation_in_axis = get_hinge_angle(apo_d1, apo_d2, holo_d1, holo_d2)
-        self.assertAlmostEqual(47, 180/np.pi*angle, delta=0.2)  # in paper: dyndom: 47°, their principal axes 43.9
+        screw_motion = get_hinge_angle(apo_d1, apo_d2, holo_d1, holo_d2)
+        self.assertAlmostEqual(47, 180/np.pi*screw_motion.angle, delta=0.2)  # in paper: dyndom: 47°, their principal axes 43.9
 
     def test_rmsd_pheromone_binding_protein_paper(self):
         apo = self.load_test_structure('2fjy')
@@ -249,10 +261,10 @@ class TestAnalyses(TestCase):
         get_centered_c_alpha_coords = GetCenteredCAlphaCoords((get_c_alpha_coords, get_centroid))
         get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, GetRotationMatrix((get_centered_c_alpha_coords,))))
 
-        angle, translation_in_axis = get_hinge_angle(s1d1, s1d2, s2d1, s2d2)
+        screw_motion = get_hinge_angle(s1d1, s1d2, s2d1, s2d2)
 
-        self.assertAlmostEqual(ANGLE, angle, places=3)
-        self.assertAlmostEqual(TRANSLATION_IN_AXIS, translation_in_axis, places=3)
+        self.assertAlmostEqual(ANGLE, screw_motion.angle, places=3)
+        self.assertAlmostEqual(TRANSLATION_IN_AXIS, screw_motion.translation_in_axis, places=3)
         # GetHingeAngle does not return AXIS_DIRECTION, or AXIS_LOCATION (yet)
 
     def test_get_hinge_angle_different_orientation(self):
@@ -300,8 +312,8 @@ class TestAnalyses(TestCase):
         get_centered_c_alpha_coords = GetCenteredCAlphaCoords((get_c_alpha_coords, get_centroid))
         get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, GetRotationMatrix((get_centered_c_alpha_coords,))))
 
-        angle, translation_in_axis = get_hinge_angle(s1d1, s1d2, s2d1, s2d2)
+        screw_motion = get_hinge_angle(s1d1, s1d2, s2d1, s2d2)
 
-        self.assertAlmostEqual(ANGLE, angle, places=3)
-        self.assertAlmostEqual(TRANSLATION_IN_AXIS, translation_in_axis, places=3)
+        self.assertAlmostEqual(ANGLE, screw_motion.angle, places=3)
+        self.assertAlmostEqual(TRANSLATION_IN_AXIS, screw_motion.translation_in_axis, places=3)
         # GetHingeAngle does not return AXIS_DIRECTION, or AXIS_LOCATION (yet)

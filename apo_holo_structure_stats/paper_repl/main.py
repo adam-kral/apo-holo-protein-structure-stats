@@ -21,14 +21,32 @@ from Bio.PDB.Model import Model
 from Bio.PDB.Polypeptide import Polypeptide
 from Bio.PDB.Structure import Structure
 
-from apo_holo_structure_stats.core.analyses import DomainResidues
-from apo_holo_structure_stats.core.dataclasses import ChainResidueData, DomainResidueData, ChainResidues, DomainResidueMapping
+from apo_holo_structure_stats.core.dataclasses import ChainResidueData, DomainResidueData, ChainResidues, \
+    DomainResidueMapping, DomainResidues
 from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
+from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
 from apo_holo_structure_stats.input.download import APIException, download_and_save_file
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId, BioResidueId
 from apo_holo_structure_stats.pipeline.run_analyses import chain_to_polypeptide, aligner, AnalysisHandler, \
     JSONAnalysisSerializer, ConcurrentJSONAnalysisSerializer
+
+
+OUTPUT_DIR = 'output'
+
+
+def get_paper_apo_holo_dataframe(filename='apo_holo.dat'):
+    df = pd.read_csv(filename, delimiter=r'\s+', comment='#', header=None,
+                     names=('apo_id', 'holo_id', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
+
+    # split pdb_code and chain id (chain id can be _)
+    df['apo_chain_id'] = df['apo_id'].map(lambda s: s[4:])
+    df['holo_chain_id'] = df['holo_id'].map(lambda s: s[4:])
+    df['apo_pdb_code'] = df['apo_id'].map(lambda s: s[:4])
+    df['holo_pdb_code'] = df['holo_id'].map(lambda s: s[:4])
+    # drop now superfluous columns
+    df = df.drop(columns=['apo_id', 'holo_id'])
+    return df
 
 
 def get_longest_common_polypeptide(
@@ -173,10 +191,21 @@ def compare_chains(chain1: Chain, chain2: Chain,
         c1_domains = sorted(filter(lambda d: d.chain_id == chain1.id, get_domains(s1_pdb_code)), key=lambda d: d.domain_id)
         c2_domains = sorted(filter(lambda d: d.chain_id == chain2.id, get_domains(s2_pdb_code)), key=lambda d: d.domain_id)
         # todo zaznamenat total počet domén (pro obě struktury), zapsat do jinýho jsonu třeba
-        domains_info.append(
-            {'type': 'total_domains_found', 'result': len(c1_domains), 'pdb_code': s1_pdb_code, 'chain_id': chain1.id})
-        domains_info.append(
-            {'type': 'total_domains_found', 'result': len(c2_domains), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
+
+        for pdb_code, domains in ((s1_pdb_code, c1_domains), (s2_pdb_code, c2_domains)):
+            for d in domains:
+                domains_info.append(
+                    {'type': 'full_domain',
+                     'full_id': (pdb_code, d.chain_id, d.domain_id),
+                     'pdb_code': pdb_code,
+                     'chain_id': d.chain_id,
+                     'domain_id': d.domain_id,
+                     'spans': d.get_spans(),})
+
+
+        # for d in c2_domains:
+        #         domains_info.append(
+        #     {'type': 'total_domains_found', 'result': len(c2_domains), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
         # todo  spany domén, hlavně
 
     except APIException as e:
@@ -197,7 +226,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
         # offset nemusí být všude stejný
         c1_domain_mapped_to_c2 = DomainResidueMapping.from_domain_on_another_chain(c1_d, chain2.id, label_seq_id_offset)
 
-        # todo proc chain.get_parent??
+        # todo proc chain.get_parent?? Asi abych chain nemusel specifikovat (ale ted pracuju jenom s nima..)
         c1_d_residues = DomainResidues.from_domain(c1_d, chain1.get_parent(), c1_residue_mapping,
                                                    lambda id: id not in c1_label_seq_ids)
         c2_d_residues = DomainResidues.from_domain(c1_domain_mapped_to_c2, chain2.get_parent(), c2_residue_mapping,
@@ -210,13 +239,26 @@ def compare_chains(chain1: Chain, chain2: Chain,
                             f'chain residues)')
             continue
 
-        # todo reflect domain cropping in the object id (domain id) somehow?
         c1_domains__residues.append(DomainResidues(c1_d_residues.data, c1_d_residues.structure_id, c1_d_residues.chain_id, c1_d_residues.domain_id))
         c2_domains__residues.append(DomainResidues(c2_d_residues.data, c2_d_residues.structure_id, c2_d_residues.chain_id, c2_d_residues.domain_id))
 
-    # todo zaznamenat počet domén jdoucích do analýz
-    domains_info.append({'type': 'analyzed_domain_count', 'result': len(c1_domains__residues), 'pdb_code': s1_pdb_code, 'chain_id': chain1.id})
-    domains_info.append({'type': 'analyzed_domain_count', 'result': len(c2_domains__residues), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
+    for residue_mapping, domains in ((c1_residue_mapping, c1_domains__residues),
+                                     (c2_residue_mapping, c2_domains__residues)):
+        for d in domains:
+            domains_info.append(
+                {'type': 'analyzed_domain',
+                 'full_id': d.get_full_id(),
+                 'pdb_code': d.structure_id,
+                 'chain_id': d.chain_id,
+                 'domain_id': d.domain_id,
+                 'spans': d.get_spans(residue_mapping),
+                 'spans_auth_seq_id': d.get_spans(residue_mapping, auth_seq_id=True),
+                 })
+
+    #
+    # # todo zaznamenat počet domén jdoucích do analýz
+    # domains_info.append({'type': 'analyzed_domain_count', 'result': len(c1_domains__residues), 'pdb_code': s1_pdb_code, 'chain_id': chain1.id})
+    # domains_info.append({'type': 'analyzed_domain_count', 'result': len(c2_domains__residues), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
 
     # todo to tam taky neni v argumentech, ale harcoded.., to je ten muj fix...
     for chain_domains in (c1_domains__residues, c2_domains__residues):
@@ -338,7 +380,7 @@ def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
             long_chains = get_chains(model)
             if len(long_chains) > 1:
                 logging.warning(f'model contains {len(long_chains)} chains with 50+ aa')
-            return long_chains[0]  # sometime there is also chain B with ligands.
+            return long_chains[0]  # sometimes there is also chain B with ligands.
 
         return chain
     return model[paper_chain_code]
@@ -350,7 +392,6 @@ if __name__ == '__main__':
     def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_paper_chain_code: str, s2_paper_chain_code: str,
                      serializer, domains_info: list):
 
-        # raise ValueError('hovna')
         logging.info(f'{s1_pdb_code}, {s2_pdb_code}')
 
         try:
@@ -385,11 +426,13 @@ if __name__ == '__main__':
         df = pd.read_csv('apo_holo.dat', delimiter=r'\s+', comment='#', header=None,
                          names=('apo', 'holo', 'domain_count', 'ligand_codes'), dtype={'domain_count': int})
 
-        with Manager() as multiprocessing_manager:
-            start_datetime = datetime.now()
+        start_datetime = datetime.now()
+        analyses_output_fpath = Path(OUTPUT_DIR) / f'output_apo_holo_{start_datetime.isoformat()}.json'
+        domains_info_fpath = Path(OUTPUT_DIR) / f'output_domains_info_{start_datetime.isoformat()}.json'
 
-            serializer = ConcurrentJSONAnalysisSerializer(f'output_apo_holo_{start_datetime.isoformat()}.json',
-                                                          multiprocessing_manager)
+        with Manager() as multiprocessing_manager:
+
+            serializer = ConcurrentJSONAnalysisSerializer(analyses_output_fpath, multiprocessing_manager)
             domains_info = multiprocessing_manager.list()
 
             found = False
@@ -402,7 +445,7 @@ if __name__ == '__main__':
 
                     # if row.apo[:4] == '1ikp':
                     #     found = True
-                    #
+
                     # if row.apo[:4] not in ('2d6l', ):
                     #     continue
                     #
@@ -419,7 +462,7 @@ if __name__ == '__main__':
                     )
 
             serializer.dump_data()
-            with open(f'output_domains_info{start_datetime.isoformat()}.json', 'w') as f:
+            with domains_info_fpath.open('w') as f:
                 json.dump(list(domains_info), f)
 
             print(start_datetime.isoformat())

@@ -9,11 +9,14 @@ from typing import List, TypeVar, Generic
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
 from Bio.PDB.Chain import Chain
 
+from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, CompareSecondaryStructure, \
-    GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterfaceBuriedArea, GetSASAForStructure, DomainResidues, GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
-from apo_holo_structure_stats.core.dataclasses import ChainResidueData, ChainResidues
+    GetSecondaryStructureForStructure, GetDomainsForStructure, GetInterfaceBuriedArea, GetSASAForStructure, \
+    GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
+from apo_holo_structure_stats.core.dataclasses import ChainResidueData, ChainResidues, DomainResidues
 from apo_holo_structure_stats.core.biopython_to_mmcif import ResidueId
 from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
+from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
 from apo_holo_structure_stats.pipeline.log import add_loglevel_args
 
 from apo_holo_structure_stats.core.analysesinstances import *
@@ -82,8 +85,8 @@ class ConcurrentJSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
         except queue.Empty:
             pass
 
-        with open(self.output_file_name, 'w') as f:
-            json.dump(data, f)
+        with open(str(self.output_file_name), 'w') as f:
+            json.dump(data, f, cls=CustomJSONEncoder)
 
 
 # debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
@@ -294,7 +297,7 @@ if __name__ == '__main__':
     add_loglevel_args(parser)
 
     args = parser.parse_args()
-    logging.basicConfig(level=args.loglevel)
+    project_logger.setLevel(args.loglevel)
 
     with open(args.structures_json) as f:
         structures_info = json.load(f)

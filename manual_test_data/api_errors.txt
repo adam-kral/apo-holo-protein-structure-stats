@@ -1,0 +1,15 @@
+1seo
+1r9e
+1uoj 1oko
+1w0j 1e1r
+2gdb
+2b4h
+
+Poslal jsem jim všechny kromě 1oko, 1e1r a 2b4h
+
+----
+ERROR predtim, nez to castecne asi spravili
+
+https://www.ebi.ac.uk/pdbe/api/pdb/entry/secondary_structure/1umb
+https://www.ebi.ac.uk/pdbe/api/pdb/entry/secondary_structure/1w8y
+https://www.ebi.ac.uk/pdbe/api/pdb/entry/secondary_structure/2blg

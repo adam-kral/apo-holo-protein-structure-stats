@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-
+import concurrent
+import itertools
 import json
 import os
 import warnings
@@ -11,9 +12,11 @@ from Bio.PDB.MMCIF2Dict import MMCIF2Dict
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
 from Bio.PDB.Structure import Structure
 
-from apo_holo_structure_stats.core.analyses import GetChains, GetMainChain
+from apo_holo_structure_stats import project_logger
+from apo_holo_structure_stats.core.analyses import GetChains
 from apo_holo_structure_stats.pipeline.log import add_loglevel_args
 from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
+logger = logging.getLogger(__name__)
 
 
 def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains):
@@ -23,7 +26,7 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
 
     # skip low resolution
     if resolution and resolution > MIN_STRUCTURE_RESOLUTION:
-        logging.info(f'skipping structure {s.id}: resolution ({resolution}) does not meet the limit of {MIN_STRUCTURE_RESOLUTION}')
+        logger.info(f'skipping structure {s.id}: resolution ({resolution}) does not meet the limit of {MIN_STRUCTURE_RESOLUTION}')
         return False
 
     # skip non-xray. Done in the original paper. Try without it. Or then, specify in output dataset which experimental
@@ -33,17 +36,17 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
     # skip DNA/RNA complexes
     try:
         if any(poly_type in mmcif_dict['_entity_poly.type'] for poly_type in ('polydeoxyribonucleotide', 'polyribonucleotide')):
-            logging.info(f'skipping structure {s.id}: no interest in structures with RNA or DNA chains')
+            logger.info(f'skipping structure {s.id}: no interest in structures with RNA or DNA chains')
             return False
     except KeyError:
         # _entity_poly.type:: Required in PDB entries no; Used in current PDB entries Yes, in about 100.0 % of entries
         # could also do the check manually (i.e. exists a chain with >= 2 nucleotides, but I wouldn't know for sure if they form a polymer)
         #       in the paper they allow only single nucleotides
-        logging.warning(f'could not determine polymers of structure {s.id}, structure allowed, might contain RNA or DNA, though')
+        logger.warning(f'could not determine polymers of structure {s.id}, structure allowed, might contain RNA or DNA, though')
 
-    # skip non-single-chain structure (too short chain or too many chains)
+    # skip structure with too short chains
     if len(get_chains(s)) < 1:
-        logging.info(f'skipping structure {s.id}: not a enough chains')
+        logger.info(f'skipping structure {s.id}: not enough chains')
         return False
 
     return True
@@ -86,7 +89,7 @@ def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     :return: file name
     """
 
-    return PDBList(pdb=STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, verbose=logging.INFO >= logging.root.level).retrieve_pdb_file(pdb_code, file_format='mmCif')
+    return PDBList(pdb=STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, verbose=logging.INFO >= logger.level).retrieve_pdb_file(pdb_code, file_format='mmCif')
     # (mmCif is the default for file_format, but implicit = warning, this way no warning)
     # verbose: BioPython prints to stdout, determine verbose by root logger level (I could also have a settings variable
     # which also could be reset by a commandline argument)
@@ -193,20 +196,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--is-directory', action='store_true',
                         help='now pdb_codes_or_directory is a path to a directory with mmcif files. Whole tree structure is inspected, all files are assumed to be mmcifs.')
-
+    parser.add_argument('--workers', type=int, default=1, help='number of subprocesses')
     parser.add_argument('pdb_codes_or_directory', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
     parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
     add_loglevel_args(parser)
 
     args = parser.parse_args()
-    logging.basicConfig(level=args.loglevel)
+    project_logger.setLevel(args.loglevel)
 
     # translate input into structure filenames
     if args.is_directory:
         directory = args.pdb_codes_or_directory
 
         if not os.path.isdir(directory):
-            logging.error(f'Directory {directory} does not exist')
+            logger.error(f'Directory {directory} does not exist')
             sys.exit(1)
 
         structure_filenames = get_structure_filenames_in_dir(directory)
@@ -214,28 +217,35 @@ if __name__ == '__main__':
         pdb_codes = args.pdb_codes_or_directory.strip().split(',')
 
         if not pdb_codes:
-            logging.error('No pdb codes specified')
+            logger.error('No pdb codes specified')
             sys.exit(1)
 
-        structure_filenames = (retrieve_structure_file_from_pdb(pdb_code) for pdb_code in pdb_codes)
+        structure_filenames = (retrieve_structure_file_from_pdb(pdb_code) for pdb_code in pdb_codes)  # todo nahradit tim, co nepouziva pdblist
 
     structure_filenames = list(structure_filenames)
-    logging.info(f'total structures to process: {len(structure_filenames)}')
+    logger.info(f'total structures to process: {len(structure_filenames)}')
 
     # load and filter structures
-    structures_passed = []
+    with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as executor:
+        def get_chains_metadata_for_structure(ordinal, filename):
+            s, s_header, mmcif_dict = parse_structure(filename)
+            logger.info(f'processing {ordinal}-th structure {s.id} at {filename}')
 
-    for i, filename in enumerate(structure_filenames):
-        s, s_header, mmcif_dict = parse_structure(filename)
-        logging.info(f'processing {i}-th structure {s.id} at {filename}')
+            get_chains_analyzer = GetChains()
 
-        get_chains_analyzer = GetChains()
+            chains_metadata = []
+            if structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains_analyzer):
+                # todo if more chains, for a structure, cache (problem with multithreading though)
+                for chain in get_chains_analyzer(s[0]):
+                    chains_metadata.append({'pdb_code': s.id, 'path': filename, 'chain_id': chain.id})  # maybe full path name?
 
-        if structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains_analyzer):
-            structures_passed.append({'pdb_code': s.id, 'path': filename, 'main_chain_id': GetMainChain((get_chains_analyzer,))(s).id})  # maybe full path name?
+            return chains_metadata
 
-            # path so we know where the structure file is in the next pipeline steps,
-            # main_chain_id for isoform step (so we don't need to load the structure again just to know the main chain id)
+        # todo if more chains, for a structure, cache (problem with multithreading though)
+        chains_of_structures_that_passed = executor.map(get_chains_metadata_for_structure, itertools.count(), structure_filenames)
+
+    # flatten the chain metadata
+    chains_of_structures_that_passed = [chain_meta for s_chains in chains_of_structures_that_passed for chain_meta in s_chains]
 
     with open(args.output_file, 'w') as f:
-        json.dump(structures_passed, f)
+        json.dump(chains_of_structures_that_passed, f)

@@ -56,6 +56,14 @@ class BiopythonToMmcifResidueIds:
         def all_to_bio(self, label_seq_ids: Iterable[int]) -> Iterable[BioResidueId]:
             return map(lambda label_seq_id: self.to_bio(label_seq_id), label_seq_ids)
 
+        def find_label_seq(self, auth_seq_id: int) -> int:
+            """ Similar to `to_label_seq_id`, but ignores insertion codes and hetero flags.
+
+            Use only if you have just auth_seq_id (results in a paper). """
+            auth_to_label = {bio_residue_id.auth_seq_id: label_seq
+                   for bio_residue_id, label_seq in self.bio_pdb__to__label_seq_id.items()}
+            return auth_to_label[auth_seq_id]
+
     Chains = Dict[str, Mapping]
     Models = DefaultDict[int, Chains]
 

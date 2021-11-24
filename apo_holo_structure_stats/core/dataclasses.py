@@ -4,15 +4,22 @@ from enum import Enum, auto
 from typing import List, Dict, TypeVar, Generic, Iterator, Iterable, Tuple, Any
 
 from Bio.PDB.Chain import Chain
+from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
 
-from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId
+from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId, BioResidueId
 
 
 class SSType(Enum):
     HELIX = auto()
     STRAND = auto()
     NO_TYPE = auto()  # no ss type found for a residue
+
+
+def contained_in_segment(number: int, segment_starts: List[int], segment_ends: List[int]):
+    """ Returns True if number is contained in any of the non-overlapping segments. Lists have to be sorted. """
+    i = -1 + bisect(segment_starts, number)  # bisect: a[:i] have e <= x, and all e in a[i:] have e > x
+    return i >= 0 and number <= segment_ends[i]
 
 
 @dataclass
@@ -24,8 +31,7 @@ class SSForChain:
 
     If we were always to compare the whole sequences of residues, it would be faster to implement it with a pointer to
     current SS start/end segment. But this should be fast enough, is easier to implement (just using bisect module),
-    and more versatile use (fast for single residues). However, it can work (fast) only with 1-integer ids of residues.
-    (or use numpy and structs, but author_insertion_code has a length limit??)
+    and more versatile use (fast for single residues).
     """
     helices_start: List[int]
     helices_end: List[int]
@@ -33,8 +39,7 @@ class SSForChain:
     strands_end: List[int]
 
     def _is_ss_for_residue(self, residue_serial: int, ss_start: List[int], ss_end: List[int]) -> bool:
-        i = -1 + bisect(ss_start, residue_serial)
-        return i >= 0 and ss_end[i] >= residue_serial
+        return contained_in_segment(residue_serial, ss_start, ss_end)
 
     def ss_for_residue(self, r: ResidueId):
         residue_serial = r.label_seq_id  #  davam author_seq_id nekam, kde mam mit label_seq (nebo to predelej na author, ale vykaslat se na insertion code)
@@ -175,8 +180,7 @@ class DomainResidueMapping:
             yield from range(segment_start, segment_end + 1)
 
     def __contains__(self, label_seq_id):
-        domain_segment_index = -1 + bisect(self.segment_beginnings, label_seq_id)
-        return domain_segment_index >= 0 and label_seq_id <= self.segment_ends[domain_segment_index]
+        return contained_in_segment(label_seq_id, self.segment_beginnings, self.segment_ends)
 
     def __len__(self):
         residue_count = 0
@@ -188,3 +192,68 @@ class DomainResidueMapping:
     def to_set_of_residue_ids(self, structure_id: str, skip_auth_seq_id=lambda id: False) -> SetOfResidueData[ResidueId]:
         return DomainResidueData[ResidueId]([ResidueId(auth_seq_id, ' ', self.chain_id) for auth_seq_id in self
                                              if not skip_auth_seq_id(auth_seq_id)], structure_id, self.chain_id, self.domain_id)
+
+    def get_spans(self):
+        return list(zip(self.segment_beginnings, self.segment_ends))
+
+
+class DomainResidues(DomainResidueData[Residue]):
+    # todo pošlu sem chainresidues a jejich label_seq_id (chci jen observed v obou sekvencich, podvybrat domenu)
+    @classmethod
+    def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model,
+                    residue_id_mapping: BiopythonToMmcifResidueIds.Mapping, skip_label_seq_id=lambda id: False):
+        bio_chain = bio_structure[domain.chain_id]  # todo wtf proč??? proč tam nepošlu rovnou chain?
+
+        domain_residues = [bio_chain[residue_id_mapping.to_bio(label_seq_id)]
+                           for label_seq_id in domain if not skip_label_seq_id(label_seq_id)]
+
+        return cls(domain_residues, bio_structure.get_parent().id, domain.chain_id, domain.domain_id)
+
+    def get_spans(self, residue_id_mapping: BiopythonToMmcifResidueIds.Mapping, auth_seq_id=False):
+        """Get domain spans (segments).
+
+        :param residue_id_mapping:
+        :param auth_seq_id: if True, return auth_seq_ids instead of label_seq_ids (however, it works just with integer
+        ids, ignores insertion codes)
+        :return: Domain segments. List of tuples (from, to_inclusive), of label_seq_ids (or auth_seq_ids)
+        """
+
+        # data is sorted (because DomainResidueMapping is), so just break a span after label_seq_id not contiguous
+        def get_res_id(r):
+            if auth_seq_id:
+                return r.id[1]
+            return residue_id_mapping.to_label_seq_id(BioResidueId(*r.id))
+
+        try:
+            residues = iter(self.data)
+
+            span_start = get_res_id(next(residues))
+            last_label_seq_id = span_start
+
+        except StopIteration:
+            return []
+
+        spans = []
+
+        for r in residues:
+            id_ = get_res_id(r)
+            if id_ - last_label_seq_id > 1:
+                # new span, if label_seq_ids weren't contiguous
+                spans.append((span_start, last_label_seq_id))
+                span_start = id_
+
+            last_label_seq_id = id_
+
+        spans.append((span_start, last_label_seq_id))
+
+        return spans
+
+
+@dataclass
+class ScrewMotionResult:
+    """ Represents result of GetHingeAngle
+
+    Angle in radians, translations in angstroms, all absolute values."""
+    angle: float
+    translation_in_axis: float
+    translation_overall: float

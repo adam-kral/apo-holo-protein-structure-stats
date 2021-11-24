@@ -11,15 +11,4 @@
 2pgd 1pgn http://www.cathdb.info/pdb/2pgd http://www.cathdb.info/pdb/1pgn  http://rcsb.org/structure/2pgd  http://rcsb.org/structure/1pgn
 
 
-SS pod 80 %
-23   CompareSecondaryStructure  ((1cgj, E), (1ab9, B))     {}  0.305344   prvni je chymotrypsinogen, (delší), s nějakým
-inhibitorem, druhy chymotrypsin komplex (2/3 chainy + peptid)
-270  CompareSecondaryStructure  ((1sfc, F), (1hvv, C))     {}  0.696970
-414  CompareSecondaryStructure  ((2c3g, A), (2c3h, A))     {}  0.666667
-425  CompareSecondaryStructure  ((2d6l, X), (2d6m, A))     {}  0.152318  galectin Carb Recgntn Domain, todo proc, podle
-mě dost overlap b-listů
-480  CompareSecondaryStructure  ((3ezm, A), (1l5b, A))     {}  0.495050
-487  CompareSecondaryStructure  ((4mat, A), (1c21, A))     {}  0.549618
-491  CompareSecondaryStructure  ((4pgm, D), (1bq4, A))     {}  0.794872
-
-1l0wB	1g51A nesedí interface surface area vůbec
+((1cgj, E), (1ab9, B))  prvni je chymotrypsinogen, (delší), s nějakým inhibitorem, druhy chymotrypsin komplex (2/3 chainy + peptid)

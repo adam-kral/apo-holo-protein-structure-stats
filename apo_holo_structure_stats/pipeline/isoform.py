@@ -20,11 +20,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--workers', type=int, default=1, help='number of threads for concurrent API requests')
-    parser.add_argument('structures_json', help='annotate the list of structures with isoform data. File needs to contain list of objects with pdb_code and main_chain_id')
+    parser.add_argument('structures_json', help='annotate the list of structures with isoform data. File needs to contain list of objects with pdb_code and chain_id')
     parser.add_argument('output_file', help='writes input json annotated with isoform uniprot id')
     add_loglevel_args(parser)
     args = parser.parse_args()
-    logging.basicConfig(level=args.loglevel)
+    project_logger.setLevel(args.loglevel)
 
     with open(args.structures_json) as f:
         structures_info = json.load(f)
@@ -34,9 +34,9 @@ if __name__ == '__main__':
             logging.info(f'processing {ordinal}-th structure {s["pdb_code"]}')
 
             try:
-                return get_isoform(s['pdb_code'], s['main_chain_id'])
+                return get_isoform(s['pdb_code'], s['chain_id'])
             except APIException as e:
-                if '404' in str(e.__cause__):  # todo thihs does not work
+                if '404' in str(e.__cause__):  # todo thihs does not work EDIT it does catch 404, so why I wrote that?
                     logging.info(f'isoform not found for {s["pdb_code"]}')
                 else:
                     logging.exception(f'api error for {s["pdb_code"]}')
@@ -45,6 +45,7 @@ if __name__ == '__main__':
 
             return None
 
+        # todo if more chains, for a structure, cache (problem with multithreading though)
         results = executor.map(get_isoform_or_none, itertools.count(), structures_info)
 
     # update the dict (json) with isoform information
