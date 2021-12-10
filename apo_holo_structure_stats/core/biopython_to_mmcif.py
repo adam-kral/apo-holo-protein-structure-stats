@@ -1,9 +1,10 @@
 import logging
 from collections import defaultdict
-from typing import Dict, DefaultDict, Tuple, NamedTuple, Iterable, List
+from typing import Dict, DefaultDict, Tuple, NamedTuple, Iterable, List, Set
 
 from Bio.PDB.Residue import Residue
 
+logger = logging.getLogger(__name__)
 
 class ResidueId(NamedTuple):
     """ Allows unique identification of a residue within a PDB structure
@@ -70,7 +71,7 @@ class BiopythonToMmcifResidueIds:
     EntityPolySequences = DefaultDict[str, Dict[int, str]]  # entity_poly_id -> {label_seq_id: three_letter_AA_code,...}
 
     @staticmethod
-    def get_all_entity_seq(mmcif_dict) -> EntityPolySequences:
+    def get_all_entity_seq(mmcif_dict) -> Tuple[EntityPolySequences, Set[int]]:
         """ Returns dict entity_id -> list of monomer 3 letter codes.
 
         Will return only polymer entities. In the moment entities with sequence microheterogeneity, as in
@@ -78,7 +79,7 @@ class BiopythonToMmcifResidueIds:
         are skipped.
         """
         entity_seqs: BiopythonToMmcifResidueIds.EntityPolySequences = defaultdict(dict)
-        entity_ids_with_seq_heterogeneity = []  # will be deleted (that's current behavior, or could be returned with the seqs. somehow)
+        entity_ids_with_seq_heterogeneity = set()  # will be deleted (that's current behavior, or could be returned with the seqs. somehow)
 
         for entity_id, seq_num, monomer_id in zip(mmcif_dict["_entity_poly_seq.entity_id"],
                                                   mmcif_dict["_entity_poly_seq.num"],
@@ -87,20 +88,17 @@ class BiopythonToMmcifResidueIds:
             seq_num = int(seq_num)  # only this field of the three is integer
 
             if seq_num in entity_seqs[entity_id]:
-                logging.warning(f'{mmcif_dict["_entry.id"]} Microheterogeneity in sequence. As in '
+                logger.warning(f'{mmcif_dict["_entry.id"]} Microheterogeneity in sequence. As in '
                                 f'https://mmcif.wwpdb.org/dictionaries/mmcif_std.dic/Categories/entity_poly_seq.html '
                                 '(Multiple sequences for the structure.) Skipping...')
-                entity_ids_with_seq_heterogeneity.append(entity_id)
+                entity_ids_with_seq_heterogeneity.add(entity_id)
 
             entity_seqs[entity_id][seq_num] = monomer_id
 
         # skipping entities (chains) with a position where multiple amino acids are possible
         # todo ensure that this is not to have one entity for two different chains with entirely different coordinates (At the moment
         #  I only have one example: 5ZA2, where this does not manifest), in any case, this heterogeneity is rare
-        for entity_id in entity_ids_with_seq_heterogeneity:
-            del entity_seqs[entity_id]
-
-        return entity_seqs
+        return entity_seqs, entity_ids_with_seq_heterogeneity
     #
     # def get_chain_mappings(self):
     #     for chain_id in self.label_seq_id__to__bio_pdb:
@@ -138,17 +136,17 @@ class BiopythonToMmcifResidueIds:
                 # But will this branch be ever used?
                 #   _atom_site.pdbx_PDB_model_num: Used in current PDB entries: Yes, in about 100.0 % of entries
                 #   probably not...
-                logging.warning(f'No pdbx_PDB_model_num column in mmcif. Biopython\'s model would be at id -1. This project code only uses model at index 0. Will crash afterwards.')
+                logger.warning(f'No pdbx_PDB_model_num column in mmcif. Biopython\'s model would be at id -1. This project code only uses model at index 0. Will crash afterwards.')
                 pass
 
             return self.biopython_model_id
 
     @classmethod
-    def create(cls, mmcif_dict) -> Tuple[Models, EntityPolySequences]:
+    def create(cls, mmcif_dict) -> Tuple[Models, EntityPolySequences, Set[int]]:
         # structure as Biopython PDB module: Structure (this class) -> Models -> Chains
         models = cls.Models(dict)  # ugly defaultdict initialization (typing doesn't help)
 
-        entity_poly_sequences = cls.get_all_entity_seq(mmcif_dict)
+        entity_poly_sequences, entity_ids_with_seq_heterogeneity = cls.get_all_entity_seq(mmcif_dict)
 
         # mmcif atom list spec: https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v40.dic/Categories/atom_site.html
 
@@ -236,7 +234,7 @@ class BiopythonToMmcifResidueIds:
 
             last_label_seq_id = label_seq_id
 
-        return models, entity_poly_sequences
+        return models, entity_poly_sequences, entity_ids_with_seq_heterogeneity
 
 
             # [done] add building polypeptide sequence ("microheterogeneity" - have to use resname to resolve ambiguities)

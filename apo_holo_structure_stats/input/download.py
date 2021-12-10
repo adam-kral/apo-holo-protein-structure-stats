@@ -2,17 +2,29 @@ import gzip
 import logging
 import os
 import urllib.request
+import warnings
 from collections import defaultdict, namedtuple
+from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Set, Union, Tuple, overload, Literal, Dict, Any
 
 import requests
+from Bio.PDB import MMCIFParser
+from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from Bio.PDB.Structure import Structure
 from requests import RequestException
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-REQUESTS_TIMEOUT = 10
+from apo_holo_structure_stats import settings
+from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
+
+logger = logging.getLogger(__name__)
+
+REQUESTS_TIMEOUT = 10  # todo move to settings
 
 
 class APIException(Exception):
@@ -36,46 +48,48 @@ def get_requests_session():
 
 
 def download_and_save_file(url, file_path):
-    """ Download file and return the path. Use existing file if path exists.
+    """ Download file and return the path.
 
-    Tempfile is linked to resulting file only if the download was successful, so it should be valíd. """
+    Tempfile is linked to resulting file only if the download was successful, so it should be valíd.
 
+    :param url:
+    :param file_path:
+    """
     r = get_requests_session().get(url, stream=True, timeout=REQUESTS_TIMEOUT)
-
-    # if file already exists, don't download anything
-    if os.path.exists(file_path):
-        return  # todo won't work if file is broken, that is possible, as I added the tempfile below
-        # just recently
 
     # download to temp file, link to actual filename only if completed
     with NamedTemporaryFile('wb', dir=os.path.dirname(file_path)) as temp:  # same dir so that os.link always works
         for chunk in r.iter_content(chunk_size=1024 * 1024):
             temp.write(chunk)
 
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
         os.link(temp.name, file_path)  # will fail if file exists
+        # os.replace wouldn't work easily, as the exit context manager for tempfile will crash (No such file or dir..)
 
-
-def download_file_stringio(url):
-    r = get_requests_session().get(url, stream=True, timeout=REQUESTS_TIMEOUT)
-
-    file_like = StringIO()
-    for chunk in r.iter_content(chunk_size=1024 * 1024, decode_unicode=True):
-        file_like.write(chunk)
-
-    file_like.seek(0)
-    return file_like
-
-
-def get_structure_stringio(code):
-    return download_file_stringio(f'https://models.rcsb.org/v1/{code}/full')
-
-def get_full_mmcif_stringio(code, dir: Path):
-    url = f'ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/{code[1:3]}/{code}.cif.gz'
-
-    with urllib.request.urlopen(url) as response:  # ~60 MB
-        with gzip.open(response, 'rt', newline='', encoding='utf-8') as r:
-            with open(dir / f'{code}.cif', 'w') as f:
-                f.write(r.read())
+#
+# def download_file_stringio(url):
+#     r = get_requests_session().get(url, stream=True, timeout=REQUESTS_TIMEOUT)
+#
+#     file_like = StringIO()
+#     for chunk in r.iter_content(chunk_size=1024 * 1024, decode_unicode=True):
+#         file_like.write(chunk)
+#
+#     file_like.seek(0)
+#     return file_like
+#
+#
+# def get_structure_stringio(code):
+#     return download_file_stringio(f'https://models.rcsb.org/v1/{code}/full')
+#
+# def get_full_mmcif_stringio(code, dir: Path):
+#     url = f'ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/{code[1:3]}/{code}.cif.gz'
+#
+#     with urllib.request.urlopen(url) as response:  # ~60 MB
+#         with gzip.open(response, 'rt', newline='', encoding='utf-8') as r:
+#             with open(dir / f'{code}.cif', 'w') as f:
+#                 f.write(r.read())
 
 
 def get_best_isoform_for_chains(struct_code):
@@ -107,7 +121,7 @@ def get_best_isoform_for_chains(struct_code):
 
             # exploratory debug print, for development
             if (mapping['start']['residue_number'], mapping['end']['residue_number']) != (mapping['pdb_start'], mapping['pdb_end']):
-                logging.debug(
+                logger.debug(
                     f'pdbe API response, Get Best Isoform for {struct_code}:  `pdb_` sequence positions do not match those in `start` and `end`')
 
     return chain_based_data
@@ -244,3 +258,84 @@ def get_domains(struct_code: str):
         raise APIException() from e
 
     return r.json()[struct_code]['CATH-B']
+
+
+def find_or_download_structure(pdb_code: str) -> Path:
+    """ Download structure file and return its path. Use existing file, if path already exists. """
+    filename = f'{pdb_code}.cif.gz'
+    url = f'https://files.rcsb.org/download/{filename}'
+
+    local_path = settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY / filename
+
+    # if file already exists, don't download anything
+    # else download it
+    if os.path.exists(local_path):
+        logger.info(f'using cached structure {pdb_code} at {local_path}')
+    else:
+        # create dir structure if does not exist
+        settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY.mkdir(parents=True, exist_ok=True)
+
+        download_and_save_file(url, local_path)
+        logger.info(f'finished downloading structure {pdb_code} to {local_path}')
+
+    return local_path
+
+
+class CustomMMCIFParser(MMCIFParser):
+    """ Adapted BioPython code, just to get the pdb code (_entry.id) from the mmcif file """
+    def get_structure(self, structure_id, file):
+        """ Parses file contents and returns Structure object.
+
+        Note that parameter order is different to the BioPython's implementation (reversed, as structure_id is optional).
+
+        :param structure_id: if None, taken from mmcif (`_entry.id`)
+        :param file: a file-like object or a file name
+        :return: Bio.PDB.Structure
+        """
+
+        with warnings.catch_warnings():
+            if self.QUIET:
+                warnings.filterwarnings("ignore", category=PDBConstructionWarning)
+            self._mmcif_dict = MMCIF2Dict(file)
+
+            # begin change
+            if structure_id is None:
+                structure_id = self._mmcif_dict['_entry.id'][0].lower()
+            # end change
+
+            self._build_structure(structure_id)
+            self._structure_builder.set_header(self._get_header())
+
+        return self._structure_builder.get_structure()
+
+
+@dataclass
+class MmcifParseResult:
+    structure: Structure # Biopython's Structure object
+    bio_to_mmcif_mappings: BiopythonToMmcifResidueIds.Models  # maps auth_seq_ids (used in BioPython) to label_seq_ids, a modern way to identify a residue
+    poly_seqs: BiopythonToMmcifResidueIds.EntityPolySequences  # polymer sequences, as in mmcif
+    poly_with_microhet: Set[int]  # ids of sequences with micro-heterogeneity (multiple resolved AAs for a position)
+
+@dataclass
+class MmcifParseResultExtra:
+    header: Dict[str, Any]  # metadata from Biopython's MMCIFParser.header (e.g. resolution)
+    mmcif_dict: MMCIF2Dict  # whole mmcif dict, suspect may be large, therefore this class is only returned when needed
+
+
+def parse_mmcif(pdb_code: str = None,
+                path: Union[str, os.PathLike] = None,
+                with_extra=False) -> Union[MmcifParseResult, Tuple[MmcifParseResult, MmcifParseResultExtra]]:
+    local_path = find_or_download_structure(pdb_code) if not path else path
+
+    with gzip.open(local_path, 'rt', newline='', encoding='utf-8') as text_file:
+        mmcif_parser = CustomMMCIFParser(QUIET=True)  # todo quiet good idea?
+
+        structure = mmcif_parser.get_structure(pdb_code, text_file)
+        # reuse already parsed mmcifdict (albeit undocumented)
+        mapping, poly_seqs, with_microhet = BiopythonToMmcifResidueIds.create(mmcif_parser._mmcif_dict)
+
+        result = MmcifParseResult(structure, mapping, poly_seqs, with_microhet)
+
+        if with_extra:
+            return result, MmcifParseResultExtra(mmcif_parser.header, mmcif_parser._mmcif_dict)
+        return result

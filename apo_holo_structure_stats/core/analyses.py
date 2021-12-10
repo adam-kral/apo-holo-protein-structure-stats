@@ -206,6 +206,7 @@ class GetSASAForStructure(CachedAnalyzer):
                     if atom.element != 'H':  # otherwise freesasa somehow crashes with: AssertionError: Error: Radius array is <= 0 for the residue: PHE ,atom: H
                         yield atom
 
+        # freesasa calls get_atoms on the passed object, so add that method to `residues`
         bound_method =  get_atoms.__get__(residues)
         object.__setattr__(residues, 'get_atoms', bound_method)  # setting to a _frozen_ dataclass (SetOfResidues)
 

@@ -5,7 +5,7 @@ import urllib.request
 
 import pandas as pd
 
-from apo_holo_structure_stats.paper_repl.main import find_or_download_structure
+from apo_holo_structure_stats.input.download import find_or_download_structure
 
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)

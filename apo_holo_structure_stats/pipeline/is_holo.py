@@ -14,7 +14,8 @@ from apo_holo_structure_stats.core.analyses import IsHolo
 
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
+
+def main():
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -24,6 +25,8 @@ if __name__ == '__main__':
     add_loglevel_args(parser)
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
+    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logging.basicConfig()
 
     with open(args.structures_json) as f:
         structures_info = json.load(f)
@@ -50,3 +53,7 @@ if __name__ == '__main__':
 
     with open(args.output_file, 'w') as f:
         json.dump(structures_info, f)
+
+
+if __name__ == '__main__':
+    main()

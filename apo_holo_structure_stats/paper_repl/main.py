@@ -1,34 +1,27 @@
 import concurrent.futures
-import gzip
 import itertools
 import json
 import logging
-import os
-import time
-import warnings
 from datetime import datetime
 from difflib import SequenceMatcher
 from multiprocessing import Manager
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import List, Dict, Iterable
 
 import pandas as pd
-from Bio.PDB import PDBList, MMCIFParser
+from Bio import pairwise2
 
 from Bio.PDB.Chain import Chain
 from Bio.PDB.Model import Model
-from Bio.PDB.Polypeptide import Polypeptide
-from Bio.PDB.Structure import Structure
+from Bio.pairwise2 import format_alignment
 
 from apo_holo_structure_stats.core.dataclasses import ChainResidueData, DomainResidueData, ChainResidues, \
     DomainResidueMapping, DomainResidues
 from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
-from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
-from apo_holo_structure_stats.input.download import APIException, download_and_save_file
-from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId, BioResidueId
-from apo_holo_structure_stats.pipeline.run_analyses import chain_to_polypeptide, aligner, AnalysisHandler, \
+from apo_holo_structure_stats.input.download import APIException, parse_mmcif
+from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId
+from apo_holo_structure_stats.pipeline.run_analyses import AnalysisHandler, \
     JSONAnalysisSerializer, ConcurrentJSONAnalysisSerializer
 
 
@@ -57,16 +50,34 @@ def get_longest_common_polypeptide(
     # find longest common substring, works even with the 3-letter codes (sequence of strings), e.g. MET and FME will get treated differently
     apo_residue_codes = list(apo_seq.values())
     holo_residue_codes = list(holo_seq.values())
+    l1, l2 = len(apo_seq), len(holo_seq)
     i1, i2, length = SequenceMatcher(a=apo_residue_codes, b=holo_residue_codes, autojunk=False)\
-        .find_longest_match(0, len(apo_seq), 0, len(holo_seq))
+        .find_longest_match(0, l1, 0, l2)
 
-    logging.info(f'substring to original ratio: {length/min(len(apo_seq), len(holo_seq))}')
+    #todo tohle kontrolovat neni tolik informativni, me zajima, jestli tam je mismatch, ale muze se stat, ze jsou jenom
+    #  posunuty (s1 ma leading cast a s2 trailing),
+    # chci vyprintovat pocet mismatchu (zacatek a konec),
+    # jednoduše zjistim z i1, i2 (min z nich pocet mismatchu na zacatku)
+    # min (l1 - i1+length, l2 - i2 + length) pocet mismatchu na konci
+    substring_length_ratio = length / min(l1, l2)
+    logging.info(f'substring to original ratio: {substring_length_ratio}')
 
-    if length < MIN_SUBSTRING_LENGTH_RATIO * min(len(apo_seq), len(holo_seq)):
-        alignment = next(aligner.align(apo_seq, holo_seq))
+    leading_mismatches = min(i1, i2)
+    trailing_mismatches = min(l1 - (i1 + length), l2 - (i2 + length))
+    mismatches = leading_mismatches + trailing_mismatches
+
+    if mismatches > 0:
+        # alignment = next(aligner.align(apo_residue_codes, holo_residue_codes))
+        alignment = pairwise2.align.globalms(apo_residue_codes,holo_residue_codes,
+                                             1, 0,  # match, mismatch
+                                             -.5, -.1, # gap open, ext
+                                             penalize_end_gaps=False, gap_char=['-'], one_alignment_only=True)[0]
         logging.info('Sequences differ, alignment:')
-        logging.info(f'\n{alignment}')
-        logging.warning(f'does not meet the threshold for substring length')
+        # logging.info(f'\n{alignment}')
+        logging.info(f'\n{format_alignment(*alignment)}')
+        logging.warning(f'found {mismatches} mismatches ({leading_mismatches} substring leading, '
+                        f'{trailing_mismatches} trailing)')
+        logging.warning(f'substring length: {substring_length_ratio:.3f} < {MIN_SUBSTRING_LENGTH_RATIO}')
 
     # crop polypeptides to longest common substring
     apo_common_seq = dict(itertools.islice(apo_seq.items(), i1, i1+length))
@@ -346,28 +357,6 @@ def compare_chains(chain1: Chain, chain2: Chain,
 #     filename = download_structure(pdb_code)
 #     return MMCIFParser(QUIET=True).get_structure(pdb_code, filename)
 
-def find_or_download_structure(pdb_code: str) -> str:
-    """ Download structure file and return its path. Use existing file, if path already exists. """
-    filename = f'{pdb_code}.cif.gz'
-    url = f'https://files.rcsb.org/download/{filename}'
-
-    local_path = Path('pdb_structs') / filename
-
-    download_and_save_file(url, local_path)
-
-    logging.info(f'finished downloading structure {pdb_code}, to {local_path}')
-
-    return local_path
-
-
-def get_structure(pdb_code: str):
-    local_path = find_or_download_structure(pdb_code)
-
-    with gzip.open(local_path, 'rt', newline='', encoding='utf-8') as text_file:
-        mmcif_parser = MMCIFParser(QUIET=True)
-        return mmcif_parser.get_structure(pdb_code, text_file), \
-               BiopythonToMmcifResidueIds.create(mmcif_parser._mmcif_dict)  # reuse already parsed mmcifdict (albeit undocumented)
-
 
 def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
     if paper_chain_code == '_':
@@ -386,41 +375,43 @@ def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
     return model[paper_chain_code]
 
 
+def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_paper_chain_code: str, s2_paper_chain_code: str,
+                 serializer, domains_info: list):
+
+    logging.info(f'{s1_pdb_code}, {s2_pdb_code}')
+
+    try:
+        apo, (apo_residue_id_mappings, apo_poly_seqs) = parse_mmcif(s1_pdb_code)
+        holo, (holo_residue_id_mappings, holo_poly_seqs) = parse_mmcif(s2_pdb_code)
+
+        # get the first model (s[0]), (in x-ray structures there is probably a single model)
+        apo, apo_residue_id_mappings = map(lambda s: s[0], (apo, apo_residue_id_mappings))
+        holo, holo_residue_id_mappings = map(lambda s: s[0], (holo, holo_residue_id_mappings))
+
+        apo_chain = get_chain_by_chain_code(apo, s1_paper_chain_code)
+        holo_chain = get_chain_by_chain_code(holo, s2_paper_chain_code)
+
+        apo_mapping = apo_residue_id_mappings[apo_chain.id]
+        holo_mapping = holo_residue_id_mappings[holo_chain.id]
+
+        compare_chains(apo_chain, holo_chain,
+                       apo_mapping, holo_mapping,
+                       apo_poly_seqs[apo_mapping.entity_poly_id], holo_poly_seqs[holo_mapping.entity_poly_id],
+                       [get_rmsd],
+                       [get_ss],
+                       [get_rmsd],
+                       [get_ss],
+                       [get_hinge_angle],
+                       serializer,
+                       domains_info,
+                       )
+    except Exception as e:
+        logging.exception('compare chains failed with: ')
+
+
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
 
-    def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_paper_chain_code: str, s2_paper_chain_code: str,
-                     serializer, domains_info: list):
-
-        logging.info(f'{s1_pdb_code}, {s2_pdb_code}')
-
-        try:
-            apo, (apo_residue_id_mappings, apo_poly_seqs) = get_structure(s1_pdb_code)
-            holo, (holo_residue_id_mappings, holo_poly_seqs) = get_structure(s2_pdb_code)
-
-            # get the first model (s[0]), (in x-ray structures there is probably a single model)
-            apo, apo_residue_id_mappings = map(lambda s: s[0], (apo, apo_residue_id_mappings))
-            holo, holo_residue_id_mappings = map(lambda s: s[0], (holo, holo_residue_id_mappings))
-
-            apo_chain = get_chain_by_chain_code(apo, s1_paper_chain_code)
-            holo_chain = get_chain_by_chain_code(holo, s2_paper_chain_code)
-
-            apo_mapping = apo_residue_id_mappings[apo_chain.id]
-            holo_mapping = holo_residue_id_mappings[holo_chain.id]
-
-            compare_chains(apo_chain, holo_chain,
-                           apo_mapping, holo_mapping,
-                           apo_poly_seqs[apo_mapping.entity_poly_id], holo_poly_seqs[holo_mapping.entity_poly_id],
-                           [get_rmsd],
-                           [get_ss],
-                           [get_rmsd],
-                           [get_ss],
-                           [get_hinge_angle],
-                           serializer,
-                           domains_info,
-                           )
-        except Exception as e:
-            logging.exception('compare chains failed with: ')
 
     def run_apo_analyses():
         df = pd.read_csv('apo_holo.dat', delimiter=r'\s+', comment='#', header=None,
@@ -492,8 +483,8 @@ if __name__ == '__main__':
 
             logging.info(f'{row.apo[:4]}, {row.holo[:4]}')
 
-            apo = get_structure(row.apo[:4])
-            holo = get_structure(row.holo[:4])
+            apo = parse_mmcif(row.apo[:4])
+            holo = parse_mmcif(row.holo[:4])
 
             apo_chain = get_chain_by_chain_code(apo, row.apo[4:])
             holo_chain = get_chain_by_chain_code(holo, row.holo[4:])

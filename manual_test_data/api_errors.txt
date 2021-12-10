@@ -1,8 +1,8 @@
-1seo
-1r9e
+1seo - obsolete (nefunguje ani isoform api)
+1r9e - obsolete
 1uoj 1oko
 1w0j 1e1r
-2gdb
+2gdb - obsolete
 2b4h
 
 Poslal jsem jim všechny kromě 1oko, 1e1r a 2b4h

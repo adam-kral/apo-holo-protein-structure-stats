@@ -1,25 +1,32 @@
 #!/usr/bin/env python3
 import concurrent
+import dataclasses
 import itertools
 import json
 import os
 import warnings
 import logging
-from typing import Iterable, Any
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Iterable, Any, Set, List
 
+import pandas as pd
 from Bio.PDB import PDBList, MMCIFParser
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
 from Bio.PDB.Structure import Structure
 
 from apo_holo_structure_stats import project_logger
-from apo_holo_structure_stats.core.analyses import GetChains
+from apo_holo_structure_stats.core.analyses import GetChains, IsHolo
+from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
+from apo_holo_structure_stats.input.download import find_or_download_structure, parse_mmcif
 from apo_holo_structure_stats.pipeline.log import add_loglevel_args
 from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
 logger = logging.getLogger(__name__)
 
 
 def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains):
+    # todo neni s structure, ale model!
     """ decides if structure meets criteria for resolution, single-chainedness, etc. """
 
     resolution = s_header['resolution']
@@ -52,34 +59,6 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
     return True
 
 
-class CustomMMCIFParser(MMCIFParser):
-    """ Adapted BioPython code, just to get the pdb code (_entry.id) from the mmcif file """
-    def get_structure(self, file, structure_id=None):
-        """ Parses file contents and returns Structure object.
-
-        Note that parameter order is different to the BioPython's implementation (reversed, as structure_id is optional).
-
-        :param file: a file-like object or a file name
-        :param structure_id: if not specified, taken from mmcif (`_entry.id`)
-        :return: Bio.PDB.Structure
-        """
-
-        with warnings.catch_warnings():
-            if self.QUIET:
-                warnings.filterwarnings("ignore", category=PDBConstructionWarning)
-            self._mmcif_dict = MMCIF2Dict(file)
-
-            # begin change
-            if structure_id is None:
-                structure_id = self._mmcif_dict['_entry.id'][0].lower()
-            # end change
-
-            self._build_structure(structure_id)
-            self._structure_builder.set_header(self._get_header())
-
-        return self._structure_builder.get_structure()
-
-
 def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     """ Download the structure file and return its path. If the file was already downloaded, use that.
 
@@ -95,6 +74,11 @@ def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     # which also could be reset by a commandline argument)
 
 
+def download_structures(pdb_codes: List[str], workers: int) -> Iterable[str]:
+    with ThreadPoolExecutor(workers) as executor:
+        return executor.map(find_or_download_structure, pdb_codes)
+
+
 def parse_structure(structure_file, structure_code=None):
     # bipythoní parser neni ideální, využívá legacy PDB fieldy (ATOM/HETATM) a auth_seq_id (s fallbackem na label_seq_id == problém při mapování z pdbe api), auth_asym_id. Pokud by např.
     # nebyl u HETATM auth_seq_id (nepovinný ale, in about 100.0 % of entries), spadlo by to
@@ -105,31 +89,31 @@ def parse_structure(structure_file, structure_code=None):
     # Anyway, I need label_seq_id of Residue objects not only for correct mapping of pdbe API results (see above), but also to align whole
     # polypeptide sequence (even unobserved residues) to form valid chain (apo-holo) pairs.
 
-    # todo viz todo.txt, bude vracet ještě asi mapping
+    # todo stejny jako input.get_structure, refactor
 
     mmcif_parser = CustomMMCIFParser()
 
     # remove warnings like: PDBConstructionWarning: WARNING: Chain C is discontinuous at line
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        structure = mmcif_parser.get_structure(structure_file, structure_code)
+        structure = mmcif_parser.get_structure(structure_code, structure_file)
 
     mmcif_dict_undocumented = mmcif_parser._mmcif_dict
 
-    return structure, mmcif_parser.header, mmcif_dict_undocumented
+    return structure, mmcif_parser.header, mmcif_dict_undocumented, BiopythonToMmcifResidueIds.create(mmcif_parser._mmcif_dict)
 
 
-def parse_and_filter_group_of_structures(files: Iterable[Any]) -> Iterable[Structure]:
-    """
-
-    :param files: Iterable of filenames or file-like objects of mmCIF files
-    :return: structures passing the filter
-    """
-    structure__header__mmcif_dict = map(parse_structure, files)
-
-    structures = (s for s, s_header, mmcif_dict in filter(structure_meets_our_criteria, structure__header__mmcif_dict))
-
-    return structures
+# def parse_and_filter_group_of_structures(files: Iterable[Any]) -> Iterable[Structure]:
+#     """
+#
+#     :param files: Iterable of filenames or file-like objects of mmCIF files
+#     :return: structures passing the filter
+#     """
+#     structure__header__mmcif_dict = map(parse_structure, files)
+#
+#     structures = (s for s, s_header, mmcif_dict in filter(structure_meets_our_criteria, structure__header__mmcif_dict))
+#
+#     return structures
 
 
 def get_structure_filenames_in_dir(root_directory):
@@ -184,9 +168,43 @@ def get_test_input(groups=None):
     import itertools
     return ','.join(itertools.chain(*struct_code_groups))
 
-# todo logging level ArgumentParser default subclass?
 
-if __name__ == '__main__':
+def get_chains_metadata_for_structure(ordinal, filename: Path, chain_whitelist: Set[str] = None):
+    parsed, metadata = parse_mmcif(path=filename, with_extra=True)
+    s = parsed.structure
+
+    logger.info(f'processing {ordinal}-th structure {s.id} at {filename}')
+
+    # get the first model (s[0]), (in x-ray structures there is probably a single model)
+    s, residue_id_mappings = map(lambda s: s[0], (s, parsed.bio_to_mmcif_mappings))
+
+    get_chains_analyzer = GetChains()
+    is_holo_analyzer = IsHolo()
+
+    chains_metadata = []
+    if structure_meets_our_criteria(s, metadata.header, metadata.mmcif_dict, get_chains_analyzer):
+        for chain in get_chains_analyzer(s):
+            # skip chains not in `chain_whitelist`
+            if chain_whitelist and chain.id not in chain_whitelist:
+                continue
+
+            mapping_for_chain = residue_id_mappings[chain.id]
+
+            # skip sequences with micro-heterogeneity
+            if mapping_for_chain.entity_poly_id in parsed.poly_with_microhet:
+                logger.info(f'skipping {s.get_parent().id} {chain.id}. Microheterogeneity in sequence')
+                continue
+
+            # get chain metadata
+            sequence = list(parsed.poly_seqs[mapping_for_chain.entity_poly_id].values())
+            is_holo = is_holo_analyzer(s, chain)
+            chains_metadata.append({'pdb_code': s.id, 'path': str(filename), 'chain_id': chain.id,
+                                    'is_holo': is_holo, 'sequence': sequence})
+
+    return chains_metadata
+
+
+def main():
     # chce, aby se tomu mohly dodat fily přes directory
     # nebo se tomu dá comma-delimited list of pdb_codes
 
@@ -194,58 +212,79 @@ if __name__ == '__main__':
     import sys
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--is-directory', action='store_true',
-                        help='now pdb_codes_or_directory is a path to a directory with mmcif files. Whole tree structure is inspected, all files are assumed to be mmcifs.')
     parser.add_argument('--workers', type=int, default=1, help='number of subprocesses')
-    parser.add_argument('pdb_codes_or_directory', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
+    parser.add_argument('--download_threads', type=int, default=1, help='number of threads')
+    parser.add_argument('--all_chains', default=False, action='store_true')
+
+    # parser.add_argument('--pdb_dir', type=str, action='store_true',
+    #                     help='now pdb_codes_or_directory is a path to a directory with mmcif files. Whole tree structure is inspected, all files are assumed to be mmcifs.')
+    parser.add_argument('-i', '--input_type', default='json', choices=['json', 'pdb_dir', 'pdb_codes'], help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
+    parser.add_argument('input', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
     parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
     add_loglevel_args(parser)
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
+    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logging.basicConfig()
+
+    chain_whitelists = None
 
     # translate input into structure filenames
-    if args.is_directory:
-        directory = args.pdb_codes_or_directory
+    if args.input_type == 'pdb_dir':
+        directory = args.input
 
         if not os.path.isdir(directory):
             logger.error(f'Directory {directory} does not exist')
             sys.exit(1)
 
         structure_filenames = get_structure_filenames_in_dir(directory)
-    else:
-        pdb_codes = args.pdb_codes_or_directory.strip().split(',')
+    elif args.input_type == 'pdb_codes':
+        pdb_codes = args.input.strip().split(',')
 
         if not pdb_codes:
             logger.error('No pdb codes specified')
             sys.exit(1)
 
-        structure_filenames = (retrieve_structure_file_from_pdb(pdb_code) for pdb_code in pdb_codes)  # todo nahradit tim, co nepouziva pdblist
+        structure_filenames = download_structures(pdb_codes, args.download_threads)
+        # structure_filenames = (retrieve_structure_file_from_pdb(pdb_code) for pdb_code in pdb_codes)
+    elif args.input_type == 'json':
+        # todo to accept just list of pdb_codes, add column chain_id? And won't that break chain_whitelists (want empty set)
+        chains = pd.read_json(args.input)[['pdb_code', 'chain_id']]
+        pdb_codes = chains['pdb_code'].unique().tolist()
+        chain_whitelists = chains.groupby('pdb_code')['chain_id'].apply(lambda series: set(series.to_list()))
+        structure_filenames = download_structures(pdb_codes, args.download_threads)
+    else:
+        raise ValueError('Unknown input type argument')
 
     structure_filenames = list(structure_filenames)
     logger.info(f'total structures to process: {len(structure_filenames)}')
 
     # load and filter structures
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as executor:
-        def get_chains_metadata_for_structure(ordinal, filename):
-            s, s_header, mmcif_dict = parse_structure(filename)
-            logger.info(f'processing {ordinal}-th structure {s.id} at {filename}')
+        extra_args = [chain_whitelists] if not args.all_chains and chain_whitelists is not None else []
+        # map to list of futures, so I can handle exceptions (with exeutor.map whole iterator stops in that case)
+        chain_metadata_futures = list(map(
+            lambda *args: executor.submit(get_chains_metadata_for_structure, *args),
+            itertools.count(), structure_filenames, *extra_args,
+        ))
 
-            get_chains_analyzer = GetChains()
+    # iterate over the futures and flatten the chain metadata
+    # result of a single task is a list of chain metadata for each structure, flatten tasks results into a list of chains
+    chains_of_structures_that_passed = []
+    for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
+        try:
+            chain_metadata = chains_future.result()
+        except Exception:
+            logger.exception(f'Exception when a task for a structure `{struct_filename}` was executed.')
+            continue
 
-            chains_metadata = []
-            if structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains_analyzer):
-                # todo if more chains, for a structure, cache (problem with multithreading though)
-                for chain in get_chains_analyzer(s[0]):
-                    chains_metadata.append({'pdb_code': s.id, 'path': filename, 'chain_id': chain.id})  # maybe full path name?
-
-            return chains_metadata
-
-        # todo if more chains, for a structure, cache (problem with multithreading though)
-        chains_of_structures_that_passed = executor.map(get_chains_metadata_for_structure, itertools.count(), structure_filenames)
-
-    # flatten the chain metadata
-    chains_of_structures_that_passed = [chain_meta for s_chains in chains_of_structures_that_passed for chain_meta in s_chains]
+        # flatten
+        chains_of_structures_that_passed.extend(chain_metadata)
 
     with open(args.output_file, 'w') as f:
         json.dump(chains_of_structures_that_passed, f)
+
+
+if __name__ == '__main__':
+    main()

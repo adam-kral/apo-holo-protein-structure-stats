@@ -108,7 +108,7 @@ class SetOfResidueData(Generic[TResidueData]):
 
 @dataclass(frozen=True, eq=False)
 class CombinedSetOfResidueData(SetOfResidueData[TResidueData]):
-    combined_id: Tuple[Any]
+    combined_id: Tuple[Any, ...]
 
     @classmethod
     def create_from_groups_of_residues(cls, *groups_of_residues: SetOfResidueData[TResidueData]):

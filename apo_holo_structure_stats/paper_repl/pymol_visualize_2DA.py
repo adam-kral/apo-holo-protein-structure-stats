@@ -14,7 +14,8 @@ from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analysesinstances import get_rotation_matrix, get_centroid
 from apo_holo_structure_stats.core.dataclasses import SetOfResidues, DomainResidueMapping, DomainResidues
 from apo_holo_structure_stats.paper_repl.json_deserialize import unfold_tuple_to_columns, tuple_it
-from apo_holo_structure_stats.paper_repl.main import get_structure, get_longest_common_polypeptide
+from apo_holo_structure_stats.paper_repl.main import get_longest_common_polypeptide
+from apo_holo_structure_stats.input.download import parse_mmcif
 
 OUTPUT_DIR = 'output'
 logger = logging.getLogger(__name__)
@@ -66,15 +67,17 @@ def visualize_2DA(apo_2DA, holo_2DA, paper_apo_spans):
      """
 
     # load the structure from file
-    apo, (apo_residue_id_mappings, apo_poly_seqs) = get_structure(apo_2DA.pdb_code)
-    holo, (holo_residue_id_mappings, holo_poly_seqs) = get_structure(holo_2DA.pdb_code)
+    a = parse_mmcif(apo_2DA.pdb_code)
+    h = parse_mmcif(holo_2DA.pdb_code)
+    apo = a.structure
+    holo = h.structure
 
     ###### vlozene z mainu
-    apo_mapping = apo_residue_id_mappings[0][apo_2DA.d1.chain_id]
-    holo_mapping = holo_residue_id_mappings[0][holo_2DA.d1.chain_id]
+    apo_mapping = a.bio_to_mmcif_mappings[0][apo_2DA.d1.chain_id]
+    holo_mapping = h.bio_to_mmcif_mappings[0][holo_2DA.d1.chain_id]
 
     # crop polypeptides to longest common substring
-    c1_common_seq, c2_common_seq = get_longest_common_polypeptide(apo_poly_seqs[apo_mapping.entity_poly_id], holo_poly_seqs[holo_mapping.entity_poly_id])
+    c1_common_seq, c2_common_seq = get_longest_common_polypeptide(a.poly_seqs[apo_mapping.entity_poly_id], h.poly_seqs[holo_mapping.entity_poly_id])
     c1_label_seq_ids = list(c1_common_seq.keys())
     c2_label_seq_ids = list(c2_common_seq.keys())
 
@@ -107,11 +110,11 @@ def visualize_2DA(apo_2DA, holo_2DA, paper_apo_spans):
         # translate spans to label seq ids and return a domain object
         segment_beginnings = list(map(residue_id_mapping.find_label_seq, np.array(paper_spans)[:, 0].tolist()))
         segment_ends = list(map(residue_id_mapping.find_label_seq, np.array(paper_spans)[:, 1].tolist()))
-        logging.debug(segment_beginnings)
-        logging.debug(segment_ends)
+        logger.debug(segment_beginnings)
+        logger.debug(segment_ends)
         return DomainResidueMapping(d.domain_id, d.chain_id, segment_beginnings, segment_ends)
 
-    logging.debug(paper_apo_spans)  # [d1, d2] where d1 [(), (),...]
+    logger.debug(paper_apo_spans)  # [d1, d2] where d1 [(), (),...]
     paper_apo_drm1 = get_paper_domain(apo_2DA.d1, paper_apo_spans[0], apo_mapping)
     paper_apo_drm2 = get_paper_domain(apo_2DA.d2, paper_apo_spans[1], apo_mapping)
     label_seq_id_offset = c2_label_seq_ids[0] - c1_label_seq_ids[0]
@@ -214,6 +217,8 @@ def main(ah_two_domain_arrangements, analyzed_domains, paper_spans):
 
 if __name__ == '__main__':
     project_logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logging.basicConfig()
 
     ah_two_domain_arrangements = [
         # [(('1vr6', 'A', '1vr6A01'), ('1vr6', 'A', '1vr6A02')), (('1rzm', 'A', '1vr6A01'), ('1rzm', 'A', '1vr6A02'))],

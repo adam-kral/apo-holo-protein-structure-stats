@@ -4,6 +4,7 @@ import json
 import logging
 import queue
 from multiprocessing import Queue, Manager
+from multiprocessing.managers import SyncManager
 from typing import List, TypeVar, Generic
 
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
@@ -48,13 +49,13 @@ class JSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
 
     def dump_data(self):
         with open(self.output_file_name, 'w') as f:
-            json.dump(self.data, f)
+            json.dump(self.data, f, cls=CustomJSONEncoder)
 
 
 class ConcurrentJSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
     """ Works with multiprocessing """
     # json na to neni uplne vhodny, neda se dumpovat nebo nacitat inkrementalně, jako napr. csvcko -- je treba mit vzdy v pameti celou reprezentaci (vsechny vysledky, nez se to dumpne)
-    def __init__(self, output_file_name, multiprocessing_manager: Manager):
+    def __init__(self, output_file_name, multiprocessing_manager: SyncManager):
         self.output_file_name = output_file_name
         # self.queue = Queue()  # or I could use Manager.list(), but python docs say that queue should be preferred to
         self.queue = multiprocessing_manager.Queue()
@@ -284,7 +285,7 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
             h_h_domain_pair_analyzers
 
 
-if __name__ == '__main__':
+def main():
     # runs for all isoforms by default
     # optionally specify a single isoform with --isoform
 
@@ -298,6 +299,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
+    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logging.basicConfig()
 
     with open(args.structures_json) as f:
         structures_info = json.load(f)
@@ -333,3 +336,7 @@ if __name__ == '__main__':
         run_analyses_for_isoform_group(apo_codes, holo_codes, structure_getter, serializer)
 
         serializer.dump_data()
+
+
+if __name__ == '__main__':
+    main()
