@@ -260,7 +260,7 @@ def get_domains(struct_code: str):
     return r.json()[struct_code]['CATH-B']
 
 
-def find_or_download_structure(pdb_code: str) -> Path:
+def find_or_download_structure(pdb_code: str, allow_download=True) -> Path:
     """ Download structure file and return its path. Use existing file, if path already exists. """
     filename = f'{pdb_code}.cif.gz'
     url = f'https://files.rcsb.org/download/{filename}'
@@ -271,12 +271,14 @@ def find_or_download_structure(pdb_code: str) -> Path:
     # else download it
     if os.path.exists(local_path):
         logger.info(f'using cached structure {pdb_code} at {local_path}')
-    else:
+    elif allow_download:
         # create dir structure if does not exist
         settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
         download_and_save_file(url, local_path)
         logger.info(f'finished downloading structure {pdb_code} to {local_path}')
+    else:
+        raise ValueError('Structure not found on disk and download not allowed')
 
     return local_path
 

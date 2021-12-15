@@ -272,11 +272,18 @@ def compare_chains(chain1: Chain, chain2: Chain,
     # domains_info.append({'type': 'analyzed_domain_count', 'result': len(c2_domains__residues), 'pdb_code': s2_pdb_code, 'chain_id': chain2.id})
 
     # todo to tam taky neni v argumentech, ale harcoded.., to je ten muj fix...
+    # todo tohle totiž neni párový porovnání.., ale 'jednotkový'
+    #  - stejně jako get domains, get_ss (nikoliv compare ss), vlastne i sequence atp
+    #  - cachovat surface area teda nedava smysl, nacte se proste z predvypocitanyho, jako normalne
+    #  - nebo, proste jenom tyhle structure-level veci ma smysl "cachovat" resp nepocitat tady, pro kazdej par, ale
+    #  - nacitat z filu/unpicklovat - to asi ne, mít serialize/deserialize (stejne chci to mit jako citelny vystup). 4
+    #  -  A pak to klidně všechno pro rychlost deserializovat do pameti...
+    # no, tak to abych se těšil zas na json/pandas-merge hell.. Vsude merge.. Vsude dupe cols/delat index (ten pak ale nekdy zas potrebujes v cols...)
+
     for chain_domains in (c1_domains__residues, c2_domains__residues):
         for d1, d2 in itertools.combinations(chain_domains, 2):
             serializer_or_analysis_handler.handle('2DA', get_interdomain_surface, get_interdomain_surface(d1, d2),
                                                   d1, d2)
-
 
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         for a in comparators__domains__residues_param:

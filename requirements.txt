@@ -6,3 +6,5 @@ numpy==1.19.4
 freesasa==2.1.0
 ipykernel==6.2.0
 seaborn==0.11.2
+more_itertools
+# todo for test - scipy (not required though, and what about pypy)

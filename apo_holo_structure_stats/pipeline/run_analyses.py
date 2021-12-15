@@ -3,12 +3,10 @@ import itertools
 import json
 import logging
 import queue
-from multiprocessing import Queue, Manager
 from multiprocessing.managers import SyncManager
 from typing import List, TypeVar, Generic
 
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
-from Bio.PDB.Chain import Chain
 
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, CompareSecondaryStructure, \
@@ -16,11 +14,9 @@ from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetCha
     GetCAlphaCoords, GetCentroid, GetCenteredCAlphaCoords, GetHingeAngle, GetRotationMatrix
 from apo_holo_structure_stats.core.dataclasses import ChainResidueData, ChainResidues, DomainResidues
 from apo_holo_structure_stats.core.biopython_to_mmcif import ResidueId
-from apo_holo_structure_stats.core.base_analyses import Analyzer, SerializableCachedAnalyzer, SerializableAnalyzer
+from apo_holo_structure_stats.core.base_analyses import SerializableAnalyzer
 from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
-from apo_holo_structure_stats.pipeline.log import add_loglevel_args
-
-from apo_holo_structure_stats.core.analysesinstances import *
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
 
 TAnalyzer = TypeVar('TAnalyzer')
 
@@ -128,12 +124,9 @@ def sequences_same(ch1, ch2):
         alignment = next(aligner.align(seq1, seq2))
         logging.info('Sequences differ, alignment:')
         logging.info(alignment)
-        import math
         return False
 
     return True
-
-
 
 
 

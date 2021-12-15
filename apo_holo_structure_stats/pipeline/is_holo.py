@@ -9,7 +9,7 @@ from typing import Dict
 from Bio.PDB import MMCIFParser
 
 from apo_holo_structure_stats import project_logger
-from apo_holo_structure_stats.pipeline.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
 from apo_holo_structure_stats.core.analyses import IsHolo
 
 logger = logging.getLogger(__name__)

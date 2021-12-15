@@ -7,7 +7,7 @@ import pandas as pd
 
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.input.uniprot_groups import get_basic_uniprot_groups__df
-from apo_holo_structure_stats.pipeline.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
 
 logger = logging.getLogger(__name__)
 

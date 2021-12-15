@@ -1,26 +1,24 @@
 #!/usr/bin/env python3
 import concurrent
-import dataclasses
 import itertools
 import json
 import os
 import warnings
 import logging
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from pathlib import Path
-from typing import Iterable, Any, Set, List
+from typing import Set
 
 import pandas as pd
-from Bio.PDB import PDBList, MMCIFParser
-from Bio.PDB.MMCIF2Dict import MMCIF2Dict
-from Bio.PDB.PDBExceptions import PDBConstructionWarning
-from Bio.PDB.Structure import Structure
+from Bio.PDB import PDBList
 
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analyses import GetChains, IsHolo
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
 from apo_holo_structure_stats.input.download import find_or_download_structure, parse_mmcif
-from apo_holo_structure_stats.pipeline.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.download_structures import download_structures
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
 from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
 logger = logging.getLogger(__name__)
 
@@ -30,10 +28,11 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
     """ decides if structure meets criteria for resolution, single-chainedness, etc. """
 
     resolution = s_header['resolution']
+    s_id = s.get_parent().id
 
     # skip low resolution
     if resolution and resolution > MIN_STRUCTURE_RESOLUTION:
-        logger.info(f'skipping structure {s.id}: resolution ({resolution}) does not meet the limit of {MIN_STRUCTURE_RESOLUTION}')
+        logger.info(f'skipping structure {s_id}: resolution ({resolution}) does not meet the limit of {MIN_STRUCTURE_RESOLUTION}')
         return False
 
     # skip non-xray. Done in the original paper. Try without it. Or then, specify in output dataset which experimental
@@ -43,17 +42,17 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
     # skip DNA/RNA complexes
     try:
         if any(poly_type in mmcif_dict['_entity_poly.type'] for poly_type in ('polydeoxyribonucleotide', 'polyribonucleotide')):
-            logger.info(f'skipping structure {s.id}: no interest in structures with RNA or DNA chains')
+            logger.info(f'skipping structure {s_id}: no interest in structures with RNA or DNA chains')
             return False
     except KeyError:
         # _entity_poly.type:: Required in PDB entries no; Used in current PDB entries Yes, in about 100.0 % of entries
         # could also do the check manually (i.e. exists a chain with >= 2 nucleotides, but I wouldn't know for sure if they form a polymer)
         #       in the paper they allow only single nucleotides
-        logger.warning(f'could not determine polymers of structure {s.id}, structure allowed, might contain RNA or DNA, though')
+        logger.warning(f'could not determine polymers of structure {s_id}, structure allowed, might contain RNA or DNA, though')
 
     # skip structure with too short chains
     if len(get_chains(s)) < 1:
-        logger.info(f'skipping structure {s.id}: not enough chains')
+        logger.info(f'skipping structure {s_id}: not enough chains')
         return False
 
     return True
@@ -72,11 +71,6 @@ def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     # (mmCif is the default for file_format, but implicit = warning, this way no warning)
     # verbose: BioPython prints to stdout, determine verbose by root logger level (I could also have a settings variable
     # which also could be reset by a commandline argument)
-
-
-def download_structures(pdb_codes: List[str], workers: int) -> Iterable[str]:
-    with ThreadPoolExecutor(workers) as executor:
-        return executor.map(find_or_download_structure, pdb_codes)
 
 
 def parse_structure(structure_file, structure_code=None):
@@ -169,8 +163,9 @@ def get_test_input(groups=None):
     return ','.join(itertools.chain(*struct_code_groups))
 
 
-def get_chains_metadata_for_structure(ordinal, filename: Path, chain_whitelist: Set[str] = None):
-    parsed, metadata = parse_mmcif(path=filename, with_extra=True)
+def get_chains_metadata_for_structure(ordinal, filename: Path, input_chain_metadata: pd.DataFrame = None,
+                                      chain_whitelist: Set[str] = None):
+    parsed, s_metadata = parse_mmcif(path=filename, with_extra=True)
     s = parsed.structure
 
     logger.info(f'processing {ordinal}-th structure {s.id} at {filename}')
@@ -181,8 +176,8 @@ def get_chains_metadata_for_structure(ordinal, filename: Path, chain_whitelist: 
     get_chains_analyzer = GetChains()
     is_holo_analyzer = IsHolo()
 
-    chains_metadata = []
-    if structure_meets_our_criteria(s, metadata.header, metadata.mmcif_dict, get_chains_analyzer):
+    chain_metadata = []
+    if structure_meets_our_criteria(s, s_metadata.header, s_metadata.mmcif_dict, get_chains_analyzer):
         for chain in get_chains_analyzer(s):
             # skip chains not in `chain_whitelist`
             if chain_whitelist and chain.id not in chain_whitelist:
@@ -198,10 +193,17 @@ def get_chains_metadata_for_structure(ordinal, filename: Path, chain_whitelist: 
             # get chain metadata
             sequence = list(parsed.poly_seqs[mapping_for_chain.entity_poly_id].values())
             is_holo = is_holo_analyzer(s, chain)
-            chains_metadata.append({'pdb_code': s.id, 'path': str(filename), 'chain_id': chain.id,
-                                    'is_holo': is_holo, 'sequence': sequence})
 
-    return chains_metadata
+            metadata = input_chain_metadata[chain.id] if input_chain_metadata else {}  # could fail, if chain.id not in chain_metadata, but I don't see it happening
+            metadata.update({'pdb_code': s.get_parent().id, 'path': str(filename), 'chain_id': chain.id,
+                             'is_holo': is_holo, 'sequence': sequence})
+            chain_metadata.append(metadata)
+
+    return chain_metadata
+
+
+def find_structures(pdb_codes):
+    return map(lambda c: find_or_download_structure(c, allow_download=False), pdb_codes)
 
 
 def main():
@@ -215,6 +217,7 @@ def main():
     parser.add_argument('--workers', type=int, default=1, help='number of subprocesses')
     parser.add_argument('--download_threads', type=int, default=1, help='number of threads')
     parser.add_argument('--all_chains', default=False, action='store_true')
+    parser.add_argument('--disallow_download', default=False, action='store_true')
 
     # parser.add_argument('--pdb_dir', type=str, action='store_true',
     #                     help='now pdb_codes_or_directory is a path to a directory with mmcif files. Whole tree structure is inspected, all files are assumed to be mmcifs.')
@@ -227,6 +230,8 @@ def main():
     project_logger.setLevel(args.loglevel)
     logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
     logging.basicConfig()
+
+    assert args.input_type == 'json'  # todo temporary hack (so that contains uniprotkb_id metadata)
 
     chain_whitelists = None
 
@@ -246,14 +251,27 @@ def main():
             logger.error('No pdb codes specified')
             sys.exit(1)
 
-        structure_filenames = download_structures(pdb_codes, args.download_threads)
+        if args.disallow_download:
+            structure_filenames = find_structures(pdb_codes)
+        else:
+            structure_filenames = download_structures(pdb_codes, args.download_threads)
         # structure_filenames = (retrieve_structure_file_from_pdb(pdb_code) for pdb_code in pdb_codes)
     elif args.input_type == 'json':
         # todo to accept just list of pdb_codes, add column chain_id? And won't that break chain_whitelists (want empty set)
-        chains = pd.read_json(args.input)[['pdb_code', 'chain_id']]
-        pdb_codes = chains['pdb_code'].unique().tolist()
-        chain_whitelists = chains.groupby('pdb_code')['chain_id'].apply(lambda series: set(series.to_list()))
-        structure_filenames = download_structures(pdb_codes, args.download_threads)
+        chains = pd.read_json(args.input)
+        # chains = chains.iloc[:100]  # todo test hack
+        # chimeric - more UNP to one chain (or could be in-vivo chimeric?
+        # skip them all, (using one unp does not make sense) Or put it them with both unps?
+        chains = chains.drop_duplicates(subset=['pdb_code', 'chain_id'], keep=False)
+        chains_gb_pdb_code = chains.groupby('pdb_code')
+
+        metadata_gb_structure = chains_gb_pdb_code.apply(lambda df: df.set_index('chain_id').to_dict(orient='index'))
+        chain_whitelists = chains_gb_pdb_code['chain_id'].apply(lambda series: set(series.to_list()))
+        pdb_codes = chains_gb_pdb_code.indices.keys()
+        if args.disallow_download:
+            structure_filenames = find_structures(pdb_codes)
+        else:
+            structure_filenames = download_structures(pdb_codes, args.download_threads)
     else:
         raise ValueError('Unknown input type argument')
 
@@ -261,26 +279,50 @@ def main():
     logger.info(f'total structures to process: {len(structure_filenames)}')
 
     # load and filter structures
-    with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as executor:
-        extra_args = [chain_whitelists] if not args.all_chains and chain_whitelists is not None else []
-        # map to list of futures, so I can handle exceptions (with exeutor.map whole iterator stops in that case)
-        chain_metadata_futures = list(map(
-            lambda *args: executor.submit(get_chains_metadata_for_structure, *args),
-            itertools.count(), structure_filenames, *extra_args,
-        ))
+    extra_args = [metadata_gb_structure]
+    if not args.all_chains and chain_whitelists is not None:
+        extra_args.append(chain_whitelists)
+
+    with ProcessPoolExecutor(max_workers=args.workers) as executor:
+        chain_metadata_futures = submit_tasks(
+            executor, 40 * args.workers,
+            get_chains_metadata_for_structure, itertools.count(), structure_filenames, *extra_args
+        )
+
+        # iterate over the futures and flatten the chain metadata
+        # result of a single task is a list of chain metadata for each structure, flatten tasks results into a list of chains
+        chains_of_structures_that_passed = []
+        for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
+            try:
+                chain_metadata = chains_future.result()
+            except Exception:
+                logger.exception(f'Exception when a task for a structure `{struct_filename}` was executed.')
+                continue
+
+            # flatten
+            chains_of_structures_that_passed.extend(chain_metadata)
+
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as executor:
+    #
+    #
+    #     # map to list of futures, so I can handle exceptions (with exeutor.map whole iterator stops in that case)
+    #     chain_metadata_futures = list(map(
+    #         lambda *args: executor.submit(get_chains_metadata_for_structure, *args),
+    #         itertools.count(), structure_filenames, *extra_args,
+    #     ))
 
     # iterate over the futures and flatten the chain metadata
     # result of a single task is a list of chain metadata for each structure, flatten tasks results into a list of chains
-    chains_of_structures_that_passed = []
-    for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
-        try:
-            chain_metadata = chains_future.result()
-        except Exception:
-            logger.exception(f'Exception when a task for a structure `{struct_filename}` was executed.')
-            continue
-
-        # flatten
-        chains_of_structures_that_passed.extend(chain_metadata)
+    # chains_of_structures_that_passed = []
+    # for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
+    #     try:
+    #         chain_metadata = chains_future.result()
+    #     except Exception:
+    #         logger.exception(f'Exception when a task for a structure `{struct_filename}` was executed.')
+    #         continue
+    #
+    #     # flatten
+    #     chains_of_structures_that_passed.extend(chain_metadata)
 
     with open(args.output_file, 'w') as f:
         json.dump(chains_of_structures_that_passed, f)

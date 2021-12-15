@@ -68,7 +68,7 @@ qsub -S python3 zkusit?
 
 
 class ShellTemplate(string.Template):
-    delimiter = '><>'
+    delimiter = '<><'
 
 
 def get_shell_template():
