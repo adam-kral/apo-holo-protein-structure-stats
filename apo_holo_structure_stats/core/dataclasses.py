@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List, Dict, TypeVar, Generic, Iterator, Iterable, Tuple, Any
 
+import numpy as np
 from Bio.PDB.Chain import Chain
 from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
@@ -195,6 +196,77 @@ class DomainResidueMapping:
 
     def get_spans(self):
         return list(zip(self.segment_beginnings, self.segment_ends))
+
+
+# todo vlastne byl problem, ze jsem nekdy dostal domén víc, takže jsem je nevěděl, jak namapovat mezi sebou
+# uvažoval jsem nějaký podrozdělování domén na víc a tak podobně, to je blbost
+#  - přeskupovat segmenty do nových domén je blbost
+# Myslim, že stačí pro každou doménu najít tu s největším overlappem (největší součet velikostí merged_segmentů)
+# což je n^2, ale kolik je max domén? To zatim zjistit nemůžu, ale asi moc ne, když max len lcs je ...
+# navíc vyberu jen takový SEGMENTY, co maj překryv s lcs, abych to urychlil?
+# max lcs len je 4620 a median 127
+# jako mohl bych ty domeny nejak seradit, ale oni obecne muzou skakat přes sebe, tak nevim, jestli je něco rychlejšího
+# než D^2?
+# v čase n*D můžeš říct na kterých pozicích které domény
+# domény jsou disjunktní (hopefully), to by mohlo pomoct ve složitosti
+#   tzn. ke každý pozici budu mít max 1 apo a 1 holo
+#   - to mi dá vlastně possible páry
+#   - bral bych jaccard similarity (IoU)
+#   - jasne no, párů může být O(min(D^2, N))
+#   jejich ohodnocení zvládnu naivním algoritmem v čase Theta(D^2 * mean_seg_count)
+#    - a lepším algoritmem O(mean_seg_count * D), kdy spočítám velikosti domén + při passu přes N (může být segment-level, nikoliv res-level) spočítám
+#    - ten lepší by měl list segmentů v apo, pak holo plus domén původu pro každý ten segment
+#           - pak by mergoval segmenty úplně stejně, jako v merge_segments (+ poznamenávat, z kt. 2 domén jsou)
+#           - pak projít ty merged_segmenty a do dictu (d1, d2) -> int přičítat vždy velikost segmentu těch dvou domén
+#           - nakonec pro všechny keys (d1, d2) toho dictu spočítat jaccard? similarity.
+
+def merge_segments(segments1, segments2):
+    """ For two arrays of segments, do an AND-like operation. That is return segments that describe indices that are
+    in both input segments.
+
+    :param segments1: array-like; list of tuples (start/end) or np.ndarray of shape (n_segments, 2)
+    :param segments2: same as above
+    :return: np.ndarray with shape (n_result se
+    """
+    segments1, segments2 = map(np.asarray, (segments1, segments2))
+    common_segments = []
+
+    i = j = 0
+    while i < len(segments1) and j < len(segments2):
+        s1_beg, s2_beg = segments1[i, 0], segments2[j, 0]
+        s1_end, s2_end = segments1[i, 1], segments2[j, 1]
+
+        maybe_seg_beg = max(s1_beg, s2_beg)
+        maybe_seg_end = min(s1_end, s2_end)
+
+        if maybe_seg_beg <= maybe_seg_end:
+            common_segments.append((maybe_seg_beg, maybe_seg_end))
+
+        # if a segment was fully consumed, move to next one
+        if s1_end == maybe_seg_end:
+            i += 1
+        if s2_end == maybe_seg_end:
+            j += 1
+
+    return np.array(common_segments)
+
+
+def merge_domains(d1: DomainResidueMapping, d2: DomainResidueMapping, label_seq_offset: int):
+    d1_segments = np.stack([d1.segment_beginnings, d1.segment_ends], axis=-1)
+    d2_segments = np.stack([d2.segment_beginnings, d2.segment_ends], axis=-1) - label_seq_offset
+
+    common_segments = merge_segments(d1_segments, d2_segments)
+
+    common_segment_begs, common_segment_ends = np.array(common_segments).T
+
+    new_d1 = DomainResidueMapping(d1.domain_id, d1.chain_id,
+                                  common_segment_begs.tolist(),
+                                  common_segment_ends.tolist())
+
+    new_d2 = DomainResidueMapping(d2.domain_id, d2.chain_id,
+                                  (common_segment_begs + label_seq_offset).tolist(),
+                                  (common_segment_ends + label_seq_offset).tolist())
+    return new_d1, new_d2
 
 
 class DomainResidues(DomainResidueData[Residue]):

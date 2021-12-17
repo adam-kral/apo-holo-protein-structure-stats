@@ -6,7 +6,7 @@ from datetime import datetime
 from difflib import SequenceMatcher
 from multiprocessing import Manager
 from pathlib import Path
-from typing import List, Dict, Iterable
+from typing import List, Dict
 
 import pandas as pd
 from Bio import pairwise2
@@ -21,9 +21,8 @@ from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
 from apo_holo_structure_stats.input.download import APIException, parse_mmcif
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds, ResidueId
-from apo_holo_structure_stats.pipeline.run_analyses import AnalysisHandler, \
-    JSONAnalysisSerializer, ConcurrentJSONAnalysisSerializer
-
+from apo_holo_structure_stats.pipeline.run_analyses import AnalysisHandler, JSONAnalysisSerializer, \
+    ConcurrentJSONAnalysisSerializer, get_observed_residues
 
 OUTPUT_DIR = 'output'
 
@@ -86,32 +85,6 @@ def get_longest_common_polypeptide(
     # return the sequences (values will be same, but not the keys, label_seq_ids, they might be offset, or depending on its definition
     # (which I find ambiguous), in a more complicated relation)
     return apo_common_seq, holo_common_seq
-
-
-def get_observed_residues(
-        chain1: Chain, c1_label_seq_ids: Iterable[int], c1_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
-        chain2: Chain, c2_label_seq_ids: Iterable[int], c2_residue_mapping: BiopythonToMmcifResidueIds.Mapping):
-
-    c1_residues = []
-    c2_residues = []
-    c1_residue_ids = []
-    c2_residue_ids = []
-
-    for r1_seq_id, r2_seq_id in zip(c1_label_seq_ids, c2_label_seq_ids):
-        try:
-            r1_bio_id = c1_residue_mapping.to_bio(r1_seq_id)
-            r2_bio_id = c2_residue_mapping.to_bio(r2_seq_id)
-        except KeyError:
-            # a residue unobserved (wasn't in atom list) -> skip the whole pair
-            continue
-
-        c1_residues.append(chain1[r1_bio_id])
-        c2_residues.append(chain2[r2_bio_id])
-
-        c1_residue_ids.append(r1_seq_id)
-        c2_residue_ids.append(r2_seq_id)
-
-    return c1_residues, c1_residue_ids, c2_residues, c2_residue_ids
 
 
 MIN_SUBSTRING_LENGTH_RATIO = 0.90

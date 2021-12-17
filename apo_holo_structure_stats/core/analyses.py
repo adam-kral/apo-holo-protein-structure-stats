@@ -287,7 +287,7 @@ class GetRotationMatrix(CachedAnalyzer):
         return rmsd.kabsch(P, Q)
 
 
-class GetRMSD(SerializableCachedAnalyzer):
+class GetRMSD(SerializableAnalyzer):
     def run(self, residues1: SetOfResidues, residues2: SetOfResidues, get_centered_c_alpha_coords: GetCenteredCAlphaCoords, get_rotation_matrix: GetRotationMatrix) -> float:
         P, Q = map(get_centered_c_alpha_coords, (residues1, residues2))
 
@@ -296,7 +296,7 @@ class GetRMSD(SerializableCachedAnalyzer):
         return rmsd.rmsd(P, Q)
 
 
-class GetHingeAngle(SerializableCachedAnalyzer):
+class GetHingeAngle(SerializableAnalyzer):
     """ Computes the angle of a two-domain movement. Provide two domains from one structure and the corresponding ones from the second structure.
 
     Uses first domain as a reference and computes an angle by which the second domain tilted to get from 1st structure -> 2nd structure.
