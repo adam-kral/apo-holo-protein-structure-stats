@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Tuple, List
 
 import more_itertools
+import numpy as np
 import pandas as pd
 from Bio import pairwise2
 
@@ -344,3 +345,20 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+def load_pairs_json(pairs_json: str):
+    def convert_lcs_result(items):
+        try:
+            items['lcs_result'] = LCSResult(**items['lcs_result'])
+        except KeyError:
+            pass
+
+        return items
+
+    with open(pairs_json) as f:
+        return pd.DataFrame.from_records(json.load(f, object_hook=convert_lcs_result))
+
+
+def pairs_without_mismatches(potential_pairs: pd.DataFrame):
+    return potential_pairs[0 == np.array([lcs_result.mismatches for lcs_result in potential_pairs.lcs_result])]

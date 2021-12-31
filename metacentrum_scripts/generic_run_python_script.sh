@@ -38,6 +38,11 @@ pip install -r requirements.txt
 pip install -e .
 cd "$SCRATCHDIR"
 
+# create TMPDIR in SCRATCH, otherwise outside-scratch quota is (unfortunately sometimes) exceeded (during pip install)
+TMP=$SCRATCHDIR/tmp
+mkdir "$TMP"
+export TMPDIR=$TMP
+
 # move to directory for script output
 output_dir=output
 mkdir "$output_dir"
@@ -51,7 +56,7 @@ cd "$output_dir"
 
 # copy output to (non-execution host) permanent storage
 ARCHIVE=output${SHARD_NUM}.tar.gz
-tar -cvf "$ARCHIVE" .
+tar -czvf "$ARCHIVE" .
 cp "$ARCHIVE" "$JOB_OUTPUT_DIR"  || { echo >&2 "Result file(s) copying failed (with a code $?)"; exit 4; }
 
 # see hardcoded locations at

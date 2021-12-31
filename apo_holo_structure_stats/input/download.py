@@ -326,8 +326,8 @@ class MmcifParseResultExtra:
 
 def parse_mmcif(pdb_code: str = None,
                 path: Union[str, os.PathLike] = None,
-                with_extra=False) -> Union[MmcifParseResult, Tuple[MmcifParseResult, MmcifParseResultExtra]]:
-    local_path = find_or_download_structure(pdb_code) if not path else path
+                with_extra=False, allow_download=True) -> Union[MmcifParseResult, Tuple[MmcifParseResult, MmcifParseResultExtra]]:
+    local_path = find_or_download_structure(pdb_code, allow_download) if not path else path
 
     with gzip.open(local_path, 'rt', newline='', encoding='utf-8') as text_file:
         mmcif_parser = CustomMMCIFParser(QUIET=True)  # todo quiet good idea?

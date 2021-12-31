@@ -14,7 +14,7 @@ get_rotation_matrix = GetRotationMatrix((get_centered_c_alpha_coords,))
 get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, get_rotation_matrix))
 get_rmsd = GetRMSD((get_centered_c_alpha_coords, get_rotation_matrix))
 
-get_ss = CompareSecondaryStructure((GetSecondaryStructureForStructure(),))
+get_ss = CompareSecondaryStructure((GetSecondaryStructureForStructure(),))  # todo spatny jmeno
 get_interdomain_surface = GetInterfaceBuriedArea((GetSASAForStructure(),))
 
 

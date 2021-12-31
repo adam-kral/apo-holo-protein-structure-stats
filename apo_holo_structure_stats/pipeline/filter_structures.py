@@ -37,7 +37,10 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
 
     # skip non-xray. Done in the original paper. Try without it. Or then, specify in output dataset which experimental
     #   method (or one could integrate the info themselves)
-    pass
+    if mmcif_dict['_exptl.method'][0] != 'X-RAY DIFFRACTION':
+        logger.info(f'skipping structure {s_id}: exp. method `{mmcif_dict["_exptl.method"]}` is not X-RAY DIFFRACTION')
+        return False
+
 
     # skip DNA/RNA complexes
     try:

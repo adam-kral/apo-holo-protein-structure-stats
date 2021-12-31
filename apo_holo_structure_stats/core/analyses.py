@@ -19,6 +19,15 @@ from .biopython_to_mmcif import ResidueId
 freesasa.setVerbosity(freesasa.nowarnings)  # FreeSASA: warning: guessing that atom 'CB' is symbol ' C' ..., or todo can set a custom classifier?
 
 
+class AnalysisException(Exception):
+    pass
+
+
+class MissingDataException(AnalysisException):
+    """ Can be raised for example as __cause__`d by APIException. """
+    pass
+
+
 def get_hetero_atom_residues(struct: Entity) -> Iterator[Residue]:
     """ non-polymer ligands, excl. water
 
