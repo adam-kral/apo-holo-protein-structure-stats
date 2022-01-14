@@ -311,7 +311,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
         for pdb_code, domains in ((s1_pdb_code, c1_domains), (s2_pdb_code, c2_domains)):
             key = (plocal.get_domains.get_name(), pdb_code)
 
-            if key not in plocal.one_struct_analyses_done_set:
+            if key not in plocal.one_struct_analyses_done_set:  # todo, tady jsem to zapomnel nastavit, takze to vlastne nepouzivam. Jsou tam dupes, ale je to jedno v podstate..
                 for d in domains:
                     plocal.domains_info.append(
                         {'type': 'full_domain',

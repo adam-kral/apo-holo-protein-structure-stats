@@ -31,26 +31,27 @@ def maybe_print(quiet: bool, *args, **kwargs):
         print(*args, **kwargs)
 
 
-def read_jsons_with_seqs_in(json_glob, quiet=False):
-    """ Read multiple (or single) files specified `json_glob`.
+def read_jsons_to_df(filepaths, quiet=False, read_method=pd.read_json) -> pd.DataFrame:
+    """ Read multiple json files into a single DataFrame`.
 
     Show progress is quiet=False.
     """
-    files = glob.glob(json_glob)
-    # files = files[:10]  # for testing
     dfs = []
 
-    for i, file in enumerate(files):
+    filepaths = list(filepaths)
+
+    for i, file in enumerate(filepaths):
         file = Path(file)
-        maybe_print(quiet, f'\rloading {file.name}: {i+1}/{len(files)}', end='')
-        df = read_json_with_seqs(file)
-        # drop sequence column (large)
-        # some dfs are empty (low res structures in a shard)
-        # if len(df):
-        #     df = df.drop(columns='sequence')
+        maybe_print(quiet, f'\rloading {file.name}: {i+1}/{len(filepaths)}', end='')
+        df = read_method(file)
         dfs.append(df)
+
     maybe_print(quiet)
     maybe_print(quiet, 'concatenating...')
     df = pd.concat(dfs) # concatenate all the data frames in the list.
     maybe_print(quiet, 'done.')
     return df
+
+
+def read_jsons_with_seqs(filepaths, quiet=False):
+    return read_jsons_to_df(filepaths, quiet, read_method=read_json_with_seqs)

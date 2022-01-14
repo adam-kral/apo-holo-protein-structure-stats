@@ -265,6 +265,7 @@ def main():
         # chains = chains.iloc[:100]  # todo test hack
         # chimeric - more UNP to one chain (or could be in-vivo chimeric?
         # skip them all, (using one unp does not make sense) Or put it them with both unps?
+        # todo obviously doesn't work, if this file is run with batches...
         chains = chains.drop_duplicates(subset=['pdb_code', 'chain_id'], keep=False)
         chains_gb_pdb_code = chains.groupby('pdb_code')
 

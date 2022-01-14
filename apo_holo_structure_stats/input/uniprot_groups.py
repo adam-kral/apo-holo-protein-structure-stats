@@ -183,7 +183,7 @@ def get_basic_uniprot_groups__df(uniprot_segments_observed_df=None, download_dir
 
     groups = df.groupby('uniprotkb_id')
 
-    df = df.merge(groups.size().rename('uniprot_group_size'), left_on='uniprotkb_id', right_index=True)  # (need to choose one column, not important which)
+    df = df.merge(groups.size().rename('uniprot_group_size'), left_on='uniprotkb_id', right_index=True)
     #
     # we want at least 2 structures in the group (so that an apo-holo pair could exist in the group)
     return df[df.uniprot_group_size >= 2]

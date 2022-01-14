@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -13,7 +12,7 @@ from Bio.PDB.Structure import Structure
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analysesinstances import get_rotation_matrix, get_centroid
 from apo_holo_structure_stats.core.dataclasses import SetOfResidues, DomainResidueMapping, DomainResidues
-from apo_holo_structure_stats.paper_repl.json_deserialize import unfold_tuple_to_columns, tuple_it
+from apo_holo_structure_stats.results.json_deserialize import unfold_tuple_to_columns, tuple_it
 from apo_holo_structure_stats.paper_repl.main import get_longest_common_polypeptide
 from apo_holo_structure_stats.input.download import parse_mmcif
 
@@ -221,20 +220,22 @@ if __name__ == '__main__':
     logging.basicConfig()
 
     ah_two_domain_arrangements = [
-        # [(('1vr6', 'A', '1vr6A01'), ('1vr6', 'A', '1vr6A02')), (('1rzm', 'A', '1vr6A01'), ('1rzm', 'A', '1vr6A02'))],
+        [(('1vr6', 'A', '1vr6A01'), ('1vr6', 'A', '1vr6A02')), (('1rzm', 'A', '1vr6A01'), ('1rzm', 'A', '1vr6A02'))],
         # [(('1usg', 'A', '1usgA01'), ('1usg', 'A', '1usgA02')), (('1usi', 'A', '1usgA01'), ('1usi', 'A', '1usgA02'))],
         # [(('1za1', 'A', '1za1A01'), ('1za1', 'A', '1za1A02')), (('1q95', 'A', '1za1A01'), ('1q95', 'A', '1za1A02'))],
         # [(('1gud', 'A', '1gudA01'), ('1gud', 'A', '1gudA02')), (('1rpj', 'A', '1gudA01'), ('1rpj', 'A', '1gudA02'))],
         # [(('1jej', 'A', '1jejA01'), ('1jej', 'A', '1jejA02')), (('1jg6', 'A', '1jejA01'), ('1jg6', 'A', '1jejA02'))],
         # [(('1zol', 'A', '1zolA01'), ('1zol', 'A', '1zolA02')),	(('1o03', 'A', '1zolA01'), ('1o03', 'A', '1zolA02'))],
-        [(('1hoo', 'B', '1hooB01'), ('1hoo', 'B', '1hooB03')), (('1cg0', 'A', '1hooB01'), ('1cg0', 'A', '1hooB03'))],
+        # [(('1hoo', 'B', '1hooB01'), ('1hoo', 'B', '1hooB03')), (('1cg0', 'A', '1hooB01'), ('1cg0', 'A', '1hooB03'))],
+        # ((('1i7n'   , 'A', '1i7nA01'), ('1i7n', 'A', '1i7nA03')), (('1i7l', 'B', '1i7nA01'), ('1i7l', 'B', '1i7nA03'))),
+        # ((('5lyo', 'B', '5lyoB01'), ('5lyo', 'B', '5lyoB02')), (('4is5', 'A', '5lyoB01'), ('4is5', 'A', '5lyoB02'))),
     ]
 
     # probably the spans are for the apo structure (numbering is not always consistent, and is not to the LCS  - can
     # start with 4 for example)
     # not entirely sure, sometimes the numbering is from holo, see differ.txt
     paper_apo_spans_string = [
-#         '''(1–64)
+        '''(1–64)
 # (65–338)''',
 #         '''(1–124, 247–333)
 # (125–246, 334–345)''',
@@ -246,8 +247,8 @@ if __name__ == '__main__':
 # (173–334)''',
 #         '''(1–16, 84–221)
 # (17–83)'''
-        '''(1–16, 84–221)
-(17–83)'''
+#         '''(1–16, 84–221)
+# (17–83)'''
     ]
     paper_spans = []
     for _2DA_string in paper_apo_spans_string:
@@ -262,6 +263,8 @@ if __name__ == '__main__':
 
     logger.debug(paper_spans)
 
+    # todo aby fungovalo i s get_domains_db
+    # mozna udelat novej soubor, kterej nebude fungovat s paper spans..., to bude mnohem rychlejsi, navic tohle se jeste hodit může
     domain_info_filename = Path(OUTPUT_DIR) / 'output_domains_info2021-11-13T14:21:51.339065.json'
     domain_info = pd.read_json(domain_info_filename)
     domain_info = domain_info.applymap(tuple_it)

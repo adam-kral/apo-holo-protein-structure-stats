@@ -39,7 +39,7 @@ INPUT_FILE=$INPUT_FILE_DIR/<><input_file_name
 cp "<><input_shard_dir_cp_path/<><input_file_name" "$INPUT_FILE"
 
 PDB_ARCHIVE=<><{input_shard_pdb_dir}.tar
-ssh $(whoami)@storage-brno2.metacentrum.cz "tar -C ~/<><input_shard_dir__in_home -cvf ~/<><input_shard_dir__in_home/$PDB_ARCHIVE <><{input_shard_pdb_dir}"
+ssh storage-brno2.metacentrum.cz "tar -C ~/<><input_shard_dir__in_home -cvf ~/<><input_shard_dir__in_home/$PDB_ARCHIVE <><{input_shard_pdb_dir}"
 cp "<><input_shard_dir_cp_path/$PDB_ARCHIVE" "$INPUT_FILE_DIR"
 tar -C "$INPUT_FILE_DIR" -xvf "$INPUT_FILE_DIR/$PDB_ARCHIVE"
 

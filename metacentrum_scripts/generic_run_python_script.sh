@@ -61,7 +61,7 @@ cp "$ARCHIVE" "$JOB_OUTPUT_DIR"  || { echo >&2 "Result file(s) copying failed (w
 
 # see hardcoded locations at
 # https://wiki.metacentrum.cz/wiki/Working_with_data#Data_transfer_between_storages_and_PC.2C_principles
-ssh $(whoami)@storage-brno2.metacentrum.cz "tar -C ~/$JOB_OUTPUT_DIR__IN_STORAGE_HOME -xvf ~/$JOB_OUTPUT_DIR__IN_STORAGE_HOME/$ARCHIVE" \
+ssh storage-brno2.metacentrum.cz "tar -C ~/$JOB_OUTPUT_DIR__IN_STORAGE_HOME -xvf ~/$JOB_OUTPUT_DIR__IN_STORAGE_HOME/$ARCHIVE" \
   || { echo >&2 "Unpacking archive at dest failed (with a code $?)"; exit 4; }
 
 #cp -r . "$JOB_OUTPUT_DIR" || { echo >&2 "Result file(s) copying failed (with a code $?) !!"; exit 4; }

@@ -126,7 +126,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
     c1_common_seq, c2_common_seq = get_longest_common_polypeptide(c1_seq, c2_seq)
     c1_label_seq_ids = list(c1_common_seq.keys())
     c2_label_seq_ids = list(c2_common_seq.keys())
-
+    return
     label_seq_id_offset = c2_label_seq_ids[0] - c1_label_seq_ids[0]
 
     # up to this point, we have residue ids of the protein sequence in the experiment. This also includes unobserved
@@ -361,8 +361,16 @@ def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_paper_chain_code: str, s
     logging.info(f'{s1_pdb_code}, {s2_pdb_code}')
 
     try:
-        apo, (apo_residue_id_mappings, apo_poly_seqs) = parse_mmcif(s1_pdb_code)
-        holo, (holo_residue_id_mappings, holo_poly_seqs) = parse_mmcif(s2_pdb_code)
+        apo_parsed = parse_mmcif(s1_pdb_code)
+        holo_parsed = parse_mmcif(s2_pdb_code)
+
+        apo = apo_parsed.structure
+        apo_residue_id_mappings = apo_parsed.bio_to_mmcif_mappings
+        apo_poly_seqs = apo_parsed.poly_seqs
+
+        holo = holo_parsed.structure
+        holo_residue_id_mappings = holo_parsed.bio_to_mmcif_mappings
+        holo_poly_seqs = holo_parsed.poly_seqs
 
         # get the first model (s[0]), (in x-ray structures there is probably a single model)
         apo, apo_residue_id_mappings = map(lambda s: s[0], (apo, apo_residue_id_mappings))

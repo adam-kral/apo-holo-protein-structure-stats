@@ -43,7 +43,7 @@ mkdir -p "$INPUT_FILE_DIR"
 cp -r <><input_shard_dir_cp_path/* "$INPUT_FILE_DIR"
 
 INPUT_ARCHIVE=input_archive.tar
-ssh $(whoami)@storage-brno2.metacentrum.cz "tar -C ~/<><input_shard_dir__in_home -cvf ~/<><input_shard_dir__in_home/$INPUT_ARCHIVE ."
+ssh storage-brno2.metacentrum.cz "tar -C ~/<><input_shard_dir__in_home -cvf ~/<><input_shard_dir__in_home/$INPUT_ARCHIVE ."
 cp "<><input_shard_dir_cp_path/$INPUT_ARCHIVE" "$INPUT_FILE_DIR"
 tar -C "$INPUT_FILE_DIR" -xvf "$INPUT_FILE_DIR/$INPUT_ARCHIVE"
 

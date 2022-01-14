@@ -1,5 +1,6 @@
 """ Compute LCS for all potential apo-holo pairs """
 import dataclasses
+import glob
 import itertools
 import json
 import logging
@@ -17,7 +18,7 @@ from Bio import pairwise2
 
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
-from apo_holo_structure_stats.pipeline.utils.json import read_jsons_with_seqs_in, maybe_print
+from apo_holo_structure_stats.pipeline.utils.json import read_jsons_with_seqs, maybe_print
 from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_short_tasks, FutureLike, process_execute
 
@@ -336,7 +337,8 @@ def main():
     logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
     logging.basicConfig()
 
-    structures_metadata = read_jsons_with_seqs_in(str(args.structures_json), quiet=False)#args.loglevel > logging.INFO)
+    json_files = glob.glob(str(args.structures_json))
+    structures_metadata = read_jsons_with_seqs(json_files, quiet=False)#args.loglevel > logging.INFO)
     pairs = list(make_pairs_with_lcs(structures_metadata, args.workers))
 
     with args.output_file.open('w') as f:

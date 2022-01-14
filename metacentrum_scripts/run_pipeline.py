@@ -42,7 +42,7 @@ Spis ne, pokazdy je ten home dir taky jinej (asi podle jobu.. ale stejne se to p
 
 Asi ten pip install byl strasne pomaly, protoze se ty install soubory posilaly po siti!!!
 
-/storage/brno11-elixir/home/baobab  # asi muj adresar na gridu, ale tech serveru je vic ne? Ma cenu ho pouzivat? Pro venv/
+/storage/brno11-elixir/home/$(whoami)  # asi muj adresar na gridu, ale tech serveru je vic ne? Ma cenu ho pouzivat? Pro venv/
 condu asi ne..
 
 """
