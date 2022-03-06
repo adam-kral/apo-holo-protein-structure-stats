@@ -29,6 +29,12 @@ python --version
 
 pip install --upgrade pip  # proto
 
+# create TMPDIR in SCRATCH, otherwise outside-scratch quota is (unfortunately sometimes) exceeded (during pip install)
+TMP=$SCRATCHDIR/tmp
+mkdir "$TMP"
+export TMPDIR=$TMP
+
+
 # copy project sources and install the project in "src" dir
 cp -r "$CODE_DIR" .
 cd "$(basename "$CODE_DIR")"
@@ -37,11 +43,6 @@ pip install -r requirements.txt
 # so we can easily run project's scripts directly
 pip install -e .
 cd "$SCRATCHDIR"
-
-# create TMPDIR in SCRATCH, otherwise outside-scratch quota is (unfortunately sometimes) exceeded (during pip install)
-TMP=$SCRATCHDIR/tmp
-mkdir "$TMP"
-export TMPDIR=$TMP
 
 # move to directory for script output
 output_dir=output
