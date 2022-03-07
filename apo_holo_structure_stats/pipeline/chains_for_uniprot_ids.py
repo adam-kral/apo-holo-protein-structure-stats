@@ -39,7 +39,8 @@ def collect_chains_for_uniprot_ids(uniprot_ids: Set[str] = None, limit_size: int
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--uniprot_ids', help='comma-separated list of primary uniprot accessions')
+    parser.add_argument('--uniprot_ids', help='comma-separated list of primary uniprot accessions')
+    parser.add_argument('--chains', help='json (records) dataset of chains that will be augmented with uniprotkb_id')
     parser.add_argument('--limit_group_size_to', type=int, help='comma-separated list of primary uniprot accessions')
     parser.add_argument('--seed', default=42, type=int, help='comma-separated list of primary uniprot accessions')
     parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
@@ -57,6 +58,18 @@ def main():
         uniprot_ids = None
 
     chains = collect_chains_for_uniprot_ids(uniprot_ids, args.limit_group_size_to, args.seed)
+
+    if args.chains:
+        # chain dataset was input, only add uniprotkb_id field
+        input_chains = pd.read_json(args.chains)
+        chains = input_chains.merge(chains, how='left', on=['pdb_code', 'chain_id'])
+
+        chains_without_uniprot = chains[pd.isna(chains.uniprotkb_id)]
+        if not chains_without_uniprot.empty:
+            logger.warning('UniprotKB ID not found for some chains, won`t be included in the result:\n'
+                           + str(chains_without_uniprot))
+            chains = chains.dropna(subset=['uniprotkb_id'])
+
     chains.to_json(args.output_file, orient='records')
 
 

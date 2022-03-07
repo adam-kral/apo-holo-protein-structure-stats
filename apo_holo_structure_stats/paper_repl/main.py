@@ -344,11 +344,11 @@ def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
         chain = next(iter(model))
 
         if len(model) != 1 or chain.id != 'A':
-            logging.warning(f'{model.get_parent().id} {paper_chain_code}, underscore is not what I thought. {chain.id}'
+            logging.warning(f'{model.get_parent().id} {paper_chain_code}, underscore is not what I originally thought. {chain.id}'
                             f', {len(model)}')
             long_chains = get_chains(model)
             if len(long_chains) > 1:
-                logging.warning(f'model contains {len(long_chains)} chains with 50+ aa')
+                logging.warning(f'model contains {len(long_chains)} chains with 50+ aa, underscore is not what I think it is now')
             return long_chains[0]  # sometimes there is also chain B with ligands.
 
         return chain
