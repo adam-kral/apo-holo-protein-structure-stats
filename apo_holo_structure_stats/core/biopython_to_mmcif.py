@@ -30,10 +30,10 @@ class BioResidueId(NamedTuple):
     #
     # chain_id: str  # is already present in e.g. ChainResidueData, but usually I expect just SetOfResidueData (may be from multiple chains,
     # # simplest, ok)
-    #
-    # @classmethod
-    # def from_bio_residue(cls, residue: Residue):
-    #     return ResidueId(residue.id[0], residue.id[1], residue.id[2], residue.get_parent().id)
+
+    @classmethod
+    def from_bio(cls, residue: Residue):
+        return cls(*residue.get_id())
 
 
 class BiopythonToMmcifResidueIds:

@@ -4,7 +4,7 @@ import itertools
 import json
 import logging
 import queue
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from multiprocessing import Manager
 from multiprocessing.managers import SyncManager
@@ -198,6 +198,33 @@ def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], 
 
 # ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 
+def assert_label_seq_id_contiguous(seq: List[int]):
+    for i in range(len(seq) - 2):
+        assert seq[i] + 1 == seq[i+1]
+
+
+def get_seqs_range_and_offset(seq1: Dict[int, str], seq2: Dict[int, str], lcs_result: LCSResult):
+    # sanity check I forgot to do previously
+    for seq in (seq1, seq2):
+        try:
+            assert_label_seq_id_contiguous(list(seq.keys()))
+        except AssertionError:
+            logger.warning('ERROR, label_seq list is not contiguous as expected. What now?')
+            try:
+                assert_label_seq_id_contiguous(sorted(seq.keys()))
+            except AssertionError:
+                logger.warning('ERROR, even if sorted, label_seq list is not contiguous as expected. What now?')
+
+    def get_seq_range(seq, lcs_start):
+        seq_ids = list(seq.keys())
+        start = seq_ids[lcs_start]
+        return range(start, start + lcs_result.length + 1)
+
+    seq1_range = get_seq_range(seq1, lcs_result.i1)
+    seq2_range = get_seq_range(seq2, lcs_result.i2)
+    seq2_label_seq_id_offset = seq2_range[0] - seq1_range[0]
+    return seq1_range, seq2_range, seq2_label_seq_id_offset
+
 
 def compare_chains(chain1: Chain, chain2: Chain,
                    c1_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
@@ -240,25 +267,16 @@ def compare_chains(chain1: Chain, chain2: Chain,
     # - todo assert in code entity_poly_seq have no gaps (always +1), they say they're sequential, I think they mean exactly this
     #    - I could have done in filter structures, just to know for sure. If it were extensible already
 
-    # crop polypeptides to longest common substring
-    # todo - vzit z inputu (mam i1 a i2, staci ziskat offset a real label seq)
-    # crop polypeptides to longest common substring
-    i1, i2, length = lcs_result.i1, lcs_result.i2, lcs_result.length
-    c1_common_seq = dict(itertools.islice(c1_seq.items(), i1, i1+length))
-    c2_common_seq = dict(itertools.islice(c2_seq.items(), i2, i2+length))
-    c1_label_seq_ids = list(c1_common_seq.keys())
-    c2_label_seq_ids = list(c2_common_seq.keys())
-
-    label_seq_id_offset = c2_label_seq_ids[0] - c1_label_seq_ids[0]
+    c1_seq_range, c2_seq_range, label_seq_id_offset = get_seqs_range_and_offset(c1_seq, c2_seq, lcs_result)
 
     # up to this point, we have residue ids of the protein sequence in the experiment. This also includes unobserved
     # residues, but those we will exclude from our analysis as their positions weren't determined
     c1_residues, c1_label_seq_ids, c2_residues, c2_label_seq_ids = get_observed_residues(
         chain1,
-        c1_label_seq_ids,
+        list(c1_seq_range),
         c1_residue_mapping,
         chain2,
-        c2_label_seq_ids,
+        list(c2_seq_range),
         c2_residue_mapping,
     )
 
@@ -464,7 +482,7 @@ def compare_chains(chain1: Chain, chain2: Chain,
 #  - nestaci je jenom definovat v globalu? - Nektery mozna, ale ty, co budou mít Manager (pdbe API analyzery)
 #  - tak ty ne. Ty musim poslat, bohuzel, zejo
 def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chain_code: str,
-                 lcs_result: LCSResult):
+                 lcs_result: LCSResult, compare_chains_fn=compare_chains):
                  # , analyzers: List[List], get_domains, get_rmsd,
                  # get_interdomain_surface, serializer, domains_info: list, one_struct_analyses_done_set: dict):
     # assert len(analyzers) == 5
@@ -522,7 +540,7 @@ def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chai
         apo_mapping = apo_residue_id_mappings[apo_chain.id]
         holo_mapping = holo_residue_id_mappings[holo_chain.id]
 
-        compare_chains(apo_chain, holo_chain,
+        compare_chains_fn(apo_chain, holo_chain,
                        apo_mapping, holo_mapping,
                        apo_poly_seqs[apo_mapping.entity_poly_id], holo_poly_seqs[holo_mapping.entity_poly_id],
                        lcs_result,
@@ -544,6 +562,86 @@ def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chai
 # MP initializer
 # https://stackoverflow.com/questions/10117073/how-to-use-initializer-to-set-up-my-multiprocess-pool
 
+def run_analyses_serial(pairs_json, process_pair_fn, worker_initializer=None, worker_init_args=()):
+    potential_pairs = load_pairs_json(pairs_json)
+    # print(potential_pairs)
+    pairs = pairs_without_mismatches(potential_pairs)
+    # pairs = pairs.iloc[:20]  # todo testing hack
+    # print(pairs)
+    if worker_initializer:
+        worker_initializer(*worker_init_args)
+
+    start_datetime = datetime.now()
+
+    for i, row in enumerate(pairs.itertuples()):
+        process_pair_fn(row.pdb_code_apo, row.pdb_code_holo,
+               row.chain_id_apo, row.chain_id_holo,
+               row.lcs_result)
+        logger.info(f'done {i + 1} / {len(pairs)}')
+
+    logger.info(f'run_analyses duration: {timedelta(seconds=int((datetime.now() - start_datetime).seconds))}\n'
+                f'started at: {start_datetime.isoformat()}, ended at: {datetime.now().isoformat()}')
+
+
+def run_analyses_multiprocess(pairs_json, process_pair_fn, num_workers, worker_initializer=None, worker_init_args=None):
+    """ Allows to run `process_pair_fn` on pairs (in multiprocess environment).
+
+    Reads the json in the expected format (output of `make_pairs_lcs.py`). Hides some of the multiprocessing complexity.
+
+    If `process_pair_fn` should access and modify some shared state between processes, you might want to use params
+    `worker_initializer` and `worker_init_args` to set up the shared state. (Possibly with the SyncManager derived
+     objects -- shared lists, dicts, etc.) Then, this function would be called inside a `with multiprocessing.Manager()`
+     block.
+
+    :param pairs_json:
+    :param process_pair_fn: picklable callable, taking 5 parameters: pdb_code_apo, _holo, chain_id_apo, _holo, lcs_result
+    :param num_workers:
+    :param worker_initializer: callable (probably) needs to be picklable, for more details look up this parameter
+        in ProcessPoolExecutor constructor
+    :param worker_init_args: arguments passed to worker_initializer in each worker, again picklable,  for more details
+        look up `initargs` in ProcessPoolExecutor constructor
+    :return:
+    """
+
+    start_datetime = datetime.now()
+
+    potential_pairs = load_pairs_json(pairs_json)
+    # print(potential_pairs)
+    pairs = pairs_without_mismatches(potential_pairs)
+    # pairs = pairs.iloc[:10]  # todo testing hack todo create a test in test.py with a smaller pairs file?
+    # print(pairs)
+
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:    # todo testing
+    with concurrent.futures.ProcessPoolExecutor(
+            max_workers=num_workers,
+            initializer=worker_initializer,
+            initargs=worker_init_args) as executor:
+        def get_args():
+            for row in pairs.itertuples():
+                yield (row.pdb_code_apo, row.pdb_code_holo,
+                       row.chain_id_apo, row.chain_id_holo,
+                       row.lcs_result,)
+                # [p.comparators_of_apo_holo__residues_param,
+                # p.comparators_of_apo_holo__residue_ids_param,
+                # p.comparators_of_apo_holo_domains__residues_param,
+                # p.comparators_of_apo_holo_domains__residue_ids_param,
+                # p.comparators_of_apo_holo_2DA__residues_param,],
+                # p.get_domains,
+                # p.get_rmsd,
+                # p.get_interdomain_surface,
+                # serializer, domains_info, one_struct_analyses_done_set)
+
+        fn = partial(fn_wrapper_unpack_args, process_pair_fn)
+        futures = submit_tasks(executor, 40 * num_workers, fn, get_args())
+        # wait for all futures to complete
+        for i, f in enumerate(futures):
+            f.result()
+            # log progress
+            logger.info(f'done {i + 1} / {len(pairs)}')
+
+        logger.info(f'run_analyses duration: {timedelta(seconds=int((datetime.now() - start_datetime).seconds))}\n'
+                    f'started at: {start_datetime.isoformat()}, ended at: {datetime.now().isoformat()}')
+
 
 def worker_initializer(analyzer_namespace, serializer_or_analysis_handler, domains_info, one_struct_analyses_done_set):
     attrs = locals()
@@ -557,7 +655,6 @@ def worker_initializer(analyzer_namespace, serializer_or_analysis_handler, domai
 def main():
     # runs for all isoforms by default
     # optionally specify a single isoform with --isoform
-
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -572,22 +669,6 @@ def main():
     project_logger.setLevel(args.loglevel)
     logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
     logging.basicConfig()
-
-    potential_pairs = load_pairs_json(args.pairs_json)
-    print(potential_pairs)
-    pairs = pairs_without_mismatches(potential_pairs)
-    # pairs = pairs.iloc[:100]  # todo testing hack
-    print(pairs)
-    # if args.limit_pairs_for_group:
-
-
-    # neni treba, nepotrebuju nutne uniprot ted..
-    # chains = pd.read_json(args.chains_json)
-    # pairs = pairs.merge(chains.set_index(['pdb_code', 'chain_id']), left_on=['pdb_code_apo', 'chain_id_apo'], right_index=True)
-
-
-    # with open(args.output_file, 'w') as f:
-    #     kdyby serializace analyz byla prubezna (csv rows/triples stream)
 
     # don't run analyses for each isoform group separately, as creating a process pool carries an overhead
     # median pairs per group is 6
@@ -604,46 +685,14 @@ def main():
         serializer = ConcurrentJSONAnalysisSerializer(analyses_output_fpath, multiprocessing_manager)
         domains_info = multiprocessing_manager.list()
         one_struct_analyses_done_set = multiprocessing_manager.dict()
+        worker_initializer_args = (analyses_namespace, serializer, domains_info, one_struct_analyses_done_set)
 
-        # with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        with concurrent.futures.ProcessPoolExecutor(
-                max_workers=args.workers,
-                initializer=worker_initializer,
-                initargs=(analyses_namespace, serializer, domains_info, one_struct_analyses_done_set)) as executor:
-            def get_args():
-                for row in pairs.itertuples():
-                    # todo, musim poslat ještě lcs_result.i1, i2 a length minimálně...
-                    # vůbec by bylo hezký mít možnost nejen tyhle uložený analýzy serializovat (jako casto delam), ale
-                    # taky deserializovat. Pak bych tam poslal celej lcs_result? Rozhodně by zabíral mín paměti než samotnej dict, hádám
-                    # stejně tak domény bych měl umět ideálně deserializovat nějak... (Mozna by ale pak celkem blbe fungovaly merge v pandas?)
+        run_analyses_multiprocess(args.pairs_json, process_pair, args.workers, worker_initializer,
+                                  worker_initializer_args)
 
-                    yield (row.pdb_code_apo, row.pdb_code_holo,
-                           row.chain_id_apo, row.chain_id_holo,
-                           row.lcs_result,)
-                           # [p.comparators_of_apo_holo__residues_param,
-                           # p.comparators_of_apo_holo__residue_ids_param,
-                           # p.comparators_of_apo_holo_domains__residues_param,
-                           # p.comparators_of_apo_holo_domains__residue_ids_param,
-                           # p.comparators_of_apo_holo_2DA__residues_param,],
-                           # p.get_domains,
-                           # p.get_rmsd,
-                           # p.get_interdomain_surface,
-                           # serializer, domains_info, one_struct_analyses_done_set)
-
-            fn = partial(fn_wrapper_unpack_args, process_pair)
-            futures = submit_tasks(executor, 40 * args.workers, fn, get_args())
-            # wait for all futures to complete
-            for i, f in enumerate(futures):
-                f.result()
-                # log progress
-                logger.info(f'done {i+1} / {len(pairs)}')
-
-            serializer.dump_data()
-            with domains_info_fpath.open('w') as f:
-                json.dump(list(domains_info), f)
-
-            print(start_datetime.isoformat())
-            print(datetime.now().isoformat())
+        serializer.dump_data()
+        with domains_info_fpath.open('w') as f:
+            json.dump(list(domains_info), f)
 
 
 # [x] todo bad res not skipped (cryo em) 7bua, or just skip non-xray?

@@ -11,9 +11,10 @@ from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
 
 from apo_holo_structure_stats.input.download import get_secondary_structure, get_domains
+from ..settings import LigandSpec
 from .base_analyses import CachedAnalyzer, SerializableCachedAnalyzer, SerializableAnalyzer
 from .dataclasses import SSForChain, SSForStructure, SetOfResidueData, SetOfResidues, DomainResidueMapping, \
-    ScrewMotionResult
+    ScrewMotionResult, ChainResidues
 from .biopython_to_mmcif import ResidueId
 
 freesasa.setVerbosity(freesasa.nowarnings)  # FreeSASA: warning: guessing that atom 'CB' is symbol ' C' ..., or todo can set a custom classifier?
@@ -33,17 +34,84 @@ def get_hetero_atom_residues(struct: Entity) -> Iterator[Residue]:
 
     BioPython's residue is a group of atoms belonging to the same molecule (made possible by mmcifs author_seq_id of heteroatoms,
     label_seq_id is '.' because a heterocompound does not belong to the poly-chain)
-    scans all chains (we deliberately ignore author chain assignment in case of a heteroatom)"""
+    scans all chains (we deliberately ignore author chain assignment in case of a heteroatom)
+    # todo maybe this is wrong, as sub-compound are covalently bound into a single ligand, if they share a chain assignment?
+        seems true for saccharides (but they do have monomers), they share label_asym_id, but not the auth_asym_id... (as in biopython)
+        in the paper, they mark multimeric with '-' between monomers and not covalently bound, distinct, ligands probably delimited
+        with ';'
+        """
 
     return filter(lambda res: res.id[0].startswith('H_'), struct.get_residues())  # .id[0] is a residue's hetatm flag
 
 
-def get_short_peptide_ligands(struct: Entity, peptide_length_limit: int) -> Iterator[Chain]:
-    return filter(lambda chain: sum(is_aa(residue) for residue in chain) <= peptide_length_limit, struct.get_chains())
+def get_short_peptide_ligands(struct: Entity, peptide_length_limit: int) -> Iterator[ChainResidues]:
+    peptide_chains = filter(lambda chain: sum(is_aa(residue) for residue in chain) <= peptide_length_limit, struct.get_chains())
+    return [ChainResidues([r for r in peptide_chain if is_aa(r)],
+                          peptide_chain.get_parent().get_parent().id,
+                          peptide_chain.id) for peptide_chain in peptide_chains]
 
 
 def get_all_ligands(struct: Model) -> Iterator[Entity]:
     return itertools.chain(get_hetero_atom_residues(struct), get_short_peptide_ligands(struct, 15))
+
+
+def get_defined_ligands(struct: Model, chain: SetOfResidues) -> Iterator[Entity]:
+    """ Get defined ligands bound with defined specificity.  (See settings.LigandSpec)
+
+    :param struct: The whole resolved structure, ligands are identified there.
+    :param chain: Only the polypeptide chain (no HETATMs etc.), as the specificity is calculated wrt. that.
+    :return: ligands (Either Bio.Residue or ChainResidues in case of a peptide ligand)
+    """
+    def has_at_least_n_non_hydrogen_atoms(ligand, n):
+        non_hydrogen_atoms = 0
+
+        for atom in ligand.get_atoms():
+            assert atom.element is not None
+            if atom.element != 'H':
+                non_hydrogen_atoms += 1
+
+            if non_hydrogen_atoms >= n:
+                return True  # todo nakonec můžu asi sumovat všechny, stejně budu chtít konfigurovatelny output, aby mi dal počet atomů ligandu, nebo budu dělat statistiky, kolik atomu má průměrný ligand atp.
+
+        return False
+
+    # ligand has >= 6 non-hydrogen atoms
+    ligands = list(filter(lambda lig: has_at_least_n_non_hydrogen_atoms(lig, LigandSpec.MIN_NON_H_ATOMS), get_all_ligands(struct)))
+
+    # ligand is within RADIUS in contact with MIN_RESIDUES_WITHIN_LIGAND residues
+
+    # (in original paper they used a program LPC, for ensuring specific interaction of ligand with at least 6 residue,
+    # this is a "shortcut", a temporary condition (simple))
+
+    chain_atoms = list(chain.get_atoms())
+    ns = NeighborSearch(chain_atoms)
+
+    MIN_RESIDUES_WITHIN_LIGAND = LigandSpec.MIN_RESIDUES_WITHIN_LIGAND
+    RADIUS = LigandSpec.MIN_RESIDUES_WITHIN_LIGAND__RADIUS
+    # todo calculate average number of protein heavy atoms in 4.5 Å within ligand _atom_ (paper says 6)
+
+    for ligand in ligands:
+        residues_in_contact_with_ligand = set()  # including the ligand itself (in biopython, non-peptide ligand is
+        # in the same chain usually, but in a different residue)
+
+        ligand_residues = set()  # residues that compose the ligand
+
+        for ligand_atom in ligand.get_atoms():  # ligand can be a chain or a residue
+            ligand_residues.add(ligand_atom.get_parent())
+            chain_atoms_in_contact = ns.search(ligand_atom.get_coord(), RADIUS)
+
+            for atom in chain_atoms_in_contact:
+                # exclude hydrogen atoms (as in the paper)
+                if atom.element == 'H':
+                    continue
+
+                residues_in_contact_with_ligand.add(atom.get_parent())
+
+        # exclude the ligand itself from the set of contact residues
+        residues_in_contact_with_ligand -= ligand_residues
+
+        if len(residues_in_contact_with_ligand) >= MIN_RESIDUES_WITHIN_LIGAND:
+            yield ligand
 
 
 class GetChains(CachedAnalyzer):
@@ -59,60 +127,8 @@ class GetMainChain(CachedAnalyzer):
 
 
 class IsHolo(CachedAnalyzer):
-    def run(self, struct: Model, chain: Chain):
-        def has_at_least_n_non_hydrogen_atoms(ligand, n):
-            non_hydrogen_atoms = 0
-
-            for atom in ligand.get_atoms():
-                assert atom.element is not None
-                if atom.element != 'H':
-                    non_hydrogen_atoms += 1
-
-                if non_hydrogen_atoms >= n:
-                    return True  # todo nakonec můžu asi sumovat všechny, stejně budu chtít konfigurovatelny output, aby mi dal počet atomů ligandu, nebo budu dělat statistiky, kolik atomu má průměrný ligand atp.
-
-            return False
-
-        # ligand has >= 6 non-hydrogen atoms
-        ligands = list(filter(lambda lig: has_at_least_n_non_hydrogen_atoms(lig, 6), get_all_ligands(struct)))
-
-        # ligand is within RADIUS in contact with MIN_RESIDUES_WITHIN_LIGAND residues
-
-        # (in original paper they used a program LPC, for ensuring specific interaction of ligand with at least 6 residue, this is a "shortcut",
-        #    a temporary condition (simple))
-
-        chain_atoms = list(chain.get_atoms())
-        ns = NeighborSearch(chain_atoms)
-
-        RADIUS = 4.5
-        MIN_RESIDUES_WITHIN_LIGAND = 6
-        # todo calculate average number of protein heavy atoms in 4.5 Å within ligand atom (paper says 6)
-
-        acceptable_ligands = []
-
-        for ligand in ligands:
-            residues_in_contact_with_ligand = set()  # including the ligand itself (in biopython, non-peptide ligand is
-            # in the same chain usually, but in a different residue)
-
-            ligand_residues = set()  # residues that compose the ligand
-
-            for ligand_atom in ligand.get_atoms():  # ligand can be a chain or a residue
-                ligand_residues.add(ligand_atom.get_parent())
-                chain_atoms_in_contact = ns.search(ligand_atom.get_coord(), RADIUS)
-
-                for atom in chain_atoms_in_contact:
-                    # exclude hydrogen atoms (as in the paper)
-                    if atom.element == 'H':
-                        continue
-
-                    residues_in_contact_with_ligand.add(atom.get_parent())
-
-            # exclude the ligand itself from the set of contact residues
-            residues_in_contact_with_ligand -= ligand_residues
-
-            if len(residues_in_contact_with_ligand) >= MIN_RESIDUES_WITHIN_LIGAND:
-                acceptable_ligands.append(ligand)
-
+    def run(self, struct: Model, chain: SetOfResidues):
+        acceptable_ligands = list(get_defined_ligands(struct, chain))
         return len(acceptable_ligands) > 0
 
 
@@ -200,6 +216,15 @@ class GetDomainsForStructure(CachedAnalyzer):
         return list(domains.values())
 
 
+def get_sasa(residues: SetOfResidues) -> freesasa.Result:
+    # use freesasa to compute SASA
+    # it uses method get_atoms (which is defined on SetOfResidues). It does not include hydrogen atoms, because
+    # otherwise it raises an error (hydrogens should be ignored by default in freesasa anyway, but they say
+    # structureFromBioPDB is experimental)
+    sasa_structure = freesasa.structureFromBioPDB(residues)
+    return freesasa.calc(sasa_structure)
+
+
 class GetSASAForStructure(CachedAnalyzer):
     """ Return solvent accessible surface area for a group of residues.
 
@@ -208,21 +233,8 @@ class GetSASAForStructure(CachedAnalyzer):
     """
 
     def run(self, residues: SetOfResidues) -> float:
-        # attach method get_atoms used by freesasa's BioPython binding (so that it behaves like BioPython's Entity)
-        def get_atoms(self):
-            for r in self:
-                for atom in r.get_atoms():
-                    if atom.element != 'H':  # otherwise freesasa somehow crashes with: AssertionError: Error: Radius array is <= 0 for the residue: PHE ,atom: H
-                        yield atom
-
-        # freesasa calls get_atoms on the passed object, so add that method to `residues`
-        bound_method =  get_atoms.__get__(residues)
-        object.__setattr__(residues, 'get_atoms', bound_method)  # setting to a _frozen_ dataclass (SetOfResidues)
-
-        # use freesasa to compute SASA
-        sasa_structure = freesasa.structureFromBioPDB(residues)
-        result = freesasa.calc(sasa_structure)
-        return result.totalArea()
+        freesasa_result = get_sasa(residues)
+        return freesasa_result.totalArea()
 
 
 class GetInterfaceBuriedArea(SerializableAnalyzer):

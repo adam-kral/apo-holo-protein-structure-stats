@@ -10,7 +10,7 @@ from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInter
     GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
 from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping, DomainResidues
-from apo_holo_structure_stats.pipeline.run_analyses import sequences_same, chain_to_polypeptide
+# from apo_holo_structure_stats.pipeline.run_analyses import sequences_same, chain_to_polypeptide
 
 
 class TestAnalyses(TestCase):
@@ -84,6 +84,17 @@ class TestAnalyses(TestCase):
         s = self.get_test_structure()
         chain_b = s[0]['B']
         residues = ChainResidues(list(chain_b), s.id, 'B')
+
+        sasa_computer = GetSASAForStructure()
+        chain_b_sasa = sasa_computer(residues)
+
+        self.assertGreater(chain_b_sasa, 1)
+
+    def test_get_sasa_for_structure_with_hydrogens(self):
+        s, _ = self.load_test_structure('7amj')
+
+        chain = s[0]['A']
+        residues = ChainResidues(list(chain), s.id, 'A')
 
         sasa_computer = GetSASAForStructure()
         chain_b_sasa = sasa_computer(residues)

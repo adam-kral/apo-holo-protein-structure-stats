@@ -143,16 +143,25 @@ class DomainResidueData(SetOfResidueData[TResidueData]):
         return (self.structure_id, self.chain_id, self.domain_id)
 
 
-SetOfResidues = SetOfResidueData[Residue]
+class SetOfResidues(SetOfResidueData[Residue]):
+    def get_atoms(self, exclude_H=True):
+        """ exclude_H by default, so the method is compatible with freesasa, see more in `get_sasa` fn """
+        for r in self:
+            for a in r.get_atoms():
+                # optionally exclude hydrogen atoms
+                if exclude_H and a.element == 'H':
+                    continue
+
+                yield a
 
 
-class ChainResidues(ChainResidueData[Residue]):
+class ChainResidues(ChainResidueData[Residue], SetOfResidues):
     @classmethod
-    def from_label_seq_ids(cls, label_seq_ids: Iterable[int], mapping: BiopythonToMmcifResidueIds.Mapping, bio_chain: Chain):
+    def from_chain(cls, chain: Chain, mapping: BiopythonToMmcifResidueIds.Mapping):
         return cls(
-            cls.residues_from_label_seq_ids(label_seq_ids, mapping, bio_chain),
-            bio_chain.get_parent().get_parent().id,
-            bio_chain.id,
+           [chain[bio_id] for bio_id in mapping.label_seq_id__to__bio_pdb.values()],
+            chain.get_parent().get_parent().id,
+            chain.id,
         )
 
 
@@ -269,7 +278,7 @@ def merge_domains(d1: DomainResidueMapping, d2: DomainResidueMapping, label_seq_
     return new_d1, new_d2
 
 
-class DomainResidues(DomainResidueData[Residue]):
+class DomainResidues(DomainResidueData[Residue], SetOfResidues):
     # todo pošlu sem chainresidues a jejich label_seq_id (chci jen observed v obou sekvencich, podvybrat domenu)
     @classmethod
     def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model,

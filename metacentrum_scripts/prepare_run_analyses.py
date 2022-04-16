@@ -49,8 +49,9 @@ tar -C "$INPUT_FILE_DIR" -xvf "$INPUT_FILE_DIR/$INPUT_ARCHIVE"
 
 export STRUCTURE_DOWNLOAD_ROOT_DIRECTORY=$INPUT_FILE_DIR/pdb_structs
 
-ah-run-analyses <><script_opts --opt_input_dir "$INPUT_FILE_DIR" "$INPUT_FILE_DIR/<><input_file_name" \
-  || { echo >&2 "ah-run-analyses failed (with a code $?)" ;}
+# e.g. ah-run-analyses for script_name
+<><script_name <><script_opts --opt_input_dir "$INPUT_FILE_DIR" "$INPUT_FILE_DIR/<><input_file_name" \
+  || { echo >&2 "<><script_name failed (with a code $?)" ;}
 ''')
 
 STORAGE_DIR = Path('.')
@@ -79,12 +80,9 @@ def get_submission_home() -> Path:
         return Path(os.environ['HOME'])
 
 
-# todo zapomnel jsem vyfiltrovat pary s mismatches, takze mam joby, co bezej strasne dlouho nebo joby, co jsou rychly...
-#  ty se filtrujou az v run analysis, nektery joby mely 5700/7500 a jiny treba 2?
-#  todo progress logging do run_analyses... pairs done  from all pairs..
 
 def submit_run_analyses(pairs, jobs: int, input_shard_base_name: str, script_opts: str, code_dir: str, pdb_dir: str,
-                        qsub_oe_path: Path, other_inputs_dir: str):
+                        qsub_oe_path: Path, other_inputs_dir: str, script_name: str):
 
     shard_size = math.ceil(len(pairs) / jobs)
     shards = (pairs[i:min(len(pairs), i+shard_size)] for i in range(0, len(pairs), shard_size))
@@ -146,6 +144,7 @@ def submit_run_analyses(pairs, jobs: int, input_shard_base_name: str, script_opt
             input_shard_pdb_dir=input_shard_pdb_subdir.name,
 
             script_opts=script_opts,
+            script_name=script_name,
         )
         job_output_dir = get_storage_path(output_shard_dir)
         init_vars = init_vars_template.substitute(
@@ -165,6 +164,8 @@ def submit_run_analyses(pairs, jobs: int, input_shard_base_name: str, script_opt
         with job_script_path.open('w') as f:
             f.write(job_script)
 
+        logger.info(f'job prepared for shard {job_num} / {jobs}')
+
         # submit job
         # passed_env_vars = [
         #     f'CODE_DIR={get_storage_path(code_dir)}',
@@ -178,6 +179,7 @@ def submit_run_analyses(pairs, jobs: int, input_shard_base_name: str, script_opt
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--script_name', default='ah-run-analyses')
     parser.add_argument('--jobs', type=int, default=1, help='number of jobs')
     # todo add reasonable default
     parser.add_argument('--script_opts', default='--workers 4 --debug')
@@ -199,7 +201,9 @@ if __name__ == '__main__':
     with open(args.input_json) as f:
         pairs = json.load(f)
 
+    # [done] ttodo zapomnel jsem vyfiltrovat pary s mismatches, takze mam joby, co bezej strasne dlouho nebo joby, co jsou rychly...
+    #  ty se filtrujou az v run analysis, nektery joby mely 5700/7500 a jiny treba 2?
     pairs = [pair for pair in pairs if pair['lcs_result']['mismatches'] == 0]
 
     submit_run_analyses(pairs, args.jobs, args.input_shard_base_name, args.script_opts, args.code_dir, args.pdb_dir,
-                        args.qsub_oe_path, args.input_dir)
+                        args.qsub_oe_path, args.input_dir, args.script_name)

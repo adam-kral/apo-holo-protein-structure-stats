@@ -20,6 +20,8 @@ from apo_holo_structure_stats.pipeline.download_structures import download_struc
 from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
 from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
+from core.dataclasses import ChainResidues
+
 logger = logging.getLogger(__name__)
 
 
@@ -195,7 +197,7 @@ def get_chains_metadata_for_structure(ordinal, filename: Path, input_chain_metad
 
             # get chain metadata
             sequence = list(parsed.poly_seqs[mapping_for_chain.entity_poly_id].values())
-            is_holo = is_holo_analyzer(s, chain)
+            is_holo = is_holo_analyzer(s, ChainResidues.from_chain(chain, mapping_for_chain))
 
             metadata = input_chain_metadata[chain.id] if input_chain_metadata else {}  # could fail, if chain.id not in chain_metadata, but I don't see it happening
             metadata.update({'pdb_code': s.get_parent().id, 'path': str(filename), 'chain_id': chain.id,

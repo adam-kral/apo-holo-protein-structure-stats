@@ -1,6 +1,7 @@
+import functools
 import multiprocessing
 import shelve
-from functools import partial
+from functools import partial, lru_cache
 from pathlib import Path
 
 from apo_holo_structure_stats.core.analyses import *
@@ -25,6 +26,15 @@ def simplify_arg(arg):
         return arg
 
 mulproc_lru_cache = partial(mulproc_lru_cache, args_to_key_fn=simplify_arg)
+
+
+def simplify_args_decorator(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        args = map(simplify_arg, args)
+        kwargs = {k: simplify_arg(v) for k, v in kwargs.items()}
+        return func(*args, **kwargs)
+    return wrapper
 
 
 # nejde writovat ve více procesech/vláknech
@@ -102,11 +112,14 @@ class NotXrayDiffraction(Exception):
     pass
 
 def parse_mmcif_exp_method_hack(not_xray: dict, pdb_code: str):
+    ''' as we want to cache the parsed structures (we do 2), we also want to record that the structure is not x-ray,
+    so we need to parse it only once. (this is a hack see above, is solved in `filter_structures` '''
     # not_xray a dict, as multiprocessing.Manager has not .set() attr
     if pdb_code in not_xray:
         raise NotXrayDiffraction
 
     apo_parsed, apo_metadata = parse_mmcif(pdb_code, with_extra=True, allow_download=False)
+    # apo_parsed, apo_metadata = parse_mmcif(pdb_code, with_extra=True, allow_download=True)  # todo temp hack for testing
 
     # todo delete this
     #  need to skip non-xray now (we still have old data unskipped in `filter_structures`)
@@ -165,5 +178,8 @@ def configure_pipeline(manager, input_dir: Path):
 
     analyzer_namespace = locals()
     del analyzer_namespace['manager']  # remove the argument from the namespace
+    del analyzer_namespace['input_dir']  # remove the argument from the namespace
 
-    return dotdict(analyzer_namespace)
+    # return dotdict(analyzer_namespace)  # najednou chyba, kdyz jsem to spoustel vedle v cryptic_binding_sites, tak to
+    # radsi opravim i tu (navic to nakonec stejne bylo zbytecny)
+    return analyzer_namespace
