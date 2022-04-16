@@ -211,8 +211,6 @@ class GetDomainsForStructure(CachedAnalyzer):
         for domain in domains.values():
             domain.segment_beginnings, domain.segment_ends = sort_bound_lists(domain.segment_beginnings, domain.segment_ends)
 
-        # if I wanted to sort that, I would also need to sort segment_ends accordingly (as pairs with the start segments), NOT on its own
-
         return list(domains.values())
 
 

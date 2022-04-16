@@ -38,8 +38,9 @@ class BioResidueId(NamedTuple):
 
 class BiopythonToMmcifResidueIds:
     class Mapping:
-        def __init__(self, entity_poly_id: str):
+        def __init__(self, entity_poly_id: str, label_asym_id: str):
             self.entity_poly_id = entity_poly_id
+            self.label_asym_id = label_asym_id
 
             self.label_seq_id__to__bio_pdb: Dict[int, BioResidueId] = {}
             self.bio_pdb__to__label_seq_id: Dict[BioResidueId, int] = {}
@@ -151,6 +152,7 @@ class BiopythonToMmcifResidueIds:
         # mmcif atom list spec: https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v40.dic/Categories/atom_site.html
 
         chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]  # not required in spec, but is in 100.0 % entries
+        label_asym_id_list = mmcif_dict["_atom_site.label_asym_id"]  # not required in spec, but is in 100.0 % entries
         entity_id_list = mmcif_dict["_atom_site.label_entity_id"]
         resname_list = mmcif_dict["_atom_site.label_comp_id"]
         icode_list = mmcif_dict["_atom_site.pdbx_PDB_ins_code"]  # not required in spec, in about 3.2 % of entries (probably means the field is present but with
@@ -214,7 +216,8 @@ class BiopythonToMmcifResidueIds:
                 if resname == "HOH" or resname == "WAT":
                     hetatm_flag = "W"
                 else:
-                    hetatm_flag = "H"  # This might be used ("W" branch probably won't, as we skip non-polymers), ex. phosphoserine in 5za2 (which would be skipped though)
+                    hetatm_flag = "H"  # This might be used ("W" branch probably won't, as we skip non-polymers),
+                    # ex. phosphoserine in 5za2 (which would be skipped though due to microheterogeneity)
             else:
                 hetatm_flag = " "
 
@@ -228,7 +231,12 @@ class BiopythonToMmcifResidueIds:
             except KeyError:
                 # todo neni zaruceny, ze auth_asym_id ma jedinou entitu, label_asym_id ano, mozna bych to mohl
                 #  kontrolovat/zjistit
-                model[chain_id] = chain_mapping = BiopythonToMmcifResidueIds.Mapping(entity_id_list[i])
+                # here I assume that an auth_asym_id chain covers the label_sym_id chain (i.e. label_asym_id is same
+                # for all the residues)
+                # if it weren't true, I should make one mapping for the whole structure, a mapping of tuples
+                # (label/auth chain_id, label/auth residue_id) onto each other.
+                model[chain_id] = chain_mapping = BiopythonToMmcifResidueIds.Mapping(entity_id_list[i],
+                                                                                     label_asym_id_list[i])
 
             chain_mapping.add_residue(int(label_seq_id), biopython_residue_id)
 

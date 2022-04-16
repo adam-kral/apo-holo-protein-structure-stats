@@ -1,0 +1,9 @@
+vztah mezi label_asym_id a tím, že mmcif file (krystalografický)
+    zachycuje asymmetric unit toho krystalu, ten file má ale víc struct_asyms.. No, mmcif se používá i pro ne-krystalografii,¨
+    takže jaká je pak definice? Proč to není v té reference? Přijde mi, že je tam tak 10 % informací.
+- opravdu je 1to1 sequence correspondence mezi label_asym and entity sequence?
+    - struct_asym ma jen jeden pointer na entity, tak asi jo?
+
+jaký je vztah mezi auth_asym a label_asym. Může se stát, že jeden auth_asym má víc label_asym (když nepočítáme
+heteroresidua, tam to neplatí samozřejmě)? A může se stát, že jeden label_asym má víc auth_asym (to by mi nevadilo, protože
+vždycky kvůli biopythonu pracuju s auth_asym).
