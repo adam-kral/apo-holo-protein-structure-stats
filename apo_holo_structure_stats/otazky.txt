@@ -7,3 +7,9 @@ vztah mezi label_asym_id a tím, že mmcif file (krystalografický)
 jaký je vztah mezi auth_asym a label_asym. Může se stát, že jeden auth_asym má víc label_asym (když nepočítáme
 heteroresidua, tam to neplatí samozřejmě)? A může se stát, že jeden label_asym má víc auth_asym (to by mi nevadilo, protože
 vždycky kvůli biopythonu pracuju s auth_asym).
+
+
+Proč nefunguje najednou logging pri multiprocessingu? Vzdyt v lozich jsem to videl, i na metacentru?
+Taky je tam najednou ten deadlock nebo co, to tam taky predtim nebylo. Vubec nechapu, co se zmenilo, kdyz
+jsem nic nemenil. No proste ho vypnu a pobezi to na jednom jadre. Je to vlastne lepsi (jenom je pak vic hpc tasků a
+pip installů), protoze stejne to bottleneckuje interprocess communication to cachovani, takze to funguje tak na 30 %...

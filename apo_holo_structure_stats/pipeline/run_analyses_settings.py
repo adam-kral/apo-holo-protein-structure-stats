@@ -8,13 +8,7 @@ from apo_holo_structure_stats.core.analyses import *
 from apo_holo_structure_stats.core.base_analyses import Analyzer
 from apo_holo_structure_stats.core.mp_lru_cache import MultiProcessingLRUCache as mulproc_lru_cache
 
-
-# todo in future the dependecy instantiation might be automatic, one would just initialize the variables with
-#  lambdas that would wrap the created instances?
-
-# todo wrap in simple memoize cache or API requests in MultiProcessingLRUCache
-# lightweight cache is only in Python 3.9, for 3.8 need to use lru_cache even for maxsize=None
-from apo_holo_structure_stats.input.download import parse_mmcif
+from apo_holo_structure_stats.input.download import parse_mmcif as parse_mmcif_fn
 
 
 def simplify_arg(arg):
@@ -79,10 +73,6 @@ class SavedAnalysis(Analyzer):
         return self.name
 
 
-
-
-
-
 # todo kolik je ne páru v jedný skupině, ale kolik je tříd ekvivalence/tranzitivních párů
 MP_CACHE_SIZE = 1e4
 
@@ -111,26 +101,8 @@ Navic bych nepretizil servery predvypoctem (i kdyz sasa - tam se hodi asi to cac
 class NotXrayDiffraction(Exception):
     pass
 
-def parse_mmcif_exp_method_hack(not_xray: dict, pdb_code: str):
-    ''' as we want to cache the parsed structures (we do 2), we also want to record that the structure is not x-ray,
-    so we need to parse it only once. (this is a hack see above, is solved in `filter_structures` '''
-    # not_xray a dict, as multiprocessing.Manager has not .set() attr
-    if pdb_code in not_xray:
-        raise NotXrayDiffraction
 
-    apo_parsed, apo_metadata = parse_mmcif(pdb_code, with_extra=True, allow_download=False)
-    # apo_parsed, apo_metadata = parse_mmcif(pdb_code, with_extra=True, allow_download=True)  # todo temp hack for testing
-
-    # todo delete this
-    #  need to skip non-xray now (we still have old data unskipped in `filter_structures`)
-    if apo_metadata.mmcif_dict['_exptl.method'][0] != 'X-RAY DIFFRACTION':
-        not_xray[pdb_code] = True
-        raise NotXrayDiffraction(f"method is {apo_metadata.mmcif_dict['_exptl.method'][0]}")
-
-    return apo_parsed
-
-
-def configure_pipeline(manager, input_dir: Path):
+def configure_pipeline(input_dir: Path, manager=None):
     # todo all other analyses could be cached at least with lru_cache for the time a pair is processed (they are called
     # multiple times in some cases..)
     # def end_pair_callback():
@@ -140,10 +112,10 @@ def configure_pipeline(manager, input_dir: Path):
 
     # todo delete this
     #  need to skip non-xray now (we still have old data unskipped in `filter_structures`)
-    not_xray = manager.dict()
-    parse_mmcif = mulproc_lru_cache(partial(parse_mmcif_exp_method_hack, not_xray), manager, max_size=2)
-    # parse_mmcif = mulproc_lru_cache(partial(parse_mmcif, allow_download=False), manager, max_size=2)
-
+    # not_xray = manager.dict()
+    # parse_mmcif = mulproc_lru_cache(partial(parse_mmcif_exp_method_hack, not_xray), manager, max_size=2)
+    # parse_mmcif = lru_cache(maxsize=3)(simplify_args_decorator(parse_mmcif_fn))
+    parse_mmcif = lru_cache(maxsize=3)(parse_mmcif_fn)
 
     get_chains = GetChains()
 

@@ -4,6 +4,7 @@ from enum import Enum, auto
 from typing import List, Dict, TypeVar, Generic, Iterator, Iterable, Tuple, Any
 
 import numpy as np
+from Bio.PDB.Atom import Atom
 from Bio.PDB.Chain import Chain
 from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
@@ -106,6 +107,20 @@ class SetOfResidueData(Generic[TResidueData]):
             )
         )
 
+    def get_atoms(self: 'SetOfResidueData[Residue]', exclude_H=True) -> Iterable[Atom]:
+        """ exclude_H by default, so the method is compatible with freesasa, see more in `get_sasa` fn
+
+        in Python one cannot specialize SetOfResidueData for SetOfResidueData[Residue] and provide its own definition,
+        like in c++, so this is the way how to do it. Note the type annotation at `self` argument."""
+
+        for r in self:
+            for a in r.get_atoms():
+                # optionally exclude hydrogen atoms
+                if exclude_H and a.element == 'H':
+                    continue
+
+                yield a
+
 
 @dataclass(frozen=True, eq=False)
 class CombinedSetOfResidueData(SetOfResidueData[TResidueData]):
@@ -144,15 +159,7 @@ class DomainResidueData(SetOfResidueData[TResidueData]):
 
 
 class SetOfResidues(SetOfResidueData[Residue]):
-    def get_atoms(self, exclude_H=True):
-        """ exclude_H by default, so the method is compatible with freesasa, see more in `get_sasa` fn """
-        for r in self:
-            for a in r.get_atoms():
-                # optionally exclude hydrogen atoms
-                if exclude_H and a.element == 'H':
-                    continue
-
-                yield a
+    pass
 
 
 class ChainResidues(ChainResidueData[Residue], SetOfResidues):

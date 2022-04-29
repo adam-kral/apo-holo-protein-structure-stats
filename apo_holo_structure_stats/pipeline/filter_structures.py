@@ -20,29 +20,77 @@ from apo_holo_structure_stats.pipeline.download_structures import download_struc
 from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
 from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
-from core.dataclasses import ChainResidues
+from apo_holo_structure_stats.core.dataclasses import ChainResidues
 
 logger = logging.getLogger(__name__)
 
 
+def get_resolution(mmcif_dict):
+    """ Basically the same as in BioPython, but fixes it for cryo-em structures (on which BioPython returns None, because
+    they often or always have `.` in _refine.ls_d_res_high.)
+
+    https://github.com/biopython/biopython/pull/3229#issuecomment-678608377
+    """
+    res_keys = [
+        "_refine.ls_d_res_high",
+        "_refine_hist.d_res_high",
+        "_em_3d_reconstruction.resolution",
+    ]
+
+    resolution = None
+
+    for key in res_keys:
+        try:
+            val = mmcif_dict[key]
+            item = val[0]
+        except (KeyError, IndexError):
+            continue
+        if item not in ('?', '.'):
+            resolution = item
+
+    if resolution is not None:
+        try:
+            resolution = float(resolution)
+        except ValueError:
+            pass
+
+    return resolution
+
+
 def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains):
     # todo neni s structure, ale model!
-    """ decides if structure meets criteria for resolution, single-chainedness, etc. """
+    """ decides if structure meets criteria for resolution, etc. """
 
-    resolution = s_header['resolution']
+    # resolution = s_header['resolution']  # this does not work with elmi
+    resolution = get_resolution(mmcif_dict)
     s_id = s.get_parent().id
 
+    print(resolution)
+    print(MIN_STRUCTURE_RESOLUTION)
     # skip low resolution
     if resolution and resolution > MIN_STRUCTURE_RESOLUTION:
         logger.info(f'skipping structure {s_id}: resolution ({resolution}) does not meet the limit of {MIN_STRUCTURE_RESOLUTION}')
         return False
+    #
+    # # skip non-xray. Done in the original paper. Try without it. Or then, specify in output dataset which experimental
+    # #   method (or one could integrate the info themselves)
+    # if mmcif_dict['_exptl.method'][0] != 'X-RAY DIFFRACTION':
+    #     logger.info(f'skipping structure {s_id}: exp. method `{mmcif_dict["_exptl.method"]}` is not X-RAY DIFFRACTION')
+    #     return False
 
-    # skip non-xray. Done in the original paper. Try without it. Or then, specify in output dataset which experimental
-    #   method (or one could integrate the info themselves)
-    if mmcif_dict['_exptl.method'][0] != 'X-RAY DIFFRACTION':
-        logger.info(f'skipping structure {s_id}: exp. method `{mmcif_dict["_exptl.method"]}` is not X-RAY DIFFRACTION')
+    # this is bad, this also should be in the output files, so we can easily know how many structures/chains were
+    # discarded and why?
+    # we already parse them, at least the mmcif
+    # probably I didn't have it in the file from the beginning, as this is an attribute of the structure, not the chains...
+    # so what? I don't need to create a flat file (or I could save it in long form). But then, it would be hard to read
+    # it with pandas (json normalize, not exactly intuitive use -  have to list all outer columns manually)
+    # no time for that now - ignore
+    if not resolution:
+        # for those methods, the resolution should be obtained:
+        # assert mmcif_dict["_exptl.method"][0] not in ('X-RAY DIFFRACTION',  'ELECTRON MICROSCOPY')
+        # skip NMR structures and others
+        logger.info(f'skipping structure {s_id}: exp. method `{mmcif_dict["_exptl.method"]}`, could not determine the resolution')
         return False
-
 
     # skip DNA/RNA complexes
     try:
@@ -200,8 +248,15 @@ def get_chains_metadata_for_structure(ordinal, filename: Path, input_chain_metad
             is_holo = is_holo_analyzer(s, ChainResidues.from_chain(chain, mapping_for_chain))
 
             metadata = input_chain_metadata[chain.id] if input_chain_metadata else {}  # could fail, if chain.id not in chain_metadata, but I don't see it happening
-            metadata.update({'pdb_code': s.get_parent().id, 'path': str(filename), 'chain_id': chain.id,
-                             'is_holo': is_holo, 'sequence': sequence})
+            metadata.update({
+                'pdb_code': s.get_parent().id,
+                'path': str(filename),  # todo I don't use that anymore
+                'chain_id': chain.id,
+                'is_holo': is_holo,  # possibly add some details about the ligand or LBS (which?)
+                'resolution': get_resolution(s_metadata.mmcif_dict),
+                '_exptl.method': s_metadata.mmcif_dict['_exptl.method'][0],  #   # there are structures where there are
+                # multiple _exptl.method, but save just the first..
+                'sequence': sequence})
             chain_metadata.append(metadata)
 
     return chain_metadata
@@ -212,9 +267,6 @@ def find_structures(pdb_codes):
 
 
 def main():
-    # chce, aby se tomu mohly dodat fily přes directory
-    # nebo se tomu dá comma-delimited list of pdb_codes
-
     import argparse
     import sys
 
@@ -289,24 +341,39 @@ def main():
     if not args.all_chains and chain_whitelists is not None:
         extra_args.append(chain_whitelists)
 
-    with ProcessPoolExecutor(max_workers=args.workers) as executor:
-        chain_metadata_futures = submit_tasks(
-            executor, 40 * args.workers,
-            get_chains_metadata_for_structure, itertools.count(), structure_filenames, *extra_args
-        )
+    chains_of_structures_that_passed = []
 
-        # iterate over the futures and flatten the chain metadata
-        # result of a single task is a list of chain metadata for each structure, flatten tasks results into a list of chains
-        chains_of_structures_that_passed = []
-        for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
+    # serial version
+    if args.workers == 1:
+        for prepared_args in zip(itertools.count(), structure_filenames, *extra_args):
             try:
-                chain_metadata = chains_future.result()
+                chain_metadata = get_chains_metadata_for_structure(*prepared_args)
+                chains_of_structures_that_passed.extend(chain_metadata)
             except Exception:
-                logger.exception(f'Exception when a task for a structure `{struct_filename}` was executed.')
-                continue
+                logger.exception(f'Exception when a task for a structure `{prepared_args[1]}` was executed.')
 
-            # flatten
-            chains_of_structures_that_passed.extend(chain_metadata)
+    else:
+        # parallel version, but logging somehow doesn't work and there is no easy/out-of-the-box way to make it work
+        # with multiprocessing
+        with ProcessPoolExecutor(max_workers=args.workers) as executor:
+            # pri multiprocessingu nefunguje logging, aspon, kdyz to spoustim pres testy, k nicemu uplne
+            chain_metadata_futures = submit_tasks(
+                executor, 40 * args.workers,
+                get_chains_metadata_for_structure, itertools.count(), structure_filenames, *extra_args
+            )
+
+            # iterate over the futures and flatten the chain metadata
+            # result of a single task is a list of chain metadata for each structure, flatten tasks results into a list of chains
+            for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
+                print('hovno done')
+                try:
+                    chain_metadata = chains_future.result()
+                except Exception:
+                    logger.exception(f'Exception when a task for a structure `{struct_filename}` was executed.')
+                    continue
+
+                # flatten
+                chains_of_structures_that_passed.extend(chain_metadata)
 
     # with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as executor:
     #

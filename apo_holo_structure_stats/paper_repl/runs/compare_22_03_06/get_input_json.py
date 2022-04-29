@@ -27,7 +27,7 @@ def get_actual_chain_id(s1_pdb_code: str, s1_paper_chain_code: str):
     apo, apo_residue_id_mappings = map(lambda s: s[0], (apo, apo_residue_id_mappings))
 
     apo_chain = get_chain_by_chain_code(apo, s1_paper_chain_code)
-    actual_chain_id = apo_chain.id  # not a f** underscore
+    actual_chain_id = apo_chain.id  # not an underscore (perhaps standing for implicit chain id)
     return actual_chain_id
 
 # logging.basicConfig()

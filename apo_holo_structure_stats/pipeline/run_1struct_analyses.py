@@ -3,6 +3,7 @@ import concurrent.futures
 import itertools
 import logging
 import shelve
+import sys
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
@@ -22,7 +23,6 @@ get_domains = GetDomainsForStructure()
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--limit_pairs_for_group', type=int, help='process only structures with main chain of that isoform')
     parser.add_argument('--workers', default=12, type=int, help='process only structures with main chain of that isoform')
     parser.add_argument('pairs_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
 
@@ -35,6 +35,10 @@ def main():
     # to pairs bych mohl mít bez mismatchů, ušetřil bch v těhlech 2/3 skriptech třetinu párů/paměti.
 
     potential_pairs = load_pairs_json(args.pairs_json)
+    if potential_pairs.empty:
+        logger.warning('Input json contains no records.')
+        sys.exit(0)
+
     print(potential_pairs)
     pairs = pairs_without_mismatches(potential_pairs)
     # pairs = pairs.iloc[:40]  # todo testing hack

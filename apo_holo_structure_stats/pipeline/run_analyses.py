@@ -4,6 +4,7 @@ import itertools
 import json
 import logging
 import queue
+import sys
 from datetime import datetime, timedelta
 from functools import partial
 from multiprocessing import Manager
@@ -490,16 +491,8 @@ def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chai
     logger.info(f'process_pair {s1_pdb_code}, {s2_pdb_code}')
 
     try:
-        # todo hack, normalne to bude ve filter structures
-        from .run_analyses_settings import NotXrayDiffraction
-        try:
-            apo_parsed = plocal.parse_mmcif(s1_pdb_code)
-            holo_parsed = plocal.parse_mmcif(s2_pdb_code)
-        except NotXrayDiffraction:
-            logger.exception('not x-ray diffraction')
-            logger.info(f'skipping pair {(s1_pdb_code, s2_pdb_code)}: exp. method '
-                        f'is not X-RAY DIFFRACTION for a structure of the pair')
-            return
+        apo_parsed = plocal.parse_mmcif(s1_pdb_code)
+        holo_parsed = plocal.parse_mmcif(s2_pdb_code)
 
         apo = apo_parsed.structure
         apo_residue_id_mappings = apo_parsed.bio_to_mmcif_mappings
@@ -562,10 +555,7 @@ def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chai
 # MP initializer
 # https://stackoverflow.com/questions/10117073/how-to-use-initializer-to-set-up-my-multiprocess-pool
 
-def run_analyses_serial(pairs_json, process_pair_fn, worker_initializer=None, worker_init_args=()):
-    potential_pairs = load_pairs_json(pairs_json)
-    # print(potential_pairs)
-    pairs = pairs_without_mismatches(potential_pairs)
+def run_analyses_serial(pairs, process_pair_fn, worker_initializer=None, worker_init_args=()):
     # pairs = pairs.iloc[:20]  # todo testing hack
     # print(pairs)
     if worker_initializer:
@@ -583,7 +573,7 @@ def run_analyses_serial(pairs_json, process_pair_fn, worker_initializer=None, wo
                 f'started at: {start_datetime.isoformat()}, ended at: {datetime.now().isoformat()}')
 
 
-def run_analyses_multiprocess(pairs_json, process_pair_fn, num_workers, worker_initializer=None, worker_init_args=None):
+def run_analyses_multiprocess(pairs, process_pair_fn, num_workers, worker_initializer=None, worker_init_args=None):
     """ Allows to run `process_pair_fn` on pairs (in multiprocess environment).
 
     Reads the json in the expected format (output of `make_pairs_lcs.py`). Hides some of the multiprocessing complexity.
@@ -593,7 +583,7 @@ def run_analyses_multiprocess(pairs_json, process_pair_fn, num_workers, worker_i
      objects -- shared lists, dicts, etc.) Then, this function would be called inside a `with multiprocessing.Manager()`
      block.
 
-    :param pairs_json:
+    :param pairs:
     :param process_pair_fn: picklable callable, taking 5 parameters: pdb_code_apo, _holo, chain_id_apo, _holo, lcs_result
     :param num_workers:
     :param worker_initializer: callable (probably) needs to be picklable, for more details look up this parameter
@@ -604,12 +594,6 @@ def run_analyses_multiprocess(pairs_json, process_pair_fn, num_workers, worker_i
     """
 
     start_datetime = datetime.now()
-
-    potential_pairs = load_pairs_json(pairs_json)
-    # print(potential_pairs)
-    pairs = pairs_without_mismatches(potential_pairs)
-    # pairs = pairs.iloc[:10]  # todo testing hack todo create a test in test.py with a smaller pairs file?
-    # print(pairs)
 
     # with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:    # todo testing
     with concurrent.futures.ProcessPoolExecutor(
@@ -670,6 +654,12 @@ def main():
     logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
     logging.basicConfig()
 
+    potential_pairs = load_pairs_json(args.pairs_json)
+    if potential_pairs.empty:
+        logger.warning('Input json contains no records.')
+        sys.exit(0)
+    pairs = pairs_without_mismatches(potential_pairs)
+
     # don't run analyses for each isoform group separately, as creating a process pool carries an overhead
     # median pairs per group is 6
     # but could reset the caches? No need, all are LRU..
@@ -677,17 +667,22 @@ def main():
     analyses_output_fpath = Path(f'output_apo_holo_{start_datetime.isoformat()}.json')
     domains_info_fpath = Path(f'output_domains_info_{start_datetime.isoformat()}.json')
 
+
     with Manager() as multiprocessing_manager:
         # get analyzers as configured
         # p = configure_pipeline(multiprocessing_manager)
-        analyses_namespace = configure_pipeline(multiprocessing_manager, args.opt_input_dir)
+        analyses_namespace = configure_pipeline(args.opt_input_dir)
 
         serializer = ConcurrentJSONAnalysisSerializer(analyses_output_fpath, multiprocessing_manager)
-        domains_info = multiprocessing_manager.list()
-        one_struct_analyses_done_set = multiprocessing_manager.dict()
+        # domains_info = multiprocessing_manager.list()
+        # one_struct_analyses_done_set = multiprocessing_manager.dict()
+        domains_info = []
+        one_struct_analyses_done_set = {}
         worker_initializer_args = (analyses_namespace, serializer, domains_info, one_struct_analyses_done_set)
 
-        run_analyses_multiprocess(args.pairs_json, process_pair, args.workers, worker_initializer,
+        # run_analyses_multiprocess(pairs, process_pair, args.workers, worker_initializer,
+        #                           worker_initializer_args)
+        run_analyses_serial(pairs, process_pair, worker_initializer,
                                   worker_initializer_args)
 
         serializer.dump_data()

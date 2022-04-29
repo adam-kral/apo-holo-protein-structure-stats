@@ -212,8 +212,13 @@ def make_pairs_with_lcs(structures_metadata, workers):    # groupby isoform
             for pair in get_pairs_in_group(structures_metadata, group_indices, uniprot_id):
                 yield uniprot_id, pair
 
-    uniprot_ids, pairs = more_itertools.unzip(get_pairs())
-    pair_ids, lcs__args = more_itertools.unzip(pairs)
+    try:
+        uniprot_ids, pairs = more_itertools.unzip(get_pairs())
+        pair_ids, lcs__args = more_itertools.unzip(pairs)
+    except ValueError:
+        # if iterable get_pairs() is empty, unpacking of more_itertools.unzip() raises this exception
+        # no time to fix that in a reasonable way
+        return
 
     i = 0
     print(datetime.now())
@@ -340,7 +345,7 @@ def main():
     json_files = glob.glob(str(args.structures_json))
     structures_metadata = read_jsons_with_seqs(json_files, quiet=False)#args.loglevel > logging.INFO)
     pairs = list(make_pairs_with_lcs(structures_metadata, args.workers))
-
+    # todo log statistic how many of possible pairs were made
     with args.output_file.open('w') as f:
         json.dump(pairs, f, cls=CustomJSONEncoder)
 
