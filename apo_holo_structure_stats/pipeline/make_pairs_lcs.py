@@ -198,7 +198,8 @@ def get_pairs_in_group(structures_metadata, group_indices, group_label=None):
             yield (apo_chain, holo_chain), (apo_row.sequence, holo_row.sequence)
 
 
-def make_pairs_with_lcs(structures_metadata, workers):    # groupby isoform
+def make_pairs_with_lcs(structures_metadata, workers):
+    # groupby isoform
     # product apo holo
     # do following in multiple processes:
     #   find LCS
@@ -220,32 +221,36 @@ def make_pairs_with_lcs(structures_metadata, workers):    # groupby isoform
         # no time to fix that in a reasonable way
         return
 
-    i = 0
-    print(datetime.now())
+    with ProcessPoolExecutor(workers) as executor:
+        i = 0
+        print(datetime.now())
+        lcs_futures = submit_short_tasks(executor, 4 * workers, 100,
+                                         partial(fn_wrapper_unpack_args, get_longest_common_polypeptide),
+                                         lcs__args)
 
-    # for uniprot_id, (apo_chain, holo_chain), lcs_future in zip(uniprot_ids, pair_ids, lcs_futures):
-    for uniprot_id, (apo_chain, holo_chain), args in zip(uniprot_ids, pair_ids, lcs__args):
-        lcs_future = FutureLike(process_execute(get_longest_common_polypeptide, *args))
-        i += 1
-        if i % 100 == 0:
-            # if i % 100 == 0:
-            maybe_print(False, f'\r{i}', end='')
+        for uniprot_id, (apo_chain, holo_chain), lcs_future in zip(uniprot_ids, pair_ids, lcs_futures):
+        # for uniprot_id, (apo_chain, holo_chain), args in zip(uniprot_ids, pair_ids, lcs__args):
+        #     lcs_future = FutureLike(process_execute(get_longest_common_polypeptide, *args))
+            i += 1
+            if i % 100 == 0:
+                # if i % 100 == 0:
+                maybe_print(False, f'\r{i}', end='')
 
-        try:
-            logger.info(f'getting result of {apo_chain} {holo_chain}, from {uniprot_id}')
+            try:
+                logger.info(f'getting result of {apo_chain} {holo_chain}, from {uniprot_id}')
 
-            yield {
-                'pdb_code_apo': apo_chain[0],  # todo could rename the variables to more general chain1 /c1, c2...
-                'chain_id_apo': apo_chain[1],
-                'pdb_code_holo': holo_chain[0],
-                'chain_id_holo': holo_chain[1],
-                'lcs_result': lcs_future.result(),
-            }
+                yield {
+                    'pdb_code_apo': apo_chain[0],  # todo could rename the variables to more general chain1 /c1, c2...
+                    'chain_id_apo': apo_chain[1],
+                    'pdb_code_holo': holo_chain[0],
+                    'chain_id_holo': holo_chain[1],
+                    'lcs_result': lcs_future.result(),
+                }
 
-        except Exception as e:
-            logger.exception('compute_lcs failed with: ')
+            except Exception as e:
+                logger.exception('compute_lcs failed with: ')
 
-    print(datetime.now())
+        print(datetime.now())
 
 
 def make_pairs_with_lcs_old(structures_metadata, workers):
@@ -346,6 +351,7 @@ def main():
     structures_metadata = read_jsons_with_seqs(json_files, quiet=False)#args.loglevel > logging.INFO)
     pairs = list(make_pairs_with_lcs(structures_metadata, args.workers))
     # todo log statistic how many of possible pairs were made
+    logger.info(f'Computed LCS for {len(pairs)} pairs.')
     with args.output_file.open('w') as f:
         json.dump(pairs, f, cls=CustomJSONEncoder)
 

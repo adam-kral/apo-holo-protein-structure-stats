@@ -66,11 +66,10 @@ qsub -S python3 zkusit?
 
 """"""
 
-
 class ShellTemplate(string.Template):
     delimiter = '<><'
 
 
-def get_shell_template():
+def get_base_run_script_template():
     with (Path(__file__).parent / 'generic_run_python_script.sh').open() as f:
         return ShellTemplate(f.read())

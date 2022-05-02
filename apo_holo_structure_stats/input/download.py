@@ -285,22 +285,24 @@ def find_or_download_structure(pdb_code: str, allow_download=True) -> Path:
 
 class CustomMMCIFParser(MMCIFParser):
     """ Adapted BioPython code, just to get the pdb code (_entry.id) from the mmcif file """
-    def get_structure(self, structure_id, file):
+    def get_structure(self, structure_id, file=None, mmcif_dict=None):
         """ Parses file contents and returns Structure object.
 
         Note that parameter order is different to the BioPython's implementation (reversed, as structure_id is optional).
 
         :param structure_id: if None, taken from mmcif (`_entry.id`)
         :param file: a file-like object or a file name
+        :param mmcif_dict: this may be specified instead of file to build the structure from already parsed mmcif dict
         :return: Bio.PDB.Structure
         """
 
         with warnings.catch_warnings():
             if self.QUIET:
                 warnings.filterwarnings("ignore", category=PDBConstructionWarning)
-            self._mmcif_dict = MMCIF2Dict(file)
 
             # begin change
+            self._mmcif_dict = MMCIF2Dict(file) if not mmcif_dict else mmcif_dict
+
             if structure_id is None:
                 structure_id = self._mmcif_dict['_entry.id'][0].lower()
             # end change
@@ -314,7 +316,8 @@ class CustomMMCIFParser(MMCIFParser):
 @dataclass
 class MmcifParseResult:
     structure: Structure # Biopython's Structure object
-    bio_to_mmcif_mappings: BiopythonToMmcifResidueIds.Models  # maps auth_seq_ids (used in BioPython) to label_seq_ids, a modern way to identify a residue
+    bio_to_mmcif_mappings: BiopythonToMmcifResidueIds.Models  # maps auth_seq_ids (used in BioPython) to
+    # label_seq_ids, a modern way to identify a residue
     poly_seqs: BiopythonToMmcifResidueIds.EntityPolySequences  # polymer sequences, as in mmcif
     poly_with_microhet: Set[int]  # ids of sequences with micro-heterogeneity (multiple resolved AAs for a position)
 
@@ -322,6 +325,15 @@ class MmcifParseResult:
 class MmcifParseResultExtra:
     header: Dict[str, Any]  # metadata from Biopython's MMCIFParser.header (e.g. resolution)
     mmcif_dict: MMCIF2Dict  # whole mmcif dict, suspect may be large, therefore this class is only returned when needed
+
+# maybetodo refactor this, header is probably useless now that I found the bug in header.resolution and only used
+# that for that allow just parsing the mmcif and then getting the structure subsequently (so that the SMCRA model
+# does not have to be built for structures that don't meet basic params (e.g. resolution). I hope and suspect that
+# building the model would take the majority of time compared to just parsing the mmcif into a dict extremely large
+# 3J3Q took 2 min of cpu time and approx 3 gb mem to load the mmcif dict and mmcifparser.get_structure took ..5 GB
+# memory and 3.5 cpu time, so ... don't do it, I only reserved too few memory (however with the caching -- this might
+# be a problem if there will be some large structures next to each other in 4 consecutive structures (cache size 3).
+# And there are --> 3j34, 3j3q, 3j3y so... that won't fit the memory unless I have ~16 gb per node
 
 
 def parse_mmcif(pdb_code: str = None,

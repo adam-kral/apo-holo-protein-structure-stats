@@ -12,9 +12,12 @@ from Bio.PDB.Structure import Structure
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analysesinstances import get_rotation_matrix, get_centroid
 from apo_holo_structure_stats.core.dataclasses import SetOfResidues, DomainResidueMapping, DomainResidues
-from apo_holo_structure_stats.results.json_deserialize import unfold_tuple_to_columns, tuple_it
-from apo_holo_structure_stats.paper_repl.main import get_longest_common_polypeptide
+from apo_holo_structure_stats.core.json_deserialize import unfold_tuple_to_columns, tuple_it
 from apo_holo_structure_stats.input.download import parse_mmcif
+
+from .main import get_longest_common_polypeptide  # todo use the one from apo_holo_structure_stats, main is
+# deprecated and can be deleted
+
 
 OUTPUT_DIR = 'output'
 logger = logging.getLogger(__name__)

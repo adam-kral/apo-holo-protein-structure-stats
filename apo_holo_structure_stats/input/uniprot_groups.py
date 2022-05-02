@@ -1,3 +1,4 @@
+import logging
 import random
 from collections import defaultdict
 import gzip
@@ -11,6 +12,7 @@ from pandas.core.util.hashing import hash_array, combine_hash_arrays
 
 from apo_holo_structure_stats.input.download import download_and_save_file
 
+logger = logging.getLogger(__name__)
 
 def get_uniprot_segments_observed_dataset(download_dir=None):
     """ loads uniprot_segments_observed.csv
@@ -171,7 +173,8 @@ def get_basic_uniprot_groups(uniprot_segments_observed_df=None, download_dir=Non
 def get_basic_uniprot_groups__df(uniprot_segments_observed_df=None, download_dir=None):
     # hack so we don't need more functions like this one
     if uniprot_segments_observed_df is None:
-        uniprot_segments_observed_df, _ = get_uniprot_segments_observed_dataset(download_dir)
+        uniprot_segments_observed_df, dataset_date_created = get_uniprot_segments_observed_dataset(download_dir)
+        logger.info(f'Downloaded uniprot_segments_observed.csv. Version timestamp: {dataset_date_created}.')
 
     # todo neni jich tam vic ruznych unp segmentu k jednomu chainu (chimericky?), ty asi muzu rovnou dropnout, nebo
     # naopak nechat v obou skupinach

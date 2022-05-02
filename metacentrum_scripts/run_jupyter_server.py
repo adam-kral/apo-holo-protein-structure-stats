@@ -4,9 +4,9 @@ import subprocess
 from pathlib import Path
 
 from prepare_run_analyses import get_storage_path, get_submission_home
-from run_pipeline import get_shell_template, ShellTemplate
+from run_pipeline import get_base_run_script_template, ShellTemplate
 
-base_template = get_shell_template()
+base_template = get_base_run_script_template()
 
 init_vars_template = ShellTemplate('''
 CODE_DIR=<><code_dir

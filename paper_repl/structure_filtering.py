@@ -4,8 +4,7 @@ pipeline/filter_structures.py script; for testing purposes (paper repl).
 
 import pandas as pd
 
-from apo_holo_structure_stats.paper_repl.main import get_paper_apo_holo_dataframe
-
+from paper_repl.paper_dataset_utils import get_paper_apo_holo_dataframe
 
 if __name__ == '__main__':
     df = get_paper_apo_holo_dataframe()

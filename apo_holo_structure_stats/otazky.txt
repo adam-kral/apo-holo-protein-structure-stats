@@ -13,3 +13,10 @@ Proč nefunguje najednou logging pri multiprocessingu? Vzdyt v lozich jsem to vi
 Taky je tam najednou ten deadlock nebo co, to tam taky predtim nebylo. Vubec nechapu, co se zmenilo, kdyz
 jsem nic nemenil. No proste ho vypnu a pobezi to na jednom jadre. Je to vlastne lepsi (jenom je pak vic hpc tasků a
 pip installů), protoze stejne to bottleneckuje interprocess communication to cachovani, takze to funguje tak na 30 %...
+
+treba tady kirke53.meta.zcu.cz job run_analyses  vypise Python 3.8.0 a pak vubec se nic nedeje a job nikdy neskonci
+- hrozne zdrzuje zaprve (nerozeznam dlouho bezici joby, ktery nechci killnout od tehle, co nic nedelaji).
+- mozna bych tyhle zcu nody mel zakazat uplne, jeslti to jde -- podivat se do navodu metacentra
+    - :plzen=False :)
+    - no, uz to nefunguje i jinde, asi je zablokovanej pip na ty ip adresy, zkusit zitra...
+        - uz to zas bezi? Mozna delay jenom

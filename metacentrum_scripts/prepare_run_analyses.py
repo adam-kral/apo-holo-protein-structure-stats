@@ -7,7 +7,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from run_pipeline import get_shell_template, ShellTemplate
+from run_pipeline import get_base_run_script_template, ShellTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -25,14 +25,7 @@ def add_loglevel_args(parser):
 
 # todo not [ ] output or [x] input file, but always copy dir
 # - cp -r is ok.. (
-base_template = get_shell_template()
-
-init_vars_template = ShellTemplate('''
-CODE_DIR=<><code_dir
-JOB_OUTPUT_DIR=<><job_output_dir
-JOB_OUTPUT_DIR__IN_STORAGE_HOME=<><job_output_dir_in_home
-SHARD_NUM=<><shard_num
-''')
+base_template = get_base_run_script_template()
 
 
 #  todo in storage home important!
@@ -147,19 +140,18 @@ def submit_run_analyses(pairs, jobs: int, input_shard_base_name: str, script_opt
             script_name=script_name,
         )
         job_output_dir = get_storage_path(output_shard_dir)
-        init_vars = init_vars_template.substitute(
+
+        job_script = base_template.substitute(
             code_dir=get_storage_path(code_dir),
             job_output_dir=job_output_dir,
             job_output_dir_in_home=job_output_dir.relative_to(get_submission_home()),
-            shard_num=job_num,
-        )
-        job_script = base_template.substitute(
-            init_vars=init_vars,
+            shard_num=format_num(job_num),
+
             run_in_output_dir=run
         )
 
         # save script
-        # could instead pass the script directly to qsub stdin, but this is more explicit
+        # could instead pass the script directly to qsub stdin, but this allows one to inspect it
         job_script_path = Path(JOBS_SCRIPTS_DIR, f'job_script{format_num(job_num)}.sh')
         with job_script_path.open('w') as f:
             f.write(job_script)
@@ -182,7 +174,7 @@ if __name__ == '__main__':
     parser.add_argument('--script_name', default='ah-run-analyses')
     parser.add_argument('--jobs', type=int, default=1, help='number of jobs')
     # todo add reasonable default
-    parser.add_argument('--script_opts', default='--workers 4 --debug')
+    parser.add_argument('--script_opts', default='--workers 1 --debug')
     parser.add_argument('--qsub_oe_path', type=Path, default=Path())
     # parser.add_argument('--pdb_dir', default='pdb_structs', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
 

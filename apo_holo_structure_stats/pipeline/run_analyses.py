@@ -689,30 +689,10 @@ def main():
         with domains_info_fpath.open('w') as f:
             json.dump(list(domains_info), f)
 
-
-# [x] todo bad res not skipped (cryo em) 7bua, or just skip non-xray?
-# could do, how many NMR/em splnuji resolution 2.5..
-# totiž, nmr nemaj takhle definovany resolution, ale maj ten quality graph se trema indikatorama...
-# takze bych ho mel preskocit stejne, a asi i cryo em, protoze nema tak dobry a musel bych modifyovat kod biopythonu
-# nebo si to napsat sam, coz neni problem, ale je asi zbytecny, protoze zadna takova struktura ani nebude
-#  pry jsou dobry 3-4, dokazali 1.8/2.7 ale tech asi nebude moc  pdb..
-
-# todo uz snad jen spustit
-#    - [x] jeste mozna skip non-xray, treba tady...
-#    - [x] plus nacitat get_ss_db a get_domains_db.. (upravit analyzer v settings)
-#      [x] - pridat 2 argy asi pro name tech ss a domain dbs, musi to byt arg do configure pipeline? Blby co..
-#    - pak jeste asi omezit pocet paru ve skupine (abych jich nedelal 1M ale treba jen 300K)
-
 # todo proc to bezi tak dlouho
 #   - velky struktury viru treba 6v1z
 #   - maj hodne paru (totiz hodne stejnejch chainu..)
 #   - hlavne trvaj ty struktury desne dlouho nacist..
-#   - nacitaj se radove stokrat znovu..., protoze jsem neudelal to zrychleni, ktery jsem mel za premature opt, a ted
-#   cekam hodiny a hodiny a myslim si , ze uz by to melo bejt, a prodluzuju walltime, aby to nechciplo
-#   - takze posbiram, to co je (400 bez 7 jobu), a udelam analyzy (na metacentru, protoze budu potrebovat tak  aspon 30 gb ram..)
-#   - tech 7 tam pak pridam jednoduse, spusti se to znova..
-#   - i kdyz tehle 7 jobu muze mit (a bude mit kolem) az 7,5K paru, tj 50K chybi ze vsech až 1M (mozna 2/3 kvuli em?), to se da prezit..
-
 
 if __name__ == '__main__':
     main()

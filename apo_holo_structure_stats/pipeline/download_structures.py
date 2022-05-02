@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 BS = 2000
 def download_structures(pdb_codes: List[str], workers: int) -> Iterable[Path]:
     with ThreadPoolExecutor(workers) as executor:
+        # todo logging progress
         for i in range(0, len(pdb_codes), BS):
             batch = pdb_codes[i: min(len(pdb_codes), i + BS)]
             br = executor.map(find_or_download_structure, batch)

@@ -3,13 +3,11 @@
 test -n "$SCRATCHDIR" || { echo >&2 "Variable SCRATCHDIR is not set!"; exit 1; }
 cd "$SCRATCHDIR"
 
-<><init_vars
-
-# these two variables I pass via qsub -v option
-test -n "$CODE_DIR" || { echo >&2 "Variable CODE_DIR is not set!"; exit 1; }
-#test -n "$SHARD_NUM" || { echo >&2 "Variable SHARD_NUM is not set!"; exit 1; }
-test -n "$JOB_OUTPUT_DIR" || { echo >&2 "Variable JOB_OUTPUT_DIR is not set!"; exit 1; }
-test -n "$JOB_OUTPUT_DIR__IN_STORAGE_HOME" || { echo >&2 "Variable JOB_OUTPUT_DIR__IN_STORAGE_HOME is not set!"; exit 1; }
+# initialize the required variables
+CODE_DIR=<><code_dir
+JOB_OUTPUT_DIR=<><job_output_dir
+JOB_OUTPUT_DIR__IN_STORAGE_HOME=<><job_output_dir_in_home
+SHARD_NUM=<><shard_num  # this is optional (may be empty string)
 
 # install requirements
 # python 3.8.0nefungoval

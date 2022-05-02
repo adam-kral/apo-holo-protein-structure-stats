@@ -65,8 +65,6 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
     resolution = get_resolution(mmcif_dict)
     s_id = s.get_parent().id
 
-    print(resolution)
-    print(MIN_STRUCTURE_RESOLUTION)
     # skip low resolution
     if resolution and resolution > MIN_STRUCTURE_RESOLUTION:
         logger.info(f'skipping structure {s_id}: resolution ({resolution}) does not meet the limit of {MIN_STRUCTURE_RESOLUTION}')

@@ -12,5 +12,5 @@ for job_script_path in JOB_SCRIPTS_PATH.glob('job_script*'):
 
     # less than 3 files (out gz, apo_holo, domains)
     if len(os.listdir(f'output/{shard_num}')) < 3:
-        submit_job(job_script_path)
+        submit_job(job_script_path, 1, '8gb', extra=':plzen=False')
 
