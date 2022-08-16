@@ -214,8 +214,11 @@ def get_test_input(groups=None):
     return ','.join(itertools.chain(*struct_code_groups))
 
 
-def get_chains_metadata_for_structure(ordinal, filename: Path, input_chain_metadata: pd.DataFrame = None,
+def get_chains_metadata_for_structure(ordinal, filename: Path, input_chain_metadata: dict = None,
                                       chain_whitelist: Set[str] = None):
+    if input_chain_metadata is not None and chain_whitelist is None:
+        raise ValueError('To update existing metadata about chains, chains have to be whitelisted.')
+
     parsed, s_metadata = parse_mmcif(path=filename, with_extra=True)
     s = parsed.structure
 
@@ -237,6 +240,9 @@ def get_chains_metadata_for_structure(ordinal, filename: Path, input_chain_metad
             mapping_for_chain = residue_id_mappings[chain.id]
 
             # skip sequences with micro-heterogeneity
+            # I think there were some phosphorylated residues in these cases, with altloc for that residue.
+            # 50% P and non-P. But it doesn't make sense to compare the structure then (with itself or across).
+            # As only the single residue has different coords.
             if mapping_for_chain.entity_poly_id in parsed.poly_with_microhet:
                 logger.info(f'skipping {s.get_parent().id} {chain.id}. Microheterogeneity in sequence')
                 continue
@@ -245,7 +251,12 @@ def get_chains_metadata_for_structure(ordinal, filename: Path, input_chain_metad
             sequence = list(parsed.poly_seqs[mapping_for_chain.entity_poly_id].values())
             is_holo = is_holo_analyzer(s, ChainResidues.from_chain(chain, mapping_for_chain))
 
-            metadata = input_chain_metadata[chain.id] if input_chain_metadata else {}  # could fail, if chain.id not in chain_metadata, but I don't see it happening
+            try:
+                metadata = input_chain_metadata[chain.id] if input_chain_metadata else {}
+            except KeyError:
+                # could fail, if chain.id not in chain_metadata (user error)
+                raise RuntimeError(f'Missing metadata for chain {s.get_parent().id},{chain.id} in chain_metadata')
+
             metadata.update({
                 'pdb_code': s.get_parent().id,
                 'path': str(filename),  # todo I don't use that anymore
@@ -316,6 +327,7 @@ def main():
         chains = pd.read_json(args.input)
         # chains = chains.iloc[:100]  # todo test hack
         # chimeric - more UNP to one chain (or could be in-vivo chimeric?
+        # e.g. 2bnq E or 2bnu B have multiplem UNPs mapped to themselves
         # skip them all, (using one unp does not make sense) Or put it them with both unps?
         # todo obviously doesn't work, if this file is run with batches...
         chains = chains.drop_duplicates(subset=['pdb_code', 'chain_id'], keep=False)
@@ -354,7 +366,6 @@ def main():
         # parallel version, but logging somehow doesn't work and there is no easy/out-of-the-box way to make it work
         # with multiprocessing
         with ProcessPoolExecutor(max_workers=args.workers) as executor:
-            # pri multiprocessingu nefunguje logging, aspon, kdyz to spoustim pres testy, k nicemu uplne
             chain_metadata_futures = submit_tasks(
                 executor, 40 * args.workers,
                 get_chains_metadata_for_structure, itertools.count(), structure_filenames, *extra_args
@@ -363,7 +374,7 @@ def main():
             # iterate over the futures and flatten the chain metadata
             # result of a single task is a list of chain metadata for each structure, flatten tasks results into a list of chains
             for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
-                print('hovno done')
+                print('done')
                 try:
                     chain_metadata = chains_future.result()
                 except Exception:

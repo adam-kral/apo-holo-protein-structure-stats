@@ -20,17 +20,21 @@ def unfold_tuple_to_columns(series_or_df_with_tuple_column, new_column_names=Non
         assert column_name is not None
         to_unfold = series_or_df_with_tuple_column[column_name]
 
-    # was too slow
+    # was too slow:
     # unfolded_cols = to_unfold.apply(pd.Series)
 
     if isinstance(to_unfold.iloc[0], dict):
         new_column_names = new_column_names if new_column_names is not None else list(to_unfold.iloc[0].keys())
-        data = list(map(list, more_itertools.unzip((tuple(d.values()) for d in to_unfold))))
+        tuples = (tuple(d.values()) for d in to_unfold)
     else:
         # tuple or list
         new_column_names = new_column_names if new_column_names is not None else to_unfold.name
-        data = list(map(list, more_itertools.unzip(to_unfold)))
+        tuples = to_unfold
 
+    # `tuples` = list of tuples
+    data = map(list, more_itertools.unzip(tuples))  # transpose to individual columns and make them lists
+    data = list(data)  # list of columns (list)
+    assert len(data) == len(new_column_names)  # assert supplied columns names for each new column (position in the tuple)
     data = dict(zip(new_column_names, data))
 
     return pd.DataFrame(series_or_df_with_tuple_column).assign(**data)

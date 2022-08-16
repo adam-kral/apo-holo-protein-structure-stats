@@ -7,10 +7,12 @@ desirable.
 The output directories are not deleted (so that you can rerun specific tests), so for a clean run you have to manually
 delete the tests' directories.
 """
-
+import argparse
+import logging
 import os
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
@@ -18,7 +20,14 @@ from unittest.mock import patch
 import pandas as pd
 
 import apo_holo_structure_stats.settings
-from apo_holo_structure_stats.pipeline import filter_structures
+from apo_holo_structure_stats.pipeline import (
+    chains_for_uniprot_ids,
+    download_structures,
+    filter_structures,
+    make_pairs_lcs,
+    run_1struct_analyses,
+    run_analyses,
+)
 from apo_holo_structure_stats.pipeline.filter_structures import get_chains_metadata_for_structure
 
 """ Download unp groups, dl (some) structures, filter structures,
@@ -34,6 +43,10 @@ run analyses - I would need again some number of pairs -–> I could use those f
 ROOT_OUTPUT_DIR = Path('test_pipeline_output')
 
 
+
+logger = logging.getLogger()
+logger.level = logging.DEBUG
+
 class TestPipelineBase(TestCase):
     class FileNames:
         CHAINS_WITH_UNP = 'chains.json'
@@ -48,11 +61,31 @@ class TestPipelineBase(TestCase):
     monolithic test, so that you can rerun tests (of course, if their depedencies=previous in order tests were already
     run)"""
 
-    def run_command_assert_ok(self, command: str):
+    # like in setup.cfg entry points
+    COMMANDS_TO_FUNCTIONS = {
+        'ah-chains-uniprot': chains_for_uniprot_ids.main,
+        'ah-download-structures': download_structures.main,
+        'ah-filter-structures': filter_structures.main,
+        'ah-make-pairs': make_pairs_lcs.main,
+        'ah-run-1struct-analyses': run_1struct_analyses.main,
+        'ah-run-analyses': run_analyses.main,
+    }
+
+    def run_command_with_mock_argparse(self, command: str):
         print('running:', command)
-        command = shlex.split(command)
-        result = subprocess.run(command)
-        self.assertEqual(0, result.returncode)
+        argv = shlex.split(command)
+
+        # patch arguments
+        script_fn = self.COMMANDS_TO_FUNCTIONS[argv[0]]
+        with patch.object(sys, 'argv', argv):
+            script_fn()  #todo nefunguje logging!!
+
+    # def run_command_assert_ok(self, command: str):
+    #     print('running:', command)
+    #     command = shlex.split(command)
+    #
+    #     result = subprocess.run(command)
+    #     self.assertEqual(0, result.returncode)
 
     def get_download_structures_input(self) -> pd.DataFrame:
         return pd.read_json(self.FileNames.CHAINS_WITH_UNP)
@@ -67,31 +100,31 @@ class TestPipelineBase(TestCase):
         command = f"""\
 ah-download-structures --debug --download_threads 2 "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}"
 """
-        self.run_command_assert_ok(command)
+        self.run_command_with_mock_argparse(command)
 
     def test_filter_structures(self):
         command = f"""\
 ah-filter-structures --debug --disallow_download "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}" "{self.FileNames.FILTERED_CHAINS}"
 """
-        self.run_command_assert_ok(command)
+        self.run_command_with_mock_argparse(command)
 
     def test_make_pairs(self):
         command = f"""\
 ah-make-pairs --debug "{self.FileNames.FILTERED_CHAINS}" "{self.FileNames.PAIRS}"
 """
-        self.run_command_assert_ok(command)
+        self.run_command_with_mock_argparse(command)
 
     def test_run_1struct_analyses(self):
         command = f"""\
 ah-run-1struct-analyses --debug --workers 8 "{self.FileNames.PAIRS}"
 """
-        self.run_command_assert_ok(command)
+        self.run_command_with_mock_argparse(command)
 
     def test_run_analyses(self):
         command = f"""\
 ah-run-analyses --debug --workers 8 "{self.FileNames.PAIRS}"
 """
-        self.run_command_assert_ok(command)
+        self.run_command_with_mock_argparse(command)
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -121,7 +154,7 @@ class TestPipelinePaperDataset(TestPipelineBase):
         command = f"""\
 ah-chains-uniprot --debug --chains "{paper_chains_json_path}" "{self.FileNames.CHAINS_WITH_UNP}"
 """
-        self.run_command_assert_ok(command)
+        self.run_command_with_mock_argparse(command)
 
     # the following definitions are only for the run test button to show up in PyCharm
     def test_download_structures(self):
@@ -153,7 +186,7 @@ class TestPipelineRandomDataset(TestPipelineBase):
         command = f"""\
 ah-chains-uniprot --debug "{self.FileNames.CHAINS_WITH_UNP}"
 """
-        self.run_command_assert_ok(command)
+        self.run_command_with_mock_argparse(command)
 
     # the following definitions are only for the run test button to show up in PyCharm
     def test_download_structures(self):
