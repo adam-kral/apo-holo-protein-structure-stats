@@ -19,12 +19,12 @@ from requests import RequestException
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-from apo_holo_structure_stats import settings
+from apo_holo_structure_stats.settings import Settings
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
 
 logger = logging.getLogger(__name__)
 
-REQUESTS_TIMEOUT = 10  # todo move to settings
+REQUESTS_TIMEOUT = Settings.API_REQUESTS_RETRIES
 
 
 class APIException(Exception):
@@ -32,7 +32,9 @@ class APIException(Exception):
 
 
 class RequestsSessionFactory:
-    retries = Retry(total=5, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504])  # https://stackoverflow.com/a/35504626/3791837
+    """ This Session retries requests on errors. """
+    # https://stackoverflow.com/a/35504626/3791837
+    retries = Retry(total=Settings.API_REQUESTS_RETRIES, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504])
 
     @classmethod
     def create(cls):
@@ -93,7 +95,13 @@ def download_and_save_file(url, file_path):
 
 
 def get_best_isoform_for_chains(struct_code):
-    """ Returns dict chain_id -> list of SegmentMapping(isoform_id, label_seq_id__begin, label_seq_id__end, unp_begin, unp_end, identity) """
+    """ Get best isoform from pdbe API
+
+    (however, the results were not correct AFAIK - sometimes the isoform had worse
+    aligment than the perfect alignment with another isoform (the actual best was the primary accession, but reported as
+    best was some isoform accession)
+
+    Returns dict chain_id -> list of SegmentMapping(isoform_id, label_seq_id__begin, label_seq_id__end, unp_begin, unp_end, identity) """
 
     try:
         r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}', timeout=REQUESTS_TIMEOUT)
@@ -265,7 +273,7 @@ def find_or_download_structure(pdb_code: str, allow_download=True) -> Path:
     filename = f'{pdb_code}.cif.gz'
     url = f'https://files.rcsb.org/download/{filename}'
 
-    local_path = settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY / filename
+    local_path = Settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY / filename
 
     # if file already exists, don't download anything
     # else download it
@@ -273,7 +281,7 @@ def find_or_download_structure(pdb_code: str, allow_download=True) -> Path:
         logger.info(f'using cached structure {pdb_code} at {local_path}')
     elif allow_download:
         # create dir structure if does not exist
-        settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        Settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
         download_and_save_file(url, local_path)
         logger.info(f'finished downloading structure {pdb_code} to {local_path}')

@@ -12,7 +12,7 @@ from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analyses import GetSecondaryStructureForStructure, GetDomainsForStructure
 from apo_holo_structure_stats.pipeline.make_pairs_lcs import load_pairs_json, pairs_without_mismatches
 from apo_holo_structure_stats.pipeline.utils.json import maybe_print
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
 
 logger = logging.getLogger(__name__)
@@ -22,11 +22,9 @@ get_domains = GetDomainsForStructure()
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = get_argument_parser()
     parser.add_argument('--workers', default=12, type=int, help='process only structures with main chain of that isoform')
     parser.add_argument('pairs_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
-
-    add_loglevel_args(parser)
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)

@@ -12,7 +12,7 @@ from Bio.PDB.Residue import Residue
 
 from apo_holo_structure_stats.input.download import get_secondary_structure, get_domains
 from ..settings import LigandSpec
-from .base_analyses import CachedAnalyzer, SerializableCachedAnalyzer, SerializableAnalyzer
+from .base_analyses import CachedAnalyzer, SerializableCachedAnalyzer, SerializableAnalyzer, AnalyzerConfigInitMixin
 from .dataclasses import SSForChain, SSForStructure, SetOfResidueData, SetOfResidues, DomainResidueMapping, \
     ScrewMotionResult, ChainResidues
 from .biopython_to_mmcif import ResidueId
@@ -114,10 +114,14 @@ def get_defined_ligands(struct: Model, chain: SetOfResidues) -> Iterator[Entity]
             yield ligand
 
 
-class GetChains(CachedAnalyzer):
-    # todo tohle teď můžu zpřesnit využitím entity_poly_seq v BiopythonToMmcif
+class GetChains(AnalyzerConfigInitMixin, CachedAnalyzer):
+    """ Use minimum number of observed residues (in bio.Chain) to define a chain for the subsequent analyses. """
     def run(self, struct: Model) -> List[Chain]:
-        return list(filter(lambda chain: sum(is_aa(residue) for residue in chain) >= 50, struct.get_chains()))
+        # (or could use all residues (incl. not observed) -> entity_poly_seq in BiopythonToMmcif)
+        return list(filter(
+            lambda chain: sum(is_aa(residue) for residue in chain) >= self.config['MIN_OBSERVED_RESIDUES_FOR_CHAIN'],
+            struct.get_chains()
+        ))
 
 
 class GetMainChain(CachedAnalyzer):

@@ -54,6 +54,21 @@ class Analyzer:
         return type(self).__name__
 
 
+class AnalyzerConfigInitMixin(Analyzer):
+    def __init__(self, config: dict, dependencies: Tuple['Analyzer', ...] = ()):
+        """ Provides constructor that sets (god) object config
+
+        Config possibly same for each analysis can be e.g. yaml parsed into a dict.
+        User therefore doesn't have to provide constructor for each analysis that
+        list all the config parameters (such as minimum length of a polymer chain),
+        save the parameters as instance attributes and instantiate the analyses listing all arguments in the
+        constructor call such as Analysis(config['yaml_param_name1'],  config['yaml_param_name2'], ..).
+
+        As a result, it is possible to access the config param directly in the `run` method."""
+        super().__init__(dependencies)
+        self.config = config
+
+
 class CachedAnalyzer(Analyzer):
     """ Holds instances of analyses and their results. Analyses are run though this object. But then -- parallelization? Serialization?"""
 

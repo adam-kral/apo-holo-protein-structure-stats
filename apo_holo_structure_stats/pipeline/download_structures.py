@@ -7,7 +7,7 @@ import pandas as pd
 
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.input.download import find_or_download_structure
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +26,13 @@ def main():
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser()
+    parser = get_argument_parser()
     parser.add_argument('--download_threads', type=int, default=1, help='number of threads')
 
     # parser.add_argument('--pdb_dir', type=str, action='store_true',
     #                     help='now pdb_codes_or_directory is a path to a directory with mmcif files. Whole tree structure is inspected, all files are assumed to be mmcifs.')
     parser.add_argument('-i', '--input_type', default='json', choices=['json', 'pdb_codes'], help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
     parser.add_argument('input', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
-    add_loglevel_args(parser)
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)

@@ -19,7 +19,7 @@ from Bio import pairwise2
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
 from apo_holo_structure_stats.pipeline.utils.json import read_jsons_with_seqs, maybe_print
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_short_tasks, FutureLike, process_execute
 
 logger = logging.getLogger(__name__)
@@ -335,12 +335,11 @@ def make_pairs_with_lcs_old(structures_metadata, workers):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser()
+    parser = get_argument_parser()
     parser.add_argument('--workers', type=int, default=1, help='number of threads for concurrent API requests')
     parser.add_argument('structures_json', type=Path, help='File needs to contain list of objects with pdb_code, chain_id, isoform '
                                                 'and is_holo flag')
     parser.add_argument('output_file', type=Path, help='writes apo-holo pairs in json')
-    add_loglevel_args(parser)
     args = parser.parse_args()
     # todo combine this and put in logs (I only use this in scripts anyway)
     project_logger.setLevel(args.loglevel)

@@ -7,7 +7,7 @@ import pandas as pd
 
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.input.uniprot_groups import get_basic_uniprot_groups__df
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +38,12 @@ def collect_chains_for_uniprot_ids(uniprot_ids: Set[str] = None, limit_size: int
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = get_argument_parser(add_config=False)
     parser.add_argument('--uniprot_ids', help='comma-separated list of primary uniprot accessions')
     parser.add_argument('--chains', help='json (records) dataset of chains that will be augmented with uniprotkb_id')
     parser.add_argument('--limit_group_size_to', type=int, help='comma-separated list of primary uniprot accessions')
     parser.add_argument('--seed', default=42, type=int, help='comma-separated list of primary uniprot accessions')
     parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
-    add_loglevel_args(parser)
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
