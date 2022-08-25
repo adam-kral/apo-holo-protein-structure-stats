@@ -276,10 +276,9 @@ class GetCAlphaCoords(CachedAnalyzer):
         for res in residues:
             try:
                 ca_coords.append(res['CA'].get_coord())
-            except KeyError:
-                # 1b0iA HIS 269 has only N atom coords
-                # use any atom coords then... (BioPython parser includes ("sees") a residue in Structure, if it has >= one specified atom coordinates)
-                ca_coords.append(next(iter(res)).get_coord())
+            except KeyError as e:
+                raise AnalysisException(f'Residue {res.id} is missing c_alpha coordinates')  # maybe should be also
+                # ValueError somehow?
 
         return np.array(ca_coords)
 

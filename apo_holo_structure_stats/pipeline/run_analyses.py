@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from Bio.PDB import MMCIFParser, PPBuilder, is_aa
 from Bio.PDB.Chain import Chain
+from Bio.PDB.Residue import Residue
 
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analyses import GetRMSD, GetMainChain, GetChains, CompareSecondaryStructure, \
@@ -697,10 +698,19 @@ if __name__ == '__main__':
     main()
 
 
+def c_alpha_observed(residue: Residue):
+    return 'CA' in residue
+
+
 def get_observed_residues(
         chain1: Chain, c1_label_seq_ids: Iterable[int], c1_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
-        chain2: Chain, c2_label_seq_ids: Iterable[int], c2_residue_mapping: BiopythonToMmcifResidueIds.Mapping):
+        chain2: Chain, c2_label_seq_ids: Iterable[int], c2_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
+        require_c_alphas_observed=True):
+    """ Returns residues observed in both chains (and their label_seq_ids).
 
+    Observed = there are coordinates for residue's atom (any) in the mmcif ATOM_SITE category.
+    If `require_c_alphas_observed` is True, the residues need to contain coordinates for their c_alpha atom.
+    """
     c1_residues = []
     c2_residues = []
     c1_residue_ids = []
@@ -714,8 +724,14 @@ def get_observed_residues(
             # a residue unobserved (wasn't in atom list) -> skip the whole pair
             continue
 
-        c1_residues.append(chain1[r1_bio_id])
-        c2_residues.append(chain2[r2_bio_id])
+        r1 = chain1[r1_bio_id]
+        r2 = chain2[r2_bio_id]
+
+        if require_c_alphas_observed and not (c_alpha_observed(r1) and c_alpha_observed(r2)):
+            continue
+
+        c1_residues.append(r1)
+        c2_residues.append(r2)
 
         c1_residue_ids.append(r1_seq_id)
         c2_residue_ids.append(r2_seq_id)
