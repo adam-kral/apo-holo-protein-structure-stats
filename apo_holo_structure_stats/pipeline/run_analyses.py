@@ -31,7 +31,7 @@ from apo_holo_structure_stats.input.download import APIException, parse_mmcif
 from apo_holo_structure_stats.pipeline.make_pairs_lcs import fn_wrapper_unpack_args, LCSResult, \
     pairs_without_mismatches, load_pairs_json
 from apo_holo_structure_stats.pipeline.run_analyses_settings import configure_pipeline, dotdict
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
 
 # from apo_holo_structure_stats.core.analysesinstances import *
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
@@ -641,13 +641,12 @@ def main():
     # optionally specify a single isoform with --isoform
     import argparse
 
-    parser = argparse.ArgumentParser()
+    parser = get_argument_parser()
     # parser.add_argument('--limit_pairs_for_group', type=int, help='process only structures with main chain of that isoform')
     parser.add_argument('--workers', default=4, type=int, help='process only structures with main chain of that isoform')
     parser.add_argument('--opt_input_dir', type=Path, default=Path())
     # parser.add_argument('chains_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
     parser.add_argument('pairs_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
-    add_loglevel_args(parser)
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)

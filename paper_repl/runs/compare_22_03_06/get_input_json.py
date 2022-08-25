@@ -33,7 +33,7 @@ def get_actual_chain_id(s1_pdb_code: str, s1_paper_chain_code: str):
 # logging.basicConfig()
 logging.root.setLevel(logging.INFO)
 
-settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY = Path('../../pdb_structs')
+settings.STRUCTURE_STORAGE_DIRECTORY = Path('../../pdb_structs')
 chains['chain_id'] = list(map(lambda row: get_actual_chain_id(row.pdb_code, row.chain_id), chains.itertuples()))
 print(chains)
 chains.to_json('chains.json', orient='records')

@@ -17,11 +17,13 @@ def submit_tasks(executor: Executor, window_size: int, fn, *iterables):
 
     args_iterator = zip(*iterables)
 
+    # initially submit `window_size` tasks, and put them into the queue
     fs_queue = deque(
         (executor.submit(fn, *args) for args in itertools.islice(args_iterator, window_size)),
         maxlen=window_size,
     )
 
+    # pop tasks and for each completed add a new one
     try:
         while fs_queue:
             # following comment copied from Executor.map
@@ -32,7 +34,7 @@ def submit_tasks(executor: Executor, window_size: int, fn, *iterables):
         # no more tasks to submit
         pass
 
-    # collect remaining tasks
+    # collect remaining tasks (after all tasks have been submitted)
     while fs_queue:
         # Careful not to keep a reference to the popped future
         yield fs_queue.popleft()

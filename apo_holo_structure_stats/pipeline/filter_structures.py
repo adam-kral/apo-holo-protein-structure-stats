@@ -17,9 +17,9 @@ from apo_holo_structure_stats.core.analyses import GetChains, IsHolo
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
 from apo_holo_structure_stats.input.download import find_or_download_structure, parse_mmcif
 from apo_holo_structure_stats.pipeline.download_structures import download_structures
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args
+from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
-from apo_holo_structure_stats.settings import STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, MIN_STRUCTURE_RESOLUTION
+from apo_holo_structure_stats.settings import Settings
 from apo_holo_structure_stats.core.dataclasses import ChainResidues
 
 logger = logging.getLogger(__name__)
@@ -66,8 +66,9 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
     s_id = s.get_parent().id
 
     # skip low resolution
-    if resolution and resolution > MIN_STRUCTURE_RESOLUTION:
-        logger.info(f'skipping structure {s_id}: resolution ({resolution}) does not meet the limit of {MIN_STRUCTURE_RESOLUTION}')
+    if resolution and resolution > Settings.MIN_STRUCTURE_RESOLUTION:
+        logger.info(f'skipping structure {s_id}: resolution ({resolution}) does not meet the limit of '
+                    f'{Settings.MIN_STRUCTURE_RESOLUTION}')
         return False
     #
     # # skip non-xray. Done in the original paper. Try without it. Or then, specify in output dataset which experimental
@@ -112,13 +113,15 @@ def structure_meets_our_criteria(s, s_header, mmcif_dict, get_chains: GetChains)
 def retrieve_structure_file_from_pdb(pdb_code: str) -> str:
     """ Download the structure file and return its path. If the file was already downloaded, use that.
 
-    Downloads are in STRUCTURE_DOWNLOAD_ROOT_DIRECTORY. The caching is done by Bio.PDB.PDBList.
+    Downloads are in STRUCTURE_STORAGE_DIRECTORY. The caching is done by Bio.PDB.PDBList.
 
     :param pdb_code: pdb code
     :return: file name
     """
 
-    return PDBList(pdb=STRUCTURE_DOWNLOAD_ROOT_DIRECTORY, verbose=logging.INFO >= logger.level).retrieve_pdb_file(pdb_code, file_format='mmCif')
+    return PDBList(
+        pdb=Settings.STRUCTURE_STORAGE_DIRECTORY, verbose=logging.INFO >= logger.level
+    ).retrieve_pdb_file(pdb_code, file_format='mmCif')
     # (mmCif is the default for file_format, but implicit = warning, this way no warning)
     # verbose: BioPython prints to stdout, determine verbose by root logger level (I could also have a settings variable
     # which also could be reset by a commandline argument)
@@ -279,10 +282,11 @@ def main():
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser()
+    parser = get_argument_parser()
     parser.add_argument('--workers', type=int, default=1, help='number of subprocesses')
     parser.add_argument('--download_threads', type=int, default=1, help='number of threads')
     parser.add_argument('--all_chains', default=False, action='store_true')
+    parser.add_argument('--disallow_download', default=False, action='store_true')
     parser.add_argument('--disallow_download', default=False, action='store_true')
 
     # parser.add_argument('--pdb_dir', type=str, action='store_true',
@@ -290,7 +294,6 @@ def main():
     parser.add_argument('-i', '--input_type', default='json', choices=['json', 'pdb_dir', 'pdb_codes'], help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
     parser.add_argument('input', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
     parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
-    add_loglevel_args(parser)
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
@@ -298,6 +301,7 @@ def main():
     logging.basicConfig()
 
     assert args.input_type == 'json'  # todo temporary hack (so that contains uniprotkb_id metadata)
+    # todo nemusí, nevadí, pak si to tam může dodat, pokud to bude make_pairs vyžadovat
 
     chain_whitelists = None
 

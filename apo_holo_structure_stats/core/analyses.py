@@ -11,7 +11,7 @@ from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
 
 from apo_holo_structure_stats.input.download import get_secondary_structure, get_domains
-from ..settings import LigandSpec
+from settings import Settings
 from .base_analyses import CachedAnalyzer, SerializableCachedAnalyzer, SerializableAnalyzer
 from .dataclasses import SSForChain, SSForStructure, SetOfResidueData, SetOfResidues, DomainResidueMapping, \
     ScrewMotionResult, ChainResidues
@@ -52,11 +52,14 @@ def get_short_peptide_ligands(struct: Entity, peptide_length_limit: int) -> Iter
 
 
 def get_all_ligands(struct: Model) -> Iterator[Entity]:
-    return itertools.chain(get_hetero_atom_residues(struct), get_short_peptide_ligands(struct, 15))
+    return itertools.chain(
+        get_hetero_atom_residues(struct),
+        get_short_peptide_ligands(struct, Settings.LigandSpec.PEPTIDE_MAX_LENGTH)
+    )
 
 
 def get_defined_ligands(struct: Model, chain: SetOfResidues) -> Iterator[Entity]:
-    """ Get defined ligands bound with defined specificity.  (See settings.LigandSpec)
+    """ Get defined ligands bound with defined specificity.  (See Settings.LigandSpec)
 
     :param struct: The whole resolved structure, ligands are identified there.
     :param chain: Only the polypeptide chain (no HETATMs etc.), as the specificity is calculated wrt. that.
@@ -86,8 +89,8 @@ def get_defined_ligands(struct: Model, chain: SetOfResidues) -> Iterator[Entity]
     chain_atoms = list(chain.get_atoms())
     ns = NeighborSearch(chain_atoms)
 
-    MIN_RESIDUES_WITHIN_LIGAND = LigandSpec.MIN_RESIDUES_WITHIN_LIGAND
-    RADIUS = LigandSpec.MIN_RESIDUES_WITHIN_LIGAND__RADIUS
+    MIN_RESIDUES_WITHIN_LIGAND = Settings.LigandSpec.MIN_RESIDUES_WITHIN_LIGAND
+    RADIUS = Settings.LigandSpec.MIN_RESIDUES_WITHIN_LIGAND__RADIUS
     # todo calculate average number of protein heavy atoms in 4.5 Å within ligand _atom_ (paper says 6)
 
     for ligand in ligands:
@@ -115,9 +118,13 @@ def get_defined_ligands(struct: Model, chain: SetOfResidues) -> Iterator[Entity]
 
 
 class GetChains(CachedAnalyzer):
-    # todo tohle teď můžu zpřesnit využitím entity_poly_seq v BiopythonToMmcif
+    """ Use minimum number of observed residues (in bio.Chain) to define a chain for the subsequent analyses. """
     def run(self, struct: Model) -> List[Chain]:
-        return list(filter(lambda chain: sum(is_aa(residue) for residue in chain) >= 50, struct.get_chains()))
+        # (or could use all residues (incl. not observed) -> entity_poly_seq in BiopythonToMmcif)
+        return list(filter(
+            lambda chain: sum(is_aa(residue) for residue in chain) >= Settings.MIN_OBSERVED_RESIDUES_FOR_CHAIN,
+            struct.get_chains()
+        ))
 
 
 class GetMainChain(CachedAnalyzer):
@@ -185,7 +192,6 @@ class GetSecondaryStructureForStructure(CachedAnalyzer):
                 helices_start, helices_end = sort_bound_lists(helices_start, helices_end)
                 strands_start, strands_end = sort_bound_lists(strands_start, strands_end)
 
-                # if I wanted to sort that, I would also need to sort helices_end accordingly (as pairs with the start segments), NOT on its own
                 ss_for_chains[chain['chain_id']] = SSForChain(helices_start, helices_end, strands_start, strands_end)
 
         return SSForStructure(ss_for_chains)
@@ -279,7 +285,11 @@ class GetCAlphaCoords(CachedAnalyzer):
 
 """ nevyhody tohoto postupu --> neda se moc composovat (volat) s parametry zjistenymi ruznymi fcemi. Napr. do GetCentroid nemuzu jednou
 poslat souradnice CA podruhy napr vsech atomu, protoze GetCentroid si musi volat tu funkci get coords samo. Ale vlastne bych tam mohl poslat jinou
-dependency (takze i typ, to se ale da vyresit), (ale co má stejný signature, to bych normálně nemusel)"""
+dependency (takze i typ, to se ale da vyresit), (ale co má stejný signature (interface v oop), to bych normálně nemusel)
+- takže když bude čas změnit? Takhle jsem to dělal kvůli cachovaní nebo serializaci výsledků, ale cachování je zbytečný
+- ukazuje se, že nejvíc času trvá načtení struktury z mmcifu a pak počítání SASA (tam bych to využil, ale marginálně). 
+Zbytek je skoro nic. I protože jsem udělal to prefetch (1struct_analyses) a cachování API response get_ss a get_domains,
+ to ale asi díky tomuhle právě ale.."""
 
 
 class GetCentroid(CachedAnalyzer):

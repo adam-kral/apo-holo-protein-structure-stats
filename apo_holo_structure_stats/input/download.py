@@ -19,12 +19,12 @@ from requests import RequestException
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-from apo_holo_structure_stats import settings
+from apo_holo_structure_stats.settings import Settings
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
 
 logger = logging.getLogger(__name__)
 
-REQUESTS_TIMEOUT = 10  # todo move to settings
+REQUESTS_TIMEOUT = Settings.API_REQUESTS_RETRIES
 
 
 class APIException(Exception):
@@ -32,13 +32,16 @@ class APIException(Exception):
 
 
 class RequestsSessionFactory:
-    retries = Retry(total=5, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504])  # https://stackoverflow.com/a/35504626/3791837
+    """ This Session retries requests on errors. """
+    # https://stackoverflow.com/a/35504626/3791837
+    retries = Retry(total=Settings.API_REQUESTS_RETRIES, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504])
 
     @classmethod
     def create(cls):
         s = requests.Session()
         s.mount('http://', HTTPAdapter(max_retries=cls.retries))
         s.mount('https://', HTTPAdapter(max_retries=cls.retries))
+        # todo why :)?
         s.headers.update({'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/87.0'})
         return s
 
@@ -55,12 +58,13 @@ def download_and_save_file(url, file_path):
     :param url:
     :param file_path:
     """
-    r = get_requests_session().get(url, stream=True, timeout=REQUESTS_TIMEOUT)
 
     # download to temp file, link to actual filename only if completed
     with NamedTemporaryFile('wb', dir=os.path.dirname(file_path)) as temp:  # same dir so that os.link always works
-        for chunk in r.iter_content(chunk_size=1024 * 1024):
-            temp.write(chunk)
+
+        with get_requests_session() as s:
+            for chunk in s.get(url, stream=True, timeout=REQUESTS_TIMEOUT).iter_content(chunk_size=1024 * 1024):
+                temp.write(chunk)
 
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -93,13 +97,20 @@ def download_and_save_file(url, file_path):
 
 
 def get_best_isoform_for_chains(struct_code):
-    """ Returns dict chain_id -> list of SegmentMapping(isoform_id, label_seq_id__begin, label_seq_id__end, unp_begin, unp_end, identity) """
+    """ Get best isoform from pdbe API
 
-    try:
-        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}', timeout=REQUESTS_TIMEOUT)
-        r.raise_for_status()
-    except RequestException as e:
-        raise APIException() from e
+    (however, the results were not correct AFAIK - sometimes the isoform had worse
+    aligment than the perfect alignment with another isoform (the actual best was the primary accession, but reported as
+    best was some isoform accession)
+
+    Returns dict chain_id -> list of SegmentMapping(isoform_id, label_seq_id__begin, label_seq_id__end, unp_begin, unp_end, identity) """
+
+    with get_requests_session() as s:
+        try:
+            r = s.get(f'https://www.ebi.ac.uk/pdbe/graph-api/mappings/isoforms/{struct_code}', timeout=REQUESTS_TIMEOUT)
+            r.raise_for_status()
+        except RequestException as e:
+            raise APIException() from e
 
     data = r.json()[struct_code]['UniProt']
 
@@ -184,15 +195,15 @@ def get_secondary_structure(struct_code: str):
         }
     }
     """
-
-    try:
-        # r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{
-        # struct_code}', timeout=REQUESTS_TIMEOUT)  # the new api endpoint was 3x slower! replaced with the old one:
-        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/api/pdb/entry/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
-        # if I knew entity id (not with biopython's parser), I could append it to the url
-        r.raise_for_status()
-    except RequestException as e:
-        raise APIException() from e
+    with get_requests_session() as s:
+        try:
+            # r = s.get(f'https://www.ebi.ac.uk/pdbe/graph-api/pdb/secondary_structure/{
+            # struct_code}', timeout=REQUESTS_TIMEOUT)  # the new api endpoint was 3x slower! replaced with the old one:
+            r = s.get(f'https://www.ebi.ac.uk/pdbe/api/pdb/entry/secondary_structure/{struct_code}', timeout=REQUESTS_TIMEOUT)
+            # if I knew entity id (not with biopython's parser), I could append it to the url
+            r.raise_for_status()
+        except RequestException as e:
+            raise APIException() from e
 
     return r.json()[struct_code]['molecules']
 
@@ -251,11 +262,13 @@ def get_domains(struct_code: str):
     it returns wrong domain end residue numbers - 168 instead of 1168 -  so it reports the segment is 1001 - 168. As of 7/23/2021.
     TODO!! Už to snad spravili, můžu použít nový. Ne je to nějak divně, místo 168, 500něco, 1168 tam je furt 1168
     """
-    try:
-        r = get_requests_session().get(f'https://www.ebi.ac.uk/pdbe/api/mappings/cath_b/{struct_code}', timeout=REQUESTS_TIMEOUT)
-        r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested with new release -- sifts mapping exists but there is no cath data yet)
-    except RequestException as e:
-        raise APIException() from e
+    with get_requests_session() as s:
+        try:
+            r = s.get(f'https://www.ebi.ac.uk/pdbe/api/mappings/cath_b/{struct_code}', timeout=REQUESTS_TIMEOUT)
+            r.raise_for_status()  # todo returns 404 if structure not found, or the data for it don't exist (e.g. tested
+            #   with new release -- sifts mapping exists but there is no cath data yet)
+        except RequestException as e:
+            raise APIException() from e
 
     return r.json()[struct_code]['CATH-B']
 
@@ -265,7 +278,7 @@ def find_or_download_structure(pdb_code: str, allow_download=True) -> Path:
     filename = f'{pdb_code}.cif.gz'
     url = f'https://files.rcsb.org/download/{filename}'
 
-    local_path = settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY / filename
+    local_path = Settings.STRUCTURE_STORAGE_DIRECTORY / filename
 
     # if file already exists, don't download anything
     # else download it
@@ -273,7 +286,7 @@ def find_or_download_structure(pdb_code: str, allow_download=True) -> Path:
         logger.info(f'using cached structure {pdb_code} at {local_path}')
     elif allow_download:
         # create dir structure if does not exist
-        settings.STRUCTURE_DOWNLOAD_ROOT_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        Settings.STRUCTURE_STORAGE_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
         download_and_save_file(url, local_path)
         logger.info(f'finished downloading structure {pdb_code} to {local_path}')

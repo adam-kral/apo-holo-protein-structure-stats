@@ -38,7 +38,7 @@ ssh storage-brno2.metacentrum.cz "tar -C ~/<><input_shard_dir__in_home -cvf ~/<>
 cp "<><input_shard_dir_cp_path/$PDB_ARCHIVE" "$INPUT_FILE_DIR"
 tar -C "$INPUT_FILE_DIR" -xvf "$INPUT_FILE_DIR/$PDB_ARCHIVE"
 
-export STRUCTURE_DOWNLOAD_ROOT_DIRECTORY=$INPUT_FILE_DIR/<><input_shard_pdb_dir
+export AH_STRUCTURE_STORAGE_DIRECTORY=$INPUT_FILE_DIR/<><input_shard_pdb_dir
 
 ah-filter-structures <><script_opts "$INPUT_FILE" "<><output_file_name" \
   || { echo >&2 "ah-filter-structures failed (with a code $?)" ;}
@@ -131,7 +131,7 @@ def submit_filter_structures(chains, jobs: int, input_shard_base_name: str, outp
         # passed_env_vars = [
         #     f'CODE_DIR={get_storage_path(code_dir)}',
         #     f'JOB_OUTPUT_DIR={get_storage_path(output_shard_path.parent)}',
-        #     f'STRUCTURE_DOWNLOAD_ROOT_DIRECTORY={get_storage_path(pdb_dir)}',
+        #     f'STRUCTURE_STORAGE_DIRECTORY={get_storage_path(pdb_dir)}',
         # ]
         # passed_env_vars = ','.join(passed_env_vars)  # no <space> between ',' Shouldn't have used it in the manpage, if it doesn't work!!
         # large walltime - sometimes copying takes long?? Wtf, why?

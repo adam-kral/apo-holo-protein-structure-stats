@@ -91,8 +91,7 @@ class TestPipelineBase(TestCase):
         return pd.read_json(self.FileNames.CHAINS_WITH_UNP)
 
     def test_download_structures(self):
-        # for changing the pdb struct download dir (by default is cwd/pdb_structs) one could set the env var here (see
-        # its name in settings.py)
+        # for changing the pdb struct download dir (by default is cwd/pdb_structs) see settings.Settings
 
         input_df = self.get_download_structures_input()
         input_df.to_json(self.FileNames.CHAINS_WITH_UNP_PROCESSED)
@@ -147,7 +146,7 @@ class TestPipelinePaperDataset(TestPipelineBase):
     OUTPUT_DIR = ROOT_OUTPUT_DIR / 'paper_dataset'
 
     def test_chains_for_uniprot_ids(self):
-        # the following file does not have uniprotkb ids for the chains
+        # the following file does not have uniprotkb ids for the chains,
         # but it will be added by the script
         paper_chains_json_path = Path(self.original_wd) / 'test_data/paper_chains.json'
 

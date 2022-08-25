@@ -1,0 +1,14 @@
+# this can be generated using to_nested_dict(Settings), however without the comments. (Those can be in the code)
+# location for Bio.PDB.PDBList that caches the downloaded structures.
+STRUCTURE_STORAGE_DIRECTORY: pdb_structs
+MIN_STRUCTURE_RESOLUTION: 2.5
+
+LigandSpec:
+  MIN_NON_H_ATOMS: 6
+  MIN_RESIDUES_WITHIN_LIGAND: 6
+  MIN_RESIDUES_WITHIN_LIGAND__RADIUS: 4.5
+  PEPTIDE_MAX_LENGTH: 15
+
+MIN_OBSERVED_RESIDUES_FOR_CHAIN: 50
+API_REQUESTS_TIMEOUT: 10
+API_REQUESTS_RETRIES: 5
