@@ -55,6 +55,8 @@ class Settings:
     API_REQUESTS_TIMEOUT = 10
     API_REQUESTS_RETRIES = 5
 
+    FILTER_STRUCTURES_CLASS = 'apo_holo_structure_stats.pipeline.filter_structures.StructureProcessor'
+
 
 # 2) load settings from yaml (possibly)
 
@@ -119,6 +121,16 @@ def to_nested_dict(klass: type) -> dict:
     return d
 
 
+def load_class_from_str(class_location: str):
+    parts = class_location.rsplit('.', 1)
+    if len(parts) != 2:
+        raise ValueError('class_location should be in format `[packages.]module.Class')
+
+    module_name, class_name = parts
+    module = importlib.import_module(module_name)
+    return getattr(module, class_name)
+
+
 # run this module directly to print the default settings
 if __name__ == '__main__':
     print(yaml.safe_dump(to_nested_dict(Settings), sort_keys=False))
@@ -127,13 +139,11 @@ if __name__ == '__main__':
 # get the settings class (default is the above Settings, but can be its descendant,
 #   should be directly in a module and not inside any other class namespace)
 settings_class_location = os.environ.get('AH_SETTINGS_CLASS', f'{__name__}.Settings')
-parts = settings_class_location.rsplit('.', 1)
-if len(parts) != 2:
+try:
+    settings_class = load_class_from_str(settings_class_location)
+except ValueError:
     sys.stderr.write(f'AH_SETTINGS_CLASS should be in format `[packages.]module.Class`. Received `{settings_class_location}`')
     sys.exit(1)
-module_name, class_name = parts
-module = importlib.import_module(module_name)
-settings_class = getattr(module, class_name)
 
 # load run-specific settings, if supplied
 yaml_settings = os.environ.get('AH_SETTINGS_FILE')

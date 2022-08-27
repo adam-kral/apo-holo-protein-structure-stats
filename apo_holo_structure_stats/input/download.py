@@ -334,13 +334,8 @@ class MmcifParseResult:
     poly_seqs: BiopythonToMmcifResidueIds.EntityPolySequences  # polymer sequences, as in mmcif
     poly_with_microhet: Set[int]  # ids of sequences with micro-heterogeneity (multiple resolved AAs for a position)
 
-@dataclass
-class MmcifParseResultExtra:
-    header: Dict[str, Any]  # metadata from Biopython's MMCIFParser.header (e.g. resolution)
-    mmcif_dict: MMCIF2Dict  # whole mmcif dict, suspect may be large, therefore this class is only returned when needed
 
-# maybetodo refactor this, header is probably useless now that I found the bug in header.resolution and only used
-# that for that allow just parsing the mmcif and then getting the structure subsequently (so that the SMCRA model
+# maybetodo refactor this, allow just parsing the mmcif and then getting the structure subsequently (so that the SMCRA model
 # does not have to be built for structures that don't meet basic params (e.g. resolution). I hope and suspect that
 # building the model would take the majority of time compared to just parsing the mmcif into a dict extremely large
 # 3J3Q took 2 min of cpu time and approx 3 gb mem to load the mmcif dict and mmcifparser.get_structure took ..5 GB
@@ -348,13 +343,37 @@ class MmcifParseResultExtra:
 # be a problem if there will be some large structures next to each other in 4 consecutive structures (cache size 3).
 # And there are --> 3j34, 3j3q, 3j3y so... that won't fit the memory unless I have ~16 gb per node
 
+ # bipythoní parser neni ideální, využívá legacy PDB fieldy (ATOM/HETATM) a auth_seq_id (s fallbackem na label_seq_id == problém při mapování z pdbe api), auth_asym_id. Pokud by např.
+    # nebyl u HETATM auth_seq_id (nepovinný ale, in about 100.0 % of entries), spadlo by to
+    # auth_seq_id u heteroatomů (v mmcifu mají všechny heteroatomy label_seq_id `.`) umožnuje identifikaci, do jaké molekuly atom patří (jinak by byl jen název sloučeniny)
+    # ovšem ty auth_ položky nemusí být číslem, ale např. tento parser je převádí na int() -- může spadnout
+    #    zde https://bioinformatics.stackexchange.com/a/11590 jsem se ale dočetl undocumented fakt,
+    #    že ty písmenka nějak dali pryč a převedli je do insertion code sloupce
+    # Anyway, I need label_seq_id of Residue objects not only for correct mapping of pdbe API results (see above), but also to align whole
+    # polypeptide sequence (even unobserved residues) to form valid chain (apo-holo) pairs.
 
-def parse_mmcif(pdb_code: str = None,
-                path: Union[str, os.PathLike] = None,
-                with_extra=False, allow_download=True) -> Union[MmcifParseResult, Tuple[MmcifParseResult, MmcifParseResultExtra]]:
+
+
+def parse_mmcif(pdb_code: str = None, path: Union[str, os.PathLike] = None, with_mmcif_dict=False,
+                allow_download=True) -> Union[MmcifParseResult, Tuple[MmcifParseResult, MMCIF2Dict]]:
+    """ Parses mmcif file and builds the biopython SMCRA model (structure, model, chain, residue, atom) of the structure.
+
+    pdb_code can be specified, in that case Settings.STRUCTURE_STORAGE_DIRECTORY is inspected (where ah-download-structures
+    writes).
+    If path is specified, structures is loaded from that file. File can be gzipped (.gz) or plain text (arbitrary or no
+    extension).
+    :param pdb_code:
+    :param path:
+    :param with_mmcif_dict: whole mmcif dict, suspect may be large, therefore this class is only returned when needed
+    :param allow_download:
+    :return:
+    """
     local_path = find_or_download_structure(pdb_code, allow_download) if not path else path
 
-    with gzip.open(local_path, 'rt', newline='', encoding='utf-8') as text_file:
+    text_file = gzip.open(local_path, 'rt', newline='', encoding='utf-8')\
+        if str(local_path).endswith('.gz') else open(local_path, 'rt', newline='', encoding='utf-8')
+
+    with text_file:
         mmcif_parser = CustomMMCIFParser(QUIET=True)  # todo quiet good idea?
 
         structure = mmcif_parser.get_structure(pdb_code, text_file)
@@ -363,6 +382,6 @@ def parse_mmcif(pdb_code: str = None,
 
         result = MmcifParseResult(structure, mapping, poly_seqs, with_microhet)
 
-        if with_extra:
-            return result, MmcifParseResultExtra(mmcif_parser.header, mmcif_parser._mmcif_dict)
+        if with_mmcif_dict:
+            return result, mmcif_parser._mmcif_dict
         return result

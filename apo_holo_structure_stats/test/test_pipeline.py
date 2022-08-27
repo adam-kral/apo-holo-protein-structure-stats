@@ -28,7 +28,7 @@ from apo_holo_structure_stats.pipeline import (
     run_1struct_analyses,
     run_analyses,
 )
-from apo_holo_structure_stats.pipeline.filter_structures import get_chains_metadata_for_structure
+from apo_holo_structure_stats.pipeline.filter_structures import StructureProcessor
 
 """ Download unp groups, dl (some) structures, filter structures,
 
@@ -43,9 +43,9 @@ run analyses - I would need again some number of pairs -–> I could use those f
 ROOT_OUTPUT_DIR = Path('test_pipeline_output')
 
 
-
 logger = logging.getLogger()
 logger.level = logging.DEBUG
+
 
 class TestPipelineBase(TestCase):
     class FileNames:
@@ -78,7 +78,9 @@ class TestPipelineBase(TestCase):
         # patch arguments
         script_fn = self.COMMANDS_TO_FUNCTIONS[argv[0]]
         with patch.object(sys, 'argv', argv):
-            script_fn()  #todo nefunguje logging!!
+            script_fn()
+            # todo assert no/not too many errors (in stderr)? Test almost always pass, as I catch the errors in the
+            #  scripts (for good reasons)
 
     # def run_command_assert_ok(self, command: str):
     #     print('running:', command)
@@ -209,12 +211,12 @@ ah-chains-uniprot --debug "{self.FileNames.CHAINS_WITH_UNP}"
 class TestFilterStructures(TestCase):
     def test_elmi_structure(self):
         """5A1A"""
-        with patch('apo_holo_structure_stats.pipeline.filter_structures.MIN_STRUCTURE_RESOLUTION', 2.5):
+        with patch('apo_holo_structure_stats.settings.Settings.MIN_STRUCTURE_RESOLUTION', 2.5):
             # has _em_3d_reconstruction.resolution 2.2
-            chains_metadata = get_chains_metadata_for_structure(0, 'test_data/5a1a.cif.gz')
+            chains_metadata = StructureProcessor().process_structure(Path('test_data/5a1a.cif.gz'))
         self.assertEqual(4, len(chains_metadata))
 
-        with patch('apo_holo_structure_stats.pipeline.filter_structures.MIN_STRUCTURE_RESOLUTION', 2.1):
+        with patch('apo_holo_structure_stats.settings.Settings.MIN_STRUCTURE_RESOLUTION', 2.1):
             # has _em_3d_reconstruction.resolution 2.2
-            chains_metadata = get_chains_metadata_for_structure(0, 'test_data/5a1a.cif.gz')
+            chains_metadata = StructureProcessor().process_structure(Path('test_data/5a1a.cif.gz'))
         self.assertEqual(0, len(chains_metadata))

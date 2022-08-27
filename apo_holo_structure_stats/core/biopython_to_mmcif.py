@@ -73,9 +73,9 @@ class BiopythonToMmcifResidueIds:
 
     @staticmethod
     def get_all_entity_seq(mmcif_dict) -> Tuple[EntityPolySequences, Set[int]]:
-        """ Returns dict entity_id -> list of monomer 3 letter codes.
+        """ Returns dict entity_id -> list of monomer 3-letter codes.
 
-        Will return only polymer entities. In the moment entities with sequence microheterogeneity, as in
+        Will return only polymer entities. At the moment entities with sequence microheterogeneity, as in
         https://mmcif.wwpdb.org/dictionaries/mmcif_std.dic/Categories/entity_poly_seq.html
         are skipped.
         """
@@ -97,8 +97,9 @@ class BiopythonToMmcifResidueIds:
             entity_seqs[entity_id][seq_num] = monomer_id
 
         # skipping entities (chains) with a position where multiple amino acids are possible
-        # todo ensure that this is not to have one entity for two different chains with entirely different coordinates (At the moment
-        #  I only have one example: 5ZA2, where this does not manifest), in any case, this heterogeneity is rare
+        # todo ensure that this is not to have one entity for two different chains with entirely different coordinates
+        #  (At the moment I only have one example: 5ZA2, and it does not manifest), in any case, this heterogeneity is
+        #  rare
         return entity_seqs, entity_ids_with_seq_heterogeneity
     #
     # def get_chain_mappings(self):

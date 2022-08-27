@@ -1,43 +1,39 @@
+import concurrent
 import itertools
 from collections import deque
-from concurrent.futures import Executor, ProcessPoolExecutor
+from concurrent.futures import Executor, ProcessPoolExecutor, Future
 
-
-# podle me by chunksize mel efekt i u threadpoolu, protoze je min futures i _workItems
-
-# nebo použít chunksize?? - to by zmensilo mozna i memory usage, hlavne ale overhead komunikace ne?
-# sem pridat chunksize, pro processpool?
 from functools import partial
 from traceback import format_exc
+
+
+class SemiBlockingQueueExecutor(Executor):
+    """ Saves memory when thousands of tasks are submitted to ProcessPoolExecutor or ThreadPoolExecutor.
+
+    In ThreadPoolExecutor and ProcessPoolExecutor internally created WorkItem and Future objects which take up memory.
+    Block `submit` when too many futures are pending."""
+    def __init__(self, executor: Executor, max_pending_futures: int):
+        self.executor = executor
+        self.max_pending_futures = max_pending_futures
+        self.pending_futures = set()
+
+    def submit(self, fn, *args, **kwargs) -> Future:
+        # Enforce upper bound on number of internally created WorkItem adn Future objects which take up memory
+        # block until a free slot
+        if len(self.pending_futures) >= self.max_pending_futures:
+            done, self.pending_futures = concurrent.futures.wait(self.pending_futures,
+                                                                 return_when=concurrent.futures.FIRST_COMPLETED)
+        future = self.executor.submit(fn, *args, **kwargs)
+        self.pending_futures.add(future)
+        return future
 
 
 def submit_tasks(executor: Executor, window_size: int, fn, *iterables):
     """ Assuming all task take approximately the same time. Effectively executor.map, but done in batches/windows to
     reduce the number of queued Future objects (seems to consume a lot of memory). """
 
-    args_iterator = zip(*iterables)
-
-    # initially submit `window_size` tasks, and put them into the queue
-    fs_queue = deque(
-        (executor.submit(fn, *args) for args in itertools.islice(args_iterator, window_size)),
-        maxlen=window_size,
-    )
-
-    # pop tasks and for each completed add a new one
-    try:
-        while fs_queue:
-            # following comment copied from Executor.map
-            # Careful not to keep a reference to the popped future
-            yield fs_queue.popleft()
-            fs_queue.append(executor.submit(fn, *next(args_iterator)))
-    except StopIteration:
-        # no more tasks to submit
-        pass
-
-    # collect remaining tasks (after all tasks have been submitted)
-    while fs_queue:
-        # Careful not to keep a reference to the popped future
-        yield fs_queue.popleft()
+    queue_executor = SemiBlockingQueueExecutor(executor, window_size)
+    yield from queue_executor.map(fn, *iterables)
 
 
 """ Following three functions extracted from stdlib concurrent.futures.process. """

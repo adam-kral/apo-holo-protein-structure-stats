@@ -20,6 +20,7 @@ def download_structures(pdb_codes: List[str], workers: int) -> Iterable[Path]:
         futures = submit_tasks(executor, MAX_FUTURES, find_or_download_structure, pdb_codes)
         for i, (pdb_code, future) in enumerate(zip(pdb_codes, futures)):
             structure_path = future.result()
+            yield structure_path
             logger.info(f'Downloaded structure {pdb_code}, {i+1}/{len(pdb_codes)} total')
 
 

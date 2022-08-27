@@ -79,7 +79,8 @@ def get_defined_ligands(struct: Model, chain: SetOfResidues) -> Iterator[Entity]
         return False
 
     # ligand has >= 6 non-hydrogen atoms
-    ligands = list(filter(lambda lig: has_at_least_n_non_hydrogen_atoms(lig, LigandSpec.MIN_NON_H_ATOMS), get_all_ligands(struct)))
+    ligands = list(filter(lambda lig: has_at_least_n_non_hydrogen_atoms(lig, Settings.LigandSpec.MIN_NON_H_ATOMS),
+                          get_all_ligands(struct)))
 
     # ligand is within RADIUS in contact with MIN_RESIDUES_WITHIN_LIGAND residues
 
