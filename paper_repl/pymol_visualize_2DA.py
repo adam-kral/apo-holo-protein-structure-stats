@@ -219,7 +219,7 @@ def main(ah_two_domain_arrangements, analyzed_domains, paper_spans):
 
 if __name__ == '__main__':
     project_logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.DEBUG)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logger.setLevel(logging.DEBUG)
     logging.basicConfig()
 
     ah_two_domain_arrangements = [

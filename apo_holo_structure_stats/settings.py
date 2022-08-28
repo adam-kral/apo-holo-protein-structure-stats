@@ -56,6 +56,7 @@ class Settings:
     API_REQUESTS_RETRIES = 5
 
     FILTER_STRUCTURES_CLASS = 'apo_holo_structure_stats.pipeline.filter_structures.StructureProcessor'
+    MAKE_PAIRS_CLASS = 'apo_holo_structure_stats.pipeline.make_pairs_lcs.ApoHoloMatchmaker'
 
 
 # 2) load settings from yaml (possibly)

@@ -103,9 +103,9 @@ ah-download-structures --debug --download_threads 2 "{self.FileNames.CHAINS_WITH
 """
         self.run_command_with_mock_argparse(command)
 
-    def test_filter_structures(self):
+    def test_filter_structures(self, additional_args: str = ''):
         command = f"""\
-ah-filter-structures --debug --disallow_download "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}" "{self.FileNames.FILTERED_CHAINS}"
+ah-filter-structures --debug --disallow_download {additional_args} "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}" "{self.FileNames.FILTERED_CHAINS}"
 """
         self.run_command_with_mock_argparse(command)
 
@@ -177,7 +177,7 @@ ah-chains-uniprot --debug --chains "{paper_chains_json_path}" "{self.FileNames.C
 class TestPipelineRandomDataset(TestPipelineBase):
     OUTPUT_DIR = ROOT_OUTPUT_DIR / 'random_dataset'
     SEED = 42
-    DATASET_SIZE__CHAINS = 100
+    DATASET_SIZE__CHAINS = 10
 
     def get_download_structures_input(self) -> pd.DataFrame:
         df = pd.read_json(self.FileNames.CHAINS_WITH_UNP)
@@ -195,6 +195,9 @@ ah-chains-uniprot --debug "{self.FileNames.CHAINS_WITH_UNP}"
 
     def test_filter_structures(self):
         super().test_filter_structures()
+
+    def test_filter_structures_multiprocess(self):
+        super().test_filter_structures(additional_args='--workers 4')
 
     def test_make_pairs(self):
         super().test_make_pairs()

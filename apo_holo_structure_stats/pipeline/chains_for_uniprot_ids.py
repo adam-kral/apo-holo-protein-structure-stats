@@ -44,7 +44,7 @@ def main():
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
-    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logger.setLevel(args.loglevel)
     logging.basicConfig()
 
     if args.uniprot_ids:

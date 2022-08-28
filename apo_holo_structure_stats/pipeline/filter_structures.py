@@ -245,7 +245,7 @@ def main():
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
-    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logger.setLevel(args.loglevel)
     logging.basicConfig()
 
     assert args.input_type == 'json'  # todo temporary (so that contains uniprotkb_id metadata, and I don't use `path`
@@ -303,11 +303,10 @@ def main():
     chains_of_structures_that_passed = []
 
     # get the configurable class that filters the structures and returns metadata for chains
-    sp_class = settings.load_class_from_str(Settings.FILTER_STRUCTURES_CLASS)
+    sp: StructureProcessor = settings.load_class_from_str(Settings.FILTER_STRUCTURES_CLASS)()
 
     # serial version
     if args.workers == 1:
-        sp: StructureProcessor = sp_class()
         for counter, filename, *extra in zip(itertools.count(), structure_filenames, *extra_args):
             logger.info(f'processing {counter + 1}-th structure at {filename}')
             try:
@@ -320,22 +319,20 @@ def main():
         # parallel version, but logging somehow doesn't work and there is no easy/out-of-the-box way to make it work
         # with multiprocessing
         with ProcessPoolExecutor(max_workers=args.workers) as executor:
-            sp: StructureProcessor = sp_class(executor)
-
             chain_metadata_futures = submit_tasks(
                 executor, 40 * args.workers,
-                sp.process_structure, itertools.count(), structure_filenames, *extra_args
+                sp.process_structure, structure_filenames, *extra_args
             )
 
             # iterate over the futures and flatten the chain metadata
             # (result of a single task is a list of chain metadata for each structure,
             # flatten tasks results into a list of chains)
-            for struct_filename, chains_future in zip(structure_filenames, chain_metadata_futures):
-                print('done')
+            for counter, filename, chains_future in zip(itertools.count(), structure_filenames, chain_metadata_futures):
+                logger.info(f'processing {counter + 1}-th structure at {filename}')
                 try:
                     chain_metadata = chains_future.result()
                 except Exception:
-                    logger.exception(f'Exception when a task for a structure `{struct_filename}` was executed.')
+                    logger.exception(f'Exception when a task for a structure `{filename}` was executed.')
                     continue
 
                 # flatten

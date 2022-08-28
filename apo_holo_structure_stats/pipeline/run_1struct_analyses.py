@@ -1,5 +1,12 @@
-import argparse
-import concurrent.futures
+""" Obtain domains and secondary structure for (the already paired) structures.
+
+This script obtains it, given the pdb_codes in the pairs json,  using the pdbe-kb API.
+It is not extensible (but could be), currently
+users are expected to use their data gathering scripts to obtain additional data they need in run_analyses.py.
+
+There are much fewer apo-holo paired structures than the whole pdb and the APIs "rely on user restraint".
+"""
+
 import itertools
 import logging
 import shelve
@@ -12,7 +19,7 @@ from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analyses import GetSecondaryStructureForStructure, GetDomainsForStructure
 from apo_holo_structure_stats.pipeline.make_pairs_lcs import load_pairs_json, pairs_without_mismatches
 from apo_holo_structure_stats.pipeline.utils.json import maybe_print
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
+from apo_holo_structure_stats.pipeline.utils.log import get_argument_parser
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
 
 logger = logging.getLogger(__name__)
@@ -28,9 +35,9 @@ def main():
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
-    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logger.setLevel(args.loglevel)
     logging.basicConfig()
-    # to pairs bych mohl mít bez mismatchů, ušetřil bch v těhlech 2/3 skriptech třetinu párů/paměti.
+    # the pairs json could be already pairs without mismatches, I would save in the script 2/3 of the pairs, memory..
 
     potential_pairs = load_pairs_json(args.pairs_json)
     if potential_pairs.empty:

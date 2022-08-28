@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import concurrent
 import itertools
 import json
@@ -651,7 +650,7 @@ def main():
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
-    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logger.setLevel(args.loglevel)
     logging.basicConfig()
 
     potential_pairs = load_pairs_json(args.pairs_json)

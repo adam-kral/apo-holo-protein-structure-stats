@@ -187,7 +187,7 @@ if __name__ == '__main__':
     add_loglevel_args(parser)
 
     args = parser.parse_args()
-    logger.setLevel(args.loglevel)  # bohužel musim specifikovat i tohle, protoze takhle to s __name__ funguje...
+    logger.setLevel(args.loglevel)
     logging.basicConfig()
 
     with open(args.input_json) as f:

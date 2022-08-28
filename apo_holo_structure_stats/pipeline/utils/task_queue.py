@@ -29,11 +29,15 @@ class SemiBlockingQueueExecutor(Executor):
 
 
 def submit_tasks(executor: Executor, window_size: int, fn, *iterables):
-    """ Assuming all task take approximately the same time. Effectively executor.map, but done in batches/windows to
-    reduce the number of queued Future objects (seems to consume a lot of memory). """
+    """ Assuming all task take approximately the same time.
 
+    Similar to executor.map but done in batches/windows to
+    reduce the number of queued Future objects (seems to consume a lot of memory), and unlike executor.map
+    returns futures, which allows exception handling. (When an exception is raised during iteration in executor.map,
+    the whole iteration halts and cannot be continued. Here you can catch individual exceptions around future.result()).
+    """
     queue_executor = SemiBlockingQueueExecutor(executor, window_size)
-    yield from queue_executor.map(fn, *iterables)
+    return map(partial(queue_executor.submit, fn), *iterables)
 
 
 """ Following three functions extracted from stdlib concurrent.futures.process. """
