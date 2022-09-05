@@ -1,103 +1,190 @@
 # apo-holo-protein-structure-stats
 
-## Everything work-in-progress. In the meantime, you can look at [our alpha results](apo_holo_structure_stats/paper_repl/paper_plots.ipynb) of reproducing [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510)
-First, we are reproducing the results of [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510), <sup>[pdf](http://cssb.biology.gatech.edu/skolnick/publications/pdffiles/273.pdf)</sup>. Next, we'll obtain the results for the up-to-date PDB.
+The purpose of this project is to provide a framework for the comparison of protein structures, namely apo and holo forms
+of a protein chain.
+
+Apo and holo forms of a protein are the protein in the absence and presence of a ligand, respectively. The ligand is
+usually a small molecule that binds to the protein and can be a drug, a cofactor, or a substrate. It stabilizes the 
+protein in a particular structure (conformation), which can alter the protein's activity.
+
+The pipeline downloads the protein structures, filters them (by the resolution for example), detects ligand presence
+pairs apo and holo chains with identical sequence, and finally runs analyses such as the RMSD between apo and holo forms,
+secondary structure identity, or measures the domain motions.
+
+## Table of contents
+- [Installation](#installation)
+- [Usage](#usage)
+   - [Customization](#customization)
+   - [Scripts](#scripts)
+   - [Try out the whole pipeline](#try-out-the-whole-pipeline)
+- [Results](#results)
+
+## Installation
+- Clone the repository `git clone https://github.com/adam-kral/apo-holo-protein-structure-stats.git`
+- Create and activate a virtual environment named 'venv' with Python >= 3.8:
+    - `python3 -m venv venv`
+    - `source venv/bin/activate` on Unix or `venv\Scripts\activate.bat` on Windows
+- Install this project `pip install /path/to/repository_root`
+
+This will install the packages as well as the scripts (see below) into the virtual environment. With the virtual environment activated, you can then import this project in your code, and run the scripts in shell anywhere in your system.
+
+## Usage
+The pipeline consists of six scripts implementing the multistep pipeline as in the flowchart below.
+
+![Apo-holo pipeline](apo-holo-pipeline.png "Apo-holo pipeline")
+
+See how to run the whole pipeline [below](#try-out-the-whole-pipeline).
+
+### Customization
+
+The constants of the default implementation (minimum resolution, ligand definition, etc.) are customizable, by
+settings env var `AH_SETTINGS_FILE` with path to the settings yaml file. See
+[settings module](apo_holo_structure_stats/settings.py),
+[sample_settings.yaml](apo_holo_structure_stats/sample_settings.yaml).
+
+Filtering logic, adding columns to the json output such as ligand binding state; pairing logic, (todo analysis logic)
+are all customizable, also beyond pairing and comparing _apo-holo_ chains. Set `Settings.FILTER_STRUCTURES_CLASS`, or `Settings.MAKE_PAIRS_CLASS` to your subclass of
+the default implementation. See [ah-filter-structures module](apo_holo_structure_stats/pipeline/filter_structures.py),
+[ah-make-pairs module](apo_holo_structure_stats/pipeline/make_pairs_lcs.py).
+
+You can import from the `apo_holo_structure_stats` in your code.
+
+### Scripts
+The description of the pipeline scripts will follow.
+
+Arguments for the scripts can be shown by running the script with `--help` flag.
+
+#### ah-chains-uniprot
 
 
-## ~~Install~~
-In repository root:
-- Create a new virtual environment (recommended) named 'venv' with Python 3: `python3 -m venv venv` (Python 3 has a built-in `venv` module for that, alternatively you can use virtualenv: `virtualenv -p python3 venv`)
-- Activate the venv: `source venv/bin/activate` on Unix or `venv\Scripts\activate.bat` on Windows
-- Install requirements `pip install -r requirements.txt`
-- todo for easier script running, extract runnable scripts to the repository root/maybe setup.py
-
-## ~~Run (and pipeline description)~~
-Run following commands in your virtual environment and in repository root.
-(Script are run as Python modules within the package (`-m` flag). That's because they import from the package. In future I could extract
-them to the repository root (just the  `if __name__=='__main__'` code), so they could be run just by their name/path.)
+Collect PDB chains with their uniprot ids.
 
 
-### Filter structures
-Filters structures suitable for analysis. 
 
-Downloads the structures with codes given in `pdb_codes_or_directory` argument, or traverses
- the directory tree at `pdb_codes_or_directory` if `-d` option is present (all files are assumed to be mmcif files). It loads the structures
- and decides if structure meets criteria for resolution, single-chainedness, etc. In the json output file, there are only structures which
- passed the filter.
+By default all PDB chains are collected (which are in the SIFTS service).
+Output fields are: pdb_code, chain_id, uniprotkb_id, uniprot_group_size
+    where uniprot_group_size is the number of chains in the PDB that have the same uniprot id.
 
-todo - usage is rather `python -m apo_holo_structure_stats.pipeline.filter_structures`
-```
-usage: filter_structures.py [-h] [-d] pdb_codes_or_directory output_file
+Data are obtained from SIFTS' uniprot_segments_observed.csv file.
 
-positional arguments:
-  pdb_codes_or_directory
-                        comma-delimited list of pdb_codes, or if `-d` option
-                        is present, a directory with mmcif files.
-  output_file           output filename for the json list of pdb_codes that
-                        passed the filter
+Usage:
+    ah-chains-uniprot chains.json
+    ah-chains-uniprot --chains <chains_without_uniprot>.json chains.json
+    ah-chains-uniprot --uniprot_ids P12345,P12346 chains.json
+    ah-chains-uniprot --limit_group_size_to 10 --seed 42 chains.json
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -d, --is-directory    now pdb_codes_or_directory is a path to a directory
-                        with mmcif files. Whole tree structure is inspected,
-                        all files are assumed to be mmcifs.
-```
 
-Example command:
 
-`python -m apo_holo_structure_stats.pipeline.filter_structures 3mqd,3lrf,4jv3,3u0e,3u0f o_filter.json`  
-or  
-`python -m apo_holo_structure_stats.pipeline.filter_structures -d my_directory_with_mmcifs o_filter.json`
+#### ah-download-structures
 
-### Annotate with ligand presence bool (is_holo)
 
-```
-usage: is_holo.py [-h] structures_json output_file
+Download structures from the PDB.
 
-positional arguments:
-  structures_json  annotate the list of structures with is_holo bool. File
-                   needs to contain list of objects with pdb_code and
-                   main_chain_id and path to the structure
-  output_file      writes input json annotated with boolean "is holo"
 
-optional arguments:
-  -h, --help       show this help message and exit
-```
 
-### Annotate with isoform information
+Files will be downloaded to the Settings.STRUCTURE_STORAGE_DIRECTORY.
+Other scripts will automatically use this directory for loading the structures.
 
-```
-usage: isoform.py [-h] structures_json output_file
+Usage:
+    ah-download-structures -v --workers 10 chains.json  
+     ah-download-structures -v -i pdb_codes 1abc,2abc                                             
 
-positional arguments:
-  structures_json  annotate the list of structures with isoform data. File
-                   needs to contain list of objects with pdb_code and
-                   main_chain_id
-  output_file      writes input json annotated with isoform uniprot id
 
-optional arguments:
-  -h, --help       show this help message and exit
 
-```
+#### ah-filter-structures
 
-### Run analyses
-```
-usage: run_analyses.py [-h] [--isoform ISOFORM] structures_json output_file
 
-positional arguments:
-  structures_json    list of structures {pdb_code: , path: , isoform_id: ,
-                     is_holo: bool, ?main_chain_id: }
-  output_file        dumped results of analyses
+  Filters structures and extracts metadata using the parsed mmcif structures.
 
-optional arguments:
-  -h, --help         show this help message and exit
-  --isoform ISOFORM  process only structures with main chain of that isoform
-```
+To modify the script functionality, you can inherit class StructureProcessor. 
+
+
+
+To modify the script functionality, you can inherit class StructureProcessor (see its docstring), and then set 
+Settings.FILTER_STRUCTURES_CLASS to your descendant. 
+
+The structures and chains are (by default) filtered according to the following criteria:
+- only structures with resolution <= Settings.MIN_STRUCTURE_RESOLUTION are kept
+    - where there must be a field "_refine.ls_d_res_high", "_refine_hist.d_res_high", or 
+    "_em_3d_reconstruction.resolution" in the mmcif set
+    - therefore the kept structures are only X-ray or EM structures
+- (chains with microheterogeneity in the sequence are skipped) https://mmcif.wwpdb.org/dictionaries/mmcif_std.dic/Categories/entity_poly_seq.html
+- only chains with at least Settings.MIN_OBSERVED_RESIDUES_FOR_CHAIN amino acid residues are kept
+
+The metadata about the chains are added to the JSON file with the following fields (by default):
+- `sequence` of the chain is retrieved from the mmcif file (3-letter codes); used in ah-make-pairs
+- `is_holo` is true if the chain has ligand bound to it (see Settings.LigandSpec); used in ah-make-pairs
+- (`resolution`, `_exptl.method`, and `path` to the file)
+
+Usage:
+    ah-filter-structures.py -v chains.json filtered_chains.json                         
+
+
+
+#### ah-make-pairs
+
+
+ Pair chains for subsequent structural analyses of the pairs.
+
+Default impl. computes the longest common substring for all potential apo-holo pairs within a uniprot accession.
+
+
+
+
+To modify the behavior of this script, set Settings.MAKE_PAIRS_CLASS to your subclass of Matchmaker.
+
+Creates JSON with records for each potential pair (within a uniprot accesion) with fields:
+- pdb_code_apo, chain_id_apo, pdb_code_holo, chain_id_holo, lcs_result (see LCSResult class)
+- use `load_pairs_json` to load the JSON into a pandas.DataFrame and `pairs_without_mismatches` to filter out
+potential pairs with mismatches leading or trailing the LCS.
+
+
+
+
+#### ah-run-1struct-analyses
+
+
+ Obtain domains and secondary structure for (the already paired) structures.
+
+This script obtains it, given the pdb_codes in the pairs json,  using the pdbe-kb API.
+It is not extensible (but could be), currently
+users are expected to use their data gathering scripts to obtain additional data they need in run_analyses.py.
+
+There are much fewer apo-holo paired structures than in the whole pdb and the APIs "rely on user restraint".
+
+
+
+#### ah-run-analyses
+
+
+Compares chains given the pairs.
+
+
+
+Currently not extensible. Users can write their own script, similar to this one, or redefine `configure_pipeline` function for smaller changes.
+
+
+
+
 
 ### Try out the whole pipeline
 ```shell script
-python -m apo_holo_structure_stats.pipeline.filter_structures 3mqd,3lrf,4jv3,3u0e,3u0f filter.json
-python -m apo_holo_structure_stats.pipeline.is_holo filter.json is_holo.json
-python -m apo_holo_structure_stats.pipeline.isoform is_holo.json structures.json
-python -m apo_holo_structure_stats.pipeline.run_analyses structures.json analyses_output.json
+ah-chains-uniprot -v --uniprot_ids P14735 chains.json
+ah-download-structures -v --threads 6 chains.json
+ah-filter-structures -v --workers 4 chains.json filtered_chains.json
+ah-make-pairs -v --workers 4 filtered_chains.json pairs.json
+ah-run-1struct-analyses -v pairs.json
+ah-run-analyses -v pairs.json
 ```
+
+
+## Results
+- reproducing the paper + citation (also into)
+- verifying (notebook link)
+- results on whole pdb gzip json link
+- notebook link whole pdb + todo refactor
+
+[verifying](apo_holo_structure_stats/paper_repl/paper_plots.ipynb) of reproducing [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510)
+First, we reproduced the results of [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510), <sup>[pdf](http://cssb.biology.gatech.edu/skolnick/publications/pdffiles/273.pdf)</sup>. Next, we obtained the results for the up-to-date PDB.
+
+todo detailed - what is measured, ligand definition etc. (copy from thesis? Add link to a pdf with this info?)

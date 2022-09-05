@@ -99,13 +99,13 @@ class TestPipelineBase(TestCase):
         input_df.to_json(self.FileNames.CHAINS_WITH_UNP_PROCESSED)
 
         command = f"""\
-ah-download-structures --debug --download_threads 2 "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}"
+ah-download-structures --debug --threads 10 "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}"
 """
         self.run_command_with_mock_argparse(command)
 
     def test_filter_structures(self, additional_args: str = ''):
         command = f"""\
-ah-filter-structures --debug --disallow_download {additional_args} "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}" "{self.FileNames.FILTERED_CHAINS}"
+ah-filter-structures --debug {additional_args} "{self.FileNames.CHAINS_WITH_UNP_PROCESSED}" "{self.FileNames.FILTERED_CHAINS}"
 """
         self.run_command_with_mock_argparse(command)
 
@@ -117,13 +117,13 @@ ah-make-pairs --debug "{self.FileNames.FILTERED_CHAINS}" "{self.FileNames.PAIRS}
 
     def test_run_1struct_analyses(self):
         command = f"""\
-ah-run-1struct-analyses --debug --workers 8 "{self.FileNames.PAIRS}"
+ah-run-1struct-analyses --debug --threads 8 "{self.FileNames.PAIRS}"
 """
         self.run_command_with_mock_argparse(command)
 
     def test_run_analyses(self):
         command = f"""\
-ah-run-analyses --debug --workers 8 "{self.FileNames.PAIRS}"
+ah-run-analyses --debug --workers 1 "{self.FileNames.PAIRS}"
 """
         self.run_command_with_mock_argparse(command)
 

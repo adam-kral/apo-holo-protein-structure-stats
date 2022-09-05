@@ -290,7 +290,7 @@ class DomainResidues(DomainResidueData[Residue], SetOfResidues):
     @classmethod
     def from_domain(cls, domain: DomainResidueMapping, bio_structure: Model,
                     residue_id_mapping: BiopythonToMmcifResidueIds.Mapping, skip_label_seq_id=lambda id: False):
-        bio_chain = bio_structure[domain.chain_id]  # todo wtf proč??? proč tam nepošlu rovnou chain?
+        bio_chain = bio_structure[domain.chain_id]  # todo proč??? proč tam nepošlu rovnou chain?
 
         domain_residues = [bio_chain[residue_id_mapping.to_bio(label_seq_id)]
                            for label_seq_id in domain if not skip_label_seq_id(label_seq_id)]

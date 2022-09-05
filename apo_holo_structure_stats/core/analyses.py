@@ -11,7 +11,7 @@ from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
 
 from apo_holo_structure_stats.input.download import get_secondary_structure, get_domains
-from settings import Settings
+from apo_holo_structure_stats.settings import Settings
 from .base_analyses import CachedAnalyzer, SerializableCachedAnalyzer, SerializableAnalyzer
 from .dataclasses import SSForChain, SSForStructure, SetOfResidueData, SetOfResidues, DomainResidueMapping, \
     ScrewMotionResult, ChainResidues

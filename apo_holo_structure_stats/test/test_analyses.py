@@ -10,7 +10,31 @@ from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInter
     GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
 from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping, DomainResidues
-# from apo_holo_structure_stats.pipeline.run_analyses import sequences_same, chain_to_polypeptide
+
+
+
+# debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
+from Bio import Align
+aligner = Align.PairwiseAligner(mode='global',
+                                open_gap_score=-0.5,
+                                extend_gap_score=-0.1,
+                                end_gap_score=0,)  # match by default 1 and mismatch 0
+
+
+
+def sequences_same(ch1, ch2):
+    pp1, pp2 = map(chain_to_polypeptide, (ch1, ch2))
+    seq1, seq2 = map(lambda pp: pp.get_sequence(), (pp1, pp2))
+
+    if seq1 != seq2:
+        # debug print to see how seqs differ
+
+        alignment = next(aligner.align(seq1, seq2))
+        logging.info('Sequences differ, alignment:')
+        logging.info(alignment)
+        return False
+
+    return True
 
 
 class TestAnalyses(TestCase):
@@ -62,7 +86,6 @@ class TestAnalyses(TestCase):
         apo__domain_interface_area = interdomain_surface_computer(s1d1, s1d2)
         holo__domain_interface_area = interdomain_surface_computer(s2d1, s2d2)
 
-        # *2 = 218, 933 vs paper -- 288, 1024  # oni to asi nedělej dvěma..., ale priblibzne to odpovida
         self.assertAlmostEqual(288, apo__domain_interface_area, delta=0.3 * 288)  # 218
         self.assertAlmostEqual(1024, holo__domain_interface_area, delta=0.3 * 1024)  # 933
 

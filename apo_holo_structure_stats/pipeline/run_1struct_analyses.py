@@ -4,7 +4,7 @@ This script obtains it, given the pdb_codes in the pairs json,  using the pdbe-k
 It is not extensible (but could be), currently
 users are expected to use their data gathering scripts to obtain additional data they need in run_analyses.py.
 
-There are much fewer apo-holo paired structures than the whole pdb and the APIs "rely on user restraint".
+There are much fewer apo-holo paired structures than in the whole pdb and the APIs "rely on user restraint".
 """
 
 import itertools
@@ -28,11 +28,12 @@ get_ss = GetSecondaryStructureForStructure()
 get_domains = GetDomainsForStructure()
 
 
-def main():
-    parser = get_argument_parser()
-    parser.add_argument('--workers', default=12, type=int, help='process only structures with main chain of that isoform')
-    parser.add_argument('pairs_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
+parser = get_argument_parser(description=__doc__)
+parser.add_argument('--threads', default=12, type=int, help='API download threads.')
+parser.add_argument('pairs_json', help='Output of ah-make-pairs.')
 
+
+def main():
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
     logger.setLevel(args.loglevel)
@@ -67,12 +68,12 @@ def main():
     quiet = args.loglevel > logging.INFO
 
     # could open the shelf with flag fast and file sync once in a while, but API requests are slow anyway
-    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+    with ThreadPoolExecutor(max_workers=args.threads) as executor:
 
         logger.info(f'total structs: {len(all_structs)}')
         successes = errors = 0
 
-        ss_futures = submit_tasks(executor, 40 * args.workers, get_ss, all_structs)
+        ss_futures = submit_tasks(executor, 40 * args.threads, get_ss, all_structs)
 
         with shelve.open('db_get_ss') as db:
             for i, pdb_code, f in zip(itertools.count(), all_structs, ss_futures):
@@ -87,7 +88,7 @@ def main():
 
         successes = errors = 0
 
-        domain_futures = submit_tasks(executor, 40 * args.workers, get_domains, all_structs)
+        domain_futures = submit_tasks(executor, 40 * args.threads, get_domains, all_structs)
 
         with shelve.open('db_get_domains') as db:
             for i, pdb_code, f in zip(itertools.count(), all_structs, domain_futures):

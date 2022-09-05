@@ -7,8 +7,8 @@ import yaml
 
 
 # def get_argument_parser(add_config=True):
-def get_argument_parser():
-    parser = ArgumentParser()
+def get_argument_parser(**kwargs):
+    parser = ArgumentParser(**kwargs)
     add_loglevel_args(parser)
     #
     # if add_config:

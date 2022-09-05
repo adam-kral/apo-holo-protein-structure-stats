@@ -134,7 +134,7 @@ def submit_filter_structures(chains, jobs: int, input_shard_base_name: str, outp
         #     f'STRUCTURE_STORAGE_DIRECTORY={get_storage_path(pdb_dir)}',
         # ]
         # passed_env_vars = ','.join(passed_env_vars)  # no <space> between ',' Shouldn't have used it in the manpage, if it doesn't work!!
-        # large walltime - sometimes copying takes long?? Wtf, why?
+        # large walltime - sometimes copying takes long??
 
         submit_job(job_script_path, 1, '4gb', '4:00:00')
         # break  # for testing, run only one job
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--jobs', type=int, default=1, help='number of jobs')
     # todo add reasonable default
-    parser.add_argument('--script_opts', default='--disallow_download --workers 1 --debug')
+    parser.add_argument('--script_opts', default='--workers 1 --debug')
     # parser.add_argument('--pdb_dir', default='pdb_structs', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
 
     parser.add_argument('input_json', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')

@@ -47,7 +47,7 @@ def simplify_args_decorator(func):
 # jako treba by to slo do filter structures (a dat tam i to getsasa)
 
 # chci ty single struct veci (krome nutneho is_holo) delat jenom pro proteiny v pairs,
-# podle me to budou ale skoro vsechny stejne...
+# je jich o dost min, tim spis, pokud nas bude zajimat nejaky uzsi dataset nez uplne vsechny struktury z PDB
 
 
 class SavedAnalysis(Analyzer):
@@ -76,30 +76,16 @@ class SavedAnalysis(Analyzer):
 # todo kolik je ne páru v jedný skupině, ale kolik je tříd ekvivalence/tranzitivních párů
 MP_CACHE_SIZE = 1e4
 
-class dotdict(dict):
-    """dot.notation access to dictionary attributes"""
-    __getattr__ = dict.__getitem__
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
-
 """
-vsechny cached veci jsou blbost celkem.. Chtel bych si je ukladat na disk tak jako tak (domains treba, ne nutne 
+(skoro) vsechny cached veci jsou blbost celkem.. Chtel bych si je ukladat na disk tak jako tak (domains treba, ne nutne 
 ss nebo sasa). Navic ze sasa nema cenu cachovat to s1+s2 preci... To ale specifikovat uplne nejde.. Treba arg no_cache
 v GetInterfaceBuriedArea.run kdyz volam get_sasa? Moc clean to neni, navic by to spadlo, pokud bych to neobalil v lru_cache
 ktera by ten arg vyzobla..
-
-Navic bych nepretizil servery predvypoctem (i kdyz sasa - tam se hodi asi to cachovani, protoze uz musim nacist ty struktury)
 
 """
 
 
 # todo on end do SavedAnalysis.db.close
-
-
-# todo delete this
-#  need to skip non-xray now (we still have old data unskipped in `filter_structures`)
-class NotXrayDiffraction(Exception):
-    pass
 
 
 def configure_pipeline(input_dir: Path, manager=None):
@@ -109,13 +95,14 @@ def configure_pipeline(input_dir: Path, manager=None):
     #     for cache in caches:
     #         cache.cache_clear()
 
+    # todo multiprocessing cache is, especially for large objects such as Bio.Structures, counter-productive due to slow IPC,
+    # (e.g. had 4 processors, but only 1.5 were used on avg).
+    # do not use multiprocessing, or use better strategy - larger chunks than one pair,
+    # parse_mmcif = mulproc_lru_cache(oarse_mmcif_fn, manager, max_size=2)
 
-    # todo delete this
-    #  need to skip non-xray now (we still have old data unskipped in `filter_structures`)
-    # not_xray = manager.dict()
-    # parse_mmcif = mulproc_lru_cache(partial(parse_mmcif_exp_method_hack, not_xray), manager, max_size=2)
-    # parse_mmcif = lru_cache(maxsize=3)(simplify_args_decorator(parse_mmcif_fn))
-    parse_mmcif = lru_cache(maxsize=3)(parse_mmcif_fn)
+    parse_mmcif = lru_cache(maxsize=3)(parse_mmcif_fn)  # this cache is important, saves most of the  re-loading (large)
+    # structures, especially useful as large structures have many chains (and pairs) and would be re-loaded
+    # disproportionately often
 
     get_chains = GetChains()
 
@@ -127,8 +114,6 @@ def configure_pipeline(input_dir: Path, manager=None):
     get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, get_rotation_matrix))
     get_rmsd = GetRMSD((get_centered_c_alpha_coords, get_rotation_matrix))
 
-    # get_ss = GetSecondaryStructureForStructure()
-    # get_ss = mulproc_lru_cache(get_ss, manager, MP_CACHE_SIZE)
     get_ss = SavedAnalysis(str(input_dir / 'db_get_ss'), GetSecondaryStructureForStructure())
     cmp_ss = CompareSecondaryStructure((get_ss,))
 
@@ -152,6 +137,4 @@ def configure_pipeline(input_dir: Path, manager=None):
     del analyzer_namespace['manager']  # remove the argument from the namespace
     del analyzer_namespace['input_dir']  # remove the argument from the namespace
 
-    # return dotdict(analyzer_namespace)  # najednou chyba, kdyz jsem to spoustel vedle v cryptic_binding_sites, tak to
-    # radsi opravim i tu (navic to nakonec stejne bylo zbytecny)
     return analyzer_namespace

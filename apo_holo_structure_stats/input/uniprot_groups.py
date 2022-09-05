@@ -1,3 +1,10 @@
+""" Utils for listing chains in PDB with their uniprot ids (for their sequence).
+
+Most of the code was for initial data exploration - i.e. how many apo-holo pairs would we have.
+Now, only two functions are used: `get_chains_with_uniprot_ids`, which internally calls
+`get_uniprot_segments_observed_dataset`. See their docstrings.
+"""
+
 import logging
 import random
 from collections import defaultdict
@@ -5,6 +12,7 @@ import gzip
 import urllib.request
 from datetime import datetime
 from pathlib import Path
+from typing import Tuple
 
 import pandas as pd
 import numpy as np
@@ -14,10 +22,12 @@ from apo_holo_structure_stats.input.download import download_and_save_file
 
 logger = logging.getLogger(__name__)
 
-def get_uniprot_segments_observed_dataset(download_dir=None):
-    """ loads uniprot_segments_observed.csv
 
-     the csv contains only observed segments (aa stretches with coordinates) of uniprot sequences in pdb chains"""
+def get_uniprot_segments_observed_dataset(download_dir=None) -> Tuple[pd.DataFrame, datetime]:
+    """ Downloads and parses uniprot_segments_observed.csv into a Dataframe.
+
+     The csv contains only observed segments (aa stretches with coordinates) of uniprot sequences in pdb chains.
+     Returns the dataframe and the date of the csv creation by the SIFTS service, which updates these csvs weekly."""
 
     # url = 'ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/csv/uniprot_segments_observed.csv.gz'
     url = 'https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/csv/uniprot_segments_observed.csv.gz'
@@ -144,34 +154,16 @@ def equivalence_partition(iterable, relation):
     return classes, partitions
 
 
-def get_basic_uniprot_groups(uniprot_segments_observed_df=None, download_dir=None):
-    # todo neudelam to nejak rychlejsi? Problem je v tom, ze to vytvari df pro kazdou group
-    # udelal bych multiindex uniprotkd_id, pdb_code, chain_id
-    # velikost group muzu udelat transformem..
+def get_chains_with_uniprot_ids(uniprot_segments_observed_df=None, download_dir='.'):
+    """ Returns a dataframe with columns: pdb_code, chain_id, uniprotkb_id, uniprot_group_size.
 
-    # hack so we don't need more functions like this one
-    if uniprot_segments_observed_df is None:
-        uniprot_segments_observed_df, _ = get_uniprot_segments_observed_dataset(download_dir)
+    The uniprot_group_size is the number of chains in the same uniprot group, i.e. the number of chains that map to the
+    same uniprot sequence.
 
-    uniprot_groupby = uniprot_segments_observed_df.drop_duplicates(['pdb_code', 'chain_id']).groupby('uniprotkb_id')[['pdb_code', 'chain_id']]
-    # also possible to .groupby(['uniprotkb_id', 'unp_begin', 'unp_end']), any changes?
-
-    uniprot_groups = {}
-    for uniprotkb_id, group in uniprot_groupby:
-        up_group = defaultdict(list)
-
-        for row in group.to_records(index=False):
-            up_group[row.pdb_code].append(row.chain_id)
-
-        # we want at least 2 structures in the group (so that an apo-holo pair could exist in the group)
-        if len(up_group) > 1:
-            uniprot_groups[uniprotkb_id] = up_group
-
-    return uniprot_groups
-
-
-def get_basic_uniprot_groups__df(uniprot_segments_observed_df=None, download_dir=None):
-    # hack so we don't need more functions like this one
+    :param uniprot_segments_observed_df: if None, will be downloaded from the internet
+    :param download_dir: the downloaded file will be saved to this directory, default is current working directory,
+        (for reproducibility)
+    """
     if uniprot_segments_observed_df is None:
         uniprot_segments_observed_df, dataset_date_created = get_uniprot_segments_observed_dataset(download_dir)
         logger.info(f'Downloaded uniprot_segments_observed.csv. Version timestamp: {dataset_date_created}.')
@@ -187,7 +179,7 @@ def get_basic_uniprot_groups__df(uniprot_segments_observed_df=None, download_dir
     groups = df.groupby('uniprotkb_id')
 
     df = df.merge(groups.size().rename('uniprot_group_size'), left_on='uniprotkb_id', right_index=True)
-    #
+
     # we want at least 2 structures in the group (so that an apo-holo pair could exist in the group)
     return df[df.uniprot_group_size >= 2]
 
@@ -197,7 +189,7 @@ def analyze_basic_uniprot_id_groups():
     """
     uniprot_segments_observed_df, _ = get_uniprot_segments_observed_dataset()
 
-    chains = get_basic_uniprot_groups__df(uniprot_segments_observed_df)
+    chains = get_chains_with_uniprot_ids(uniprot_segments_observed_df)
     # chains = chains.set_index(['uniprotkb_id', 'pdb_code', 'chain_id'])
 
     print('multiple-struct-groups:', chains['uniprotkb_id'].nunique())

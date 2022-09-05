@@ -2,6 +2,7 @@
 
 Default impl. computes the longest common substring for all potential apo-holo pairs within a uniprot accession.
 """
+import argparse
 import dataclasses
 import glob
 import itertools
@@ -18,13 +19,12 @@ import more_itertools
 import numpy as np
 import pandas as pd
 
-import settings
-from apo_holo_structure_stats import project_logger
+from apo_holo_structure_stats import project_logger, settings
 from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
 from apo_holo_structure_stats.pipeline.utils.json import read_jsons_with_seqs, maybe_print
 from apo_holo_structure_stats.pipeline.utils.log import get_argument_parser
 from apo_holo_structure_stats.pipeline.utils.task_queue import submit_short_tasks
-from settings import Settings
+from apo_holo_structure_stats.settings import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -122,23 +122,6 @@ def compute_lcs(apo_seq: List[str], holo_seq: List[str],
 #             # yield a tuple of metadata and args for `get_longest_common_polypeptide`
 #             yield (apo_chain, holo_chain), (apo_row.sequence, holo_row.sequence)
 
-"""
-Co to dělá - vstup jsou teda chain metadata
-pak to groupby uniprot
-a pak to po skupinách klasifikuje apo/holo (a/b) nebo klidne muzu chtit holo-holo nebo phospho-nephospho
-- a každopádně to vrátí všechny potenciální páry
-- načež to pro každý spočítá lcs a v tomto případě dá výsledky všechny do jsonu (mohlo by klidně jenom bez mismatches)
-- a to je výstupem, páry + metadata k páru (lcs result např.)
-
-
-What does it do - so the input is chain metadata
-then it groupby uniprot
-and then it is classified by groups as apo/holo (a/b) or I can easily want holo-holo or phospho-not phospho
-- and it will return all potential pairs
-- whereupon for each pair it calculates LCS and in this case puts all the results into json (it could easily just be without mismatches)
-- and this is the output, pairs + metadata for the pair (lcs result, for example)
-"""
-
 
 class Matchmaker:
     """ Pairs equivalent chains for subsequent analyses. Outputs pairs with metadata for each pair.
@@ -149,13 +132,6 @@ class Matchmaker:
     By default, all chains within a uniprot accession are paired together (all combinations).
 
     See make_pairs for more details.
-    """
-    """ What does it do - so the input is chain metadata
-    then it groupby uniprot
-    and then it is classified by groups as apo/holo (a/b) or I can easily want holo-holo or phospho-not phospho
-    - and it will return all potential pairs
-    - whereupon for each pair it calculates LCS and in this case puts all the results into json (it could easily just be without mismatches)
-    - and this is the output, pairs + metadata for the pair (lcs result, for example)
     """
     def __init__(self, workers: int):
         self.workers = workers
@@ -172,7 +148,7 @@ class Matchmaker:
     def get_potential_pairs(self, chain_metadata):
         """
         :param chain_metadata: pandas.DataFrame
-        :return: generator of tuples of (apo_chain, holo_chain), (apo_seq, holo_seq)
+        :return: generator of tuples of uniprot_id, (c1_namedtuple, c2_namedtuple)
         """
         groups = chain_metadata.groupby('uniprotkb_id')
         for uniprot_id, group_indices in groups.indices.items():
@@ -266,12 +242,23 @@ class ApoHoloMatchmaker(Matchmaker):
 # json ma nakonec "jenom" 670 MB??
 
 
+parser = get_argument_parser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                             description=__doc__,
+                             epilog='''\
+To modify the behavior of this script, set Settings.MAKE_PAIRS_CLASS to your subclass of Matchmaker.
+
+Creates JSON with records for each potential pair (within a uniprot accesion) with fields:
+- pdb_code_apo, chain_id_apo, pdb_code_holo, chain_id_holo, lcs_result (see LCSResult class)
+- use `load_pairs_json` to load the JSON into a pandas.DataFrame and `pairs_without_mismatches` to filter out
+potential pairs with mismatches leading or trailing the LCS.
+
+''')
+parser.add_argument('--workers', type=int, default=1, help='Number of workers to use when computing LCS.')
+parser.add_argument('structures_json', type=Path, help='JSON containing of records with pdb_code, '
+                                                       'chain_id, uniprotkb_id, and is_holo flag')
+parser.add_argument('output_file', type=Path, help='writes apo-holo pairs in json')
+
 def main():
-    parser = get_argument_parser()
-    parser.add_argument('--workers', type=int, default=1, help='number of threads for concurrent API requests')
-    parser.add_argument('structures_json', type=Path, help='File needs to contain list of objects with pdb_code, chain_id, isoform '
-                                                'and is_holo flag')
-    parser.add_argument('output_file', type=Path, help='writes apo-holo pairs in json')
     args = parser.parse_args()
     # todo combine this and put in logs (I only use this in scripts anyway)
     project_logger.setLevel(args.loglevel)
@@ -293,7 +280,7 @@ def main():
 
     logger.info(f'Done.')
 
-
+""" """
 if __name__ == '__main__':
     main()
 

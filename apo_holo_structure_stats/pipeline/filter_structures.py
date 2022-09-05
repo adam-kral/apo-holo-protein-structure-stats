@@ -1,7 +1,7 @@
-"""  Filters structures and fetches metadata using the parsed mmcif structures.
+"""  Filters structures and extracts metadata using the parsed mmcif structures.
 
 To modify the script functionality, you can inherit class StructureProcessor. """
-
+import argparse
 import concurrent
 import itertools
 import json
@@ -15,15 +15,16 @@ from typing import Set, List, Iterable
 import pandas as pd
 from Bio.PDB.Chain import Chain
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+from Bio.PDB.Model import Model
 
-import settings
+from apo_holo_structure_stats import settings
 from apo_holo_structure_stats import project_logger
 from apo_holo_structure_stats.core.analyses import GetChains, IsHolo
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
 from apo_holo_structure_stats.input.download import find_or_download_structure, parse_mmcif, MmcifParseResult
 from apo_holo_structure_stats.pipeline.download_structures import download_structures
 from apo_holo_structure_stats.pipeline.utils.log import get_argument_parser
-from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks, SemiBlockingQueueExecutor
+from apo_holo_structure_stats.pipeline.utils.task_queue import submit_tasks
 from apo_holo_structure_stats.settings import Settings
 from apo_holo_structure_stats.core.dataclasses import ChainResidues
 
@@ -62,8 +63,7 @@ def get_resolution(mmcif_dict):
     return resolution
 
 
-def structure_meets_our_criteria(s, mmcif_dict, get_chains: GetChains):
-    # todo neni s structure, ale model!
+def structure_meets_our_criteria(s: Model, mmcif_dict, get_chains: GetChains):
     """ decides if structure meets criteria for resolution, etc. """
 
     # resolution = s_header['resolution']  # this does not work with elmi
@@ -86,7 +86,7 @@ def structure_meets_our_criteria(s, mmcif_dict, get_chains: GetChains):
     # discarded and why?
     # we already parse them, at least the mmcif
     # probably I didn't have it in the file from the beginning, as this is an attribute of the structure, not the chains...
-    # so what? I don't need to create a flat file (or I could save it in long form). But then, it would be hard to read
+    # so what? I don't need to create a flat file (or I could save it in wide form). But then, it would be hard to read
     # it with pandas (json normalize, not exactly intuitive use -  have to list all outer columns manually)
     # no time for that now - ignore
     if not resolution:
@@ -113,19 +113,6 @@ def structure_meets_our_criteria(s, mmcif_dict, get_chains: GetChains):
         return False
 
     return True
-
-
-# def parse_and_filter_group_of_structures(files: Iterable[Any]) -> Iterable[Structure]:
-#     """
-#
-#     :param files: Iterable of filenames or file-like objects of mmCIF files
-#     :return: structures passing the filter
-#     """
-#     structure__header__mmcif_dict = map(parse_structure, files)
-#
-#     structures = (s for s, s_header, mmcif_dict in filter(structure_meets_our_criteria, structure__header__mmcif_dict))
-#
-#     return structures
 
 
 def get_structure_filenames_in_dir(root_directory) -> Iterable[Path]:
@@ -228,20 +215,47 @@ def find_structures(pdb_codes):
     return map(lambda c: find_or_download_structure(c, allow_download=False), pdb_codes)
 
 
+parser = get_argument_parser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                             description=__doc__,
+                             epilog='''\
+To modify the script functionality, you can inherit class StructureProcessor (see its docstring), and then set 
+Settings.FILTER_STRUCTURES_CLASS to your descendant. 
+
+The structures and chains are (by default) filtered according to the following criteria:
+- only structures with resolution <= Settings.MIN_STRUCTURE_RESOLUTION are kept
+    - where there must be a field "_refine.ls_d_res_high", "_refine_hist.d_res_high", or 
+    "_em_3d_reconstruction.resolution" in the mmcif set
+    - therefore the kept structures are only X-ray or EM structures
+- (chains with microheterogeneity in the sequence are skipped) https://mmcif.wwpdb.org/dictionaries/mmcif_std.dic/Categories/entity_poly_seq.html
+- only chains with at least Settings.MIN_OBSERVED_RESIDUES_FOR_CHAIN amino acid residues are kept
+
+The metadata about the chains are added to the JSON file with the following fields (by default):
+- `sequence` of the chain is retrieved from the mmcif file (3-letter codes); used in ah-make-pairs
+- `is_holo` is true if the chain has ligand bound to it (see Settings.LigandSpec); used in ah-make-pairs
+- (`resolution`, `_exptl.method`, and `path` to the file)
+
+Usage:
+    ah-filter-structures.py -v chains.json filtered_chains.json                         
+''')
+# todo more is_holo description in the docs/readme - copy from the thesis?
+
+parser.add_argument('--workers', type=int, default=1, help='number of subprocesses')
+parser.add_argument('--download_threads', type=int, default=1, help='number of download threads')
+parser.add_argument('--allow_download', default=False, action='store_true',
+                    help='Download (missing) structures to Settings.STRUCTURE_STORAGE_DIRECTORY '
+                         'False by default – helpful not to accidentally overload the PDB servers, '
+                         'if this script is run on a cluster; structures are expected to be  '
+                         'downloaded with ah-download-structures beforehand.')
+
+parser.add_argument('-i', '--input_type', default='json', choices=['json', 'pdb_dir', 'pdb_codes'],
+                    help='now, only json is supported')
+parser.add_argument('input', help='JSON (records) dataset of chains, required columns: pdb_code, chain_id.')
+parser.add_argument('output_file', help='filtered JSON (records) dataset of the input chains, '
+                                        'with additional columns added.')
+
+
 def main():
     import sys
-
-    parser = get_argument_parser()
-    parser.add_argument('--workers', type=int, default=1, help='number of subprocesses')
-    parser.add_argument('--download_threads', type=int, default=1, help='number of threads')
-    parser.add_argument('--disallow_download', default=False, action='store_true')
-
-    parser.add_argument('-i', '--input_type', default='json', choices=['json', 'pdb_dir', 'pdb_codes'],
-                        help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.'
-                             'In that case, whole tree structure is inspected, all files are assumed to be mmcifs, or'
-                             'gzipped mmcifs (filename ending with .gz)')
-    parser.add_argument('input', help='comma-delimited list of pdb_codes, or if `-d` option is present, a directory with mmcif files.')
-    parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
 
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
@@ -270,17 +284,18 @@ def main():
             logger.error('No pdb codes specified')
             sys.exit(1)
 
-        if args.disallow_download:
-            structure_filenames = find_structures(pdb_codes)
-        else:
+        if args.allow_download:
             structure_filenames = download_structures(pdb_codes, args.download_threads)
+        else:
+            structure_filenames = find_structures(pdb_codes)
     elif args.input_type == 'json':
         chains = pd.read_json(args.input)
         # chimeric - more UNP to one chain (or could be in-vivo chimeric?
         # e.g. 2bnq E or 2bnu B have multiple UNPs mapped to themselves
         # skip them all, (using one unp does not make sense) Or put it them with both unps?
         # todo obviously doesn't work, if this file is run with batches...
-        chains = chains.drop_duplicates(subset=['pdb_code', 'chain_id'], keep=False)
+        # chains = chains.drop_duplicates(subset=['pdb_code', 'chain_id'], keep=False)
+
         chains_gb_pdb_code = chains.groupby('pdb_code')
 
         metadata_gb_structure = chains_gb_pdb_code.apply(lambda df: df.set_index('chain_id').to_dict(orient='index'))
@@ -289,10 +304,10 @@ def main():
         extra_args = [metadata_gb_structure, chain_whitelists]
 
         pdb_codes = chains_gb_pdb_code.indices.keys()
-        if args.disallow_download:
-            structure_filenames = find_structures(pdb_codes)
-        else:
+        if args.allow_download:
             structure_filenames = download_structures(pdb_codes, args.download_threads)
+        else:
+            structure_filenames = find_structures(pdb_codes)
     else:
         raise ValueError('Unknown input type argument')
 

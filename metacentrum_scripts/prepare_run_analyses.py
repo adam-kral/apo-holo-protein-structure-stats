@@ -165,7 +165,7 @@ def submit_run_analyses(pairs, jobs: int, input_shard_base_name: str, script_opt
         #     f'AH_STRUCTURE_STORAGE_DIRECTORY={get_storage_path(pdb_dir)}',
         # ]
         # passed_env_vars = ','.join(passed_env_vars)  # no <space> between ',' Shouldn't have used it in the manpage, if it doesn't work!!
-        # large walltime - sometimes copying takes long?? Wtf, why?
+        # large walltime - sometimes copying takes long??
 
 
 

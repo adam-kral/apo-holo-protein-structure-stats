@@ -1,13 +1,19 @@
+""" Collect PDB chains with their uniprot ids.
+
+This script downloads a csv file listing all chains in PDB and returns a json file with chains with uniprot ids.
+See `ah-chains-uniprot --help` for details.
+"""
 import argparse
 import logging
+import sys
 from pathlib import Path
 from typing import Set
 
 import pandas as pd
 
 from apo_holo_structure_stats import project_logger
-from apo_holo_structure_stats.input.uniprot_groups import get_basic_uniprot_groups__df
-from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
+from apo_holo_structure_stats.input.uniprot_groups import get_chains_with_uniprot_ids
+from apo_holo_structure_stats.pipeline.utils.log import get_argument_parser
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +21,7 @@ logger = logging.getLogger(__name__)
 def collect_chains_for_uniprot_ids(uniprot_ids: Set[str] = None, limit_size: int = None, seed: int = None):
     logger.info('Downloading and parsing a csv listing all chains in PDB...')
 
-    chains = get_basic_uniprot_groups__df(download_dir=Path())
-    # groups = chains.groupby('uniprotkb_id').size()
+    chains = get_chains_with_uniprot_ids(download_dir=Path())
 
     if uniprot_ids:
         chains = chains[chains.uniprotkb_id.isin(uniprot_ids)]
@@ -34,14 +39,37 @@ def collect_chains_for_uniprot_ids(uniprot_ids: Set[str] = None, limit_size: int
     return chains
 
 
-def main():
-    parser = get_argument_parser()
-    parser.add_argument('--uniprot_ids', help='comma-separated list of primary uniprot accessions')
-    parser.add_argument('--chains', help='json (records) dataset of chains that will be augmented with uniprotkb_id')
-    parser.add_argument('--limit_group_size_to', type=int, help='comma-separated list of primary uniprot accessions')
-    parser.add_argument('--seed', default=42, type=int, help='comma-separated list of primary uniprot accessions')
-    parser.add_argument('output_file', help='output filename for the json list of pdb_codes that passed the filter. Paths to mmcif files are relative to the working directory.')
+parser = get_argument_parser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                             description='Collect PDB chains with their uniprot ids.',
+                             epilog='''\
+By default all PDB chains are collected (which are in the SIFTS service).
+Output fields are: pdb_code, chain_id, uniprotkb_id, uniprot_group_size
+    where uniprot_group_size is the number of chains in the PDB that have the same uniprot id.
 
+Data are obtained from SIFTS' uniprot_segments_observed.csv file.
+
+Usage:
+    ah-chains-uniprot chains.json
+    ah-chains-uniprot --chains <chains_without_uniprot>.json chains.json
+    ah-chains-uniprot --uniprot_ids P12345,P12346 chains.json
+    ah-chains-uniprot --limit_group_size_to 10 --seed 42 chains.json
+''')
+parser.add_argument('--uniprot_ids', help='If set, output only chains with these uniprots\n'
+                                          'comma-separated list of primary uniprot accessions')
+parser.add_argument('--chains', help='If set, this json (records) dataset of chains will be augmented '
+                                     'with uniprotkb_id and uniprot_group_size column. Required columns: '
+                                     'pdb_code, chain_id')
+
+parser.add_argument('--limit_group_size_to', type=int, help='If set, all chains from uniprot groups of this size or '
+                                                            'smaller will be included. Chains from larger groups '
+                                                            'will be subsampled using --seed')
+parser.add_argument('--seed', default=42, type=int, help='Seed for subsampling chains. See --limit_group_size_to')
+
+parser.add_argument('output_file', help='Output file path. JSON (records) dataset of chains with columns: '
+                                        'pdb_code, chain_id, uniprotkb_id, uniprot_group_size')
+
+
+def main():
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
     logger.setLevel(args.loglevel)
@@ -57,7 +85,14 @@ def main():
 
     if args.chains:
         # chain dataset was input, only add uniprotkb_id field
-        input_chains = pd.read_json(args.chains)
+        try:
+            input_chains = pd.read_json(args.chains)
+        except ValueError:
+            sys.stderr.write('Error: input file is not a valid json dataset of chains.')
+            sys.exit(1)
+
+        assert 'pdb_code' in input_chains.columns and 'chain_id' in input_chains.columns
+
         chains = input_chains.merge(chains, how='left', on=['pdb_code', 'chain_id'])
 
         chains_without_uniprot = chains[pd.isna(chains.uniprotkb_id)]

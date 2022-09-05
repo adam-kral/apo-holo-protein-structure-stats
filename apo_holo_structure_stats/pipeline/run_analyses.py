@@ -30,7 +30,7 @@ from apo_holo_structure_stats.core.json_serialize import CustomJSONEncoder
 from apo_holo_structure_stats.input.download import APIException, parse_mmcif
 from apo_holo_structure_stats.pipeline.make_pairs_lcs import fn_wrapper_unpack_args, LCSResult, \
     pairs_without_mismatches, load_pairs_json
-from apo_holo_structure_stats.pipeline.run_analyses_settings import configure_pipeline, dotdict
+from apo_holo_structure_stats.pipeline.run_analyses_settings import configure_pipeline
 from apo_holo_structure_stats.pipeline.utils.log import add_loglevel_args, get_argument_parser
 
 # from apo_holo_structure_stats.core.analysesinstances import *
@@ -106,49 +106,6 @@ class ConcurrentJSONAnalysisSerializer(AnalysisHandler[SerializableAnalyzer]):
             json.dump(data, f, cls=CustomJSONEncoder)
 
 
-# debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
-from Bio import Align
-aligner = Align.PairwiseAligner(mode='global',
-                                open_gap_score=-0.5,
-                                extend_gap_score=-0.1,
-                                end_gap_score=0,)  # match by default 1 and mismatch 0
-
-
-
-# def chain_to_polypeptide(chain):
-#     ppb = PPBuilder()
-#     polypeptides = ppb.build_peptides(chain, aa_only=0)  # allow non-standard aas?
-#
-#     if len(polypeptides) != 1:
-#         logging.info(f'parsed {len(polypeptides)} polypeptides from one chain, concatenating')
-#
-#         for pp in polypeptides[1:]:
-#             polypeptides[0].extend(pp)
-#
-#     return polypeptides[0]
-
-#
-# def sequences_same(ch1, ch2):
-#     pp1, pp2 = map(chain_to_polypeptide, (ch1, ch2))
-#     seq1, seq2 = map(lambda pp: pp.get_sequence(), (pp1, pp2))
-#
-#     if seq1 != seq2:
-#         # debug print to see how seqs differ
-#
-#         #     residues_mapping = # might be a fallback to the pdb-residue-to-uniprot-residue mapping api, depends, what we want
-#         #           (also we have some mapping (segment to segment) when we do get_best_isoform, there can probably be mutations though)
-#         #
-#         #          if there are some extra residues on ends, we can truncate the sequences
-#         #          maybe I wouldn't use the API, just do this alignment, if we wanted to compare structs with non-100%-identical sequences)
-#
-#         alignment = next(aligner.align(seq1, seq2))
-#         logging.info('Sequences differ, alignment:')
-#         logging.info(alignment)
-#         return False
-#
-#     return True
-
-
 # process-local variable, to be set in each worker process with ProcessPoolExecutor
 # main process sets it too
 class PLocal:
@@ -157,55 +114,13 @@ class PLocal:
 plocal = PLocal()
 
 
-
-def run_analyses_for_isoform_group(apo_codes: List[str], holo_codes: List[str], get_structure, serializer_or_analysis_handler: AnalysisHandler):
-    # apo-holo analyses
-
-    get_main_chain = GetMainChain((GetChains(),))
-
-    get_c_alpha_coords = GetCAlphaCoords()
-    get_centroid = GetCentroid((get_c_alpha_coords,))
-    get_centered_c_alpha_coords = GetCenteredCAlphaCoords((get_c_alpha_coords, get_centroid))
-    get_rotation_matrix = GetRotationMatrix((get_centered_c_alpha_coords,))
-
-    get_hinge_angle = GetHingeAngle((get_c_alpha_coords, get_centroid, get_rotation_matrix))
-    get_rmsd = GetRMSD((get_centered_c_alpha_coords, get_rotation_matrix))
-
-    get_ss = GetSecondaryStructureForStructure()
-    get_ss = mulproc_lru_cache(get_ss, m)
-    ss_a = CompareSecondaryStructure((get_ss,))
-    interdomain_surface_a = GetInterfaceBuriedArea((GetSASAForStructure(),))
-
-    comparators_of_apo_holo__residues_param = [get_rmsd, interdomain_surface_a]
-    comparators_of_apo_holo__residue_ids_param = [ss_a]
-
-    comparators_of_apo_holo_domains__residues_param = [get_rmsd, interdomain_surface_a]
-    comparators_of_apo_holo_domains__residue_ids_param = [ss_a]
-
-    comparators_of_apo_holo_2domains__residues_param = [get_hinge_angle]
-
-
-    get_domains = GetDomainsForStructure()
-    # nejrychlejsi /pro analyzu rmsd/ bude nacist CA z chainu/domen do np arraye. Pak porovnávat jen ty arraye, ale pak to nebude moc extensible pro jiny analyzy
-    # napr interdomenovy povrch
-    # tohle to zrychli víc nez nejaky caching centroidu (ten skoro vubec, rychly numpy, kdyz uz mam atomy v arrayi)
-        # protoze se do pameti vejde vsechno a nemusi se pak znovu nacitat struktury (nebo nam bude stacit min pameti)
-    # vubec bych si z tech analyz mozna mel vyzobnout na zacatku ty argumenty do mejch objektu
-
-    # runner, co to umí spustit, jak chce, (plánuje multivláknově), podle těch kombinací dvojic třeba, jak má, je k ničemu, pokud ty argumenty budou plný, ,velký, objekty
-    # protoze se zadela pamět jestě pred tim, nez se neco spusti. -> identifikatory chainů, domén (domény získám z apicka)
-
-
-
-# ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
-
 def assert_label_seq_id_contiguous(seq: List[int]):
+    """Sanity check for the format of mmcif (spec not totally clear in this, therefore sanity check) """
     for i in range(len(seq) - 2):
         assert seq[i] + 1 == seq[i+1]
 
 
 def get_seqs_range_and_offset(seq1: Dict[int, str], seq2: Dict[int, str], lcs_result: LCSResult):
-    # sanity check I forgot to do previously
     for seq in (seq1, seq2):
         try:
             assert_label_seq_id_contiguous(list(seq.keys()))
@@ -231,43 +146,22 @@ def compare_chains(chain1: Chain, chain2: Chain,
                    c1_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
                    c2_residue_mapping: BiopythonToMmcifResidueIds.Mapping,
                    c1_seq: Dict[int, str], c2_seq: Dict[int, str],  # in 3-letter codes
-                   lcs_result: LCSResult,
-                   # comparators__residues_param: List[Analyzer],  # todo tohle v pythonu 3.8 neni,
-                   # # ale spis bych mel mit duck-typing type annotations, protože to muze byt wrapply v cachich/a (de)serializerech..
-                   # # a nebude to inheritance ale composition (napr nebudu muset delat subclassy pro kazdy analyzer na to, abych tam pridal cache funkcionalitu...
-                   # comparators__residue_ids_param: List[Analyzer],
-                   # comparators__domains__residues_param: List[Analyzer],
-                   # comparators__domains__residue_ids_param: List[Analyzer],
-                   # comparators__2DA__residues_param: List[Analyzer],
-                   # get_domains,
-                   # get_rmsd,
-                   # get_interdomain_surface,
-                   # serializer_or_analysis_handler: AnalysisHandler,
-                   # domains_info: list,
-                   # one_struct_analyses_done_set: dict,
-                   ) -> None:
+                   lcs_result: LCSResult) -> None:
     """ Runs comparisons between two chains. E.g. one ligand-free (apo) and another ligand-bound (holo).
     :param chain1: A Bio.PDB Chain, obtained as a part of BioPython Structure object as usual
     :param chain2: A corresponding chain (same sequence), typically from a different PDB structure. See chain1.
 
     :param c1_residue_mapping:
-    :param apo_poly_seqs:
     """
     s1_pdb_code = chain1.get_parent().get_parent().id
     s2_pdb_code = chain2.get_parent().get_parent().id
 
     logger.info(f'running analyses for ({s1_pdb_code}, {s2_pdb_code}) pair...')
-    #
-    # with warnings.catch_warnings():
-    #     warnings.simplefilter("ignore")
-    #     pp1 = chain_to_polypeptide(chain1)
-    #     pp2 = chain_to_polypeptide(chain2)
 
     # c1_seq, c2_seq todo, is the order in atom_site loop guaranteed? If not, I should sort the dict by label_seq_id
-    # also todo, is label_seq_id sequential, that is one-by-one always +1? - I use that contiguity assumption already...
-    # - todo assert in code entity_poly_seq have no gaps (always +1), they say they're sequential, I think they mean exactly this
-    #    - I could have done in filter structures, just to know for sure. If it were extensible already
-
+    # also is label_seq_id sequential, that is one-by-one always +1? - I use that contiguity assumption already...
+    # - the following asserts entity_poly_seq have no gaps (always +1), they say they're sequential, I think they mean exactly this
+    #    - I could have done in filter structures, just to know for sure
     c1_seq_range, c2_seq_range, label_seq_id_offset = get_seqs_range_and_offset(c1_seq, c2_seq, lcs_result)
 
     # up to this point, we have residue ids of the protein sequence in the experiment. This also includes unobserved
@@ -290,17 +184,13 @@ def compare_chains(chain1: Chain, chain2: Chain,
     c2_residue_ids = ChainResidueData[ResidueId]([ResidueId(label_seq_id, chain2.id) for label_seq_id in
                                                   c2_label_seq_ids], s2_pdb_code, chain2.id)
 
-    # [done] tady nahradit pp pomocí apo_seq nějak
-    # [done] v analyzerech (APIs) nahradit author_seq_id
-    # todo tady matchovaní domén pomocí tohodle - zas mohu pouzit Sequence Matcher
-    #   - ale spany, je to složitější -> zatím přeindexovat apo nebo holo do druhý...
-
     def run_analysis(level_tag, analysis, *args):
         try:
             plocal.serializer_or_analysis_handler.handle(level_tag, analysis, analysis(*args), *args)
         except AnalysisException:
             logger.exception('Caught exception while computing analysis, all others will be run normally')
 
+    # chain-level analyses
     for a in plocal.comparators__residues_param:
         # this fn (run_analyses_for_isoform_group) does not know anything about serialization?
         # But it will know how nested it is (domain->structure) and can pass full identifiers of structures/domains
@@ -312,6 +202,8 @@ def compare_chains(chain1: Chain, chain2: Chain,
     for a in plocal.comparators__residue_ids_param:
         run_analysis('chain2chain', a, c1_residue_ids, c2_residue_ids)
 
+    # todo save the residue ids which were compared (already have this info in the analyzed_domain object below) but
+    #   when the chain does not have domains available from API (low percentage though)
 
     # domain-level analyses
 
@@ -320,7 +212,6 @@ def compare_chains(chain1: Chain, chain2: Chain,
     try:
         c1_domains = sorted(filter(lambda d: d.chain_id == chain1.id, plocal.get_domains(s1_pdb_code)), key=lambda d: d.domain_id)
         c2_domains = sorted(filter(lambda d: d.chain_id == chain2.id, plocal.get_domains(s2_pdb_code)), key=lambda d: d.domain_id)
-
 
         # # todo tohle muzu dat uplne jinam.. treba do 1struct remote analyses, jestli to dá do ramky celej json vubec?
         # no ale ja musim nejak vyhodnotit ty analyzy v tom jupyter notebooku, jak to vůbec nactu do ramky úplně všechno vlastně??
@@ -352,7 +243,6 @@ def compare_chains(chain1: Chain, chain2: Chain,
 
     # assert len(c1_domains) == len(c2_domains) # not always true, as expected, but now OK
 
-    # SequenceMatcher on domain resiudes
     c1_domains__residues = []
     c2_domains__residues = []
 
@@ -396,32 +286,20 @@ def compare_chains(chain1: Chain, chain2: Chain,
                  'spans_auth_seq_id': d.get_spans(residue_mapping, auth_seq_id=True),
                  })
 
-    # todo to tam taky neni v argumentech, ale harcoded.., to je ten muj fix...
-    # todo tohle totiž neni párový porovnání.., ale 'jednotkový'
-    #  - stejně jako get domains, get_ss (nikoliv compare ss), vlastne i sequence atp
     #  - cachovat surface area teda nedava smysl, nacte se proste z predvypocitanyho, jako normalne
     #  - nebo, proste jenom tyhle structure-level veci ma smysl "cachovat" resp nepocitat tady, pro kazdej par, ale
-    #  - nacitat z filu/unpicklovat - to asi ne, mít serialize/deserialize (stejne chci to mit jako citelny vystup). 4
     #  -  A pak to klidně všechno pro rychlost deserializovat do pameti...
     # no, tak to abych se těšil zas na json/pandas-merge hell.. Vsude merge.. Vsude dupe cols/delat index (ten pak ale nekdy zas potrebujes v cols...)
 
-    # TODO bud dát do 1struct (ale tam nechci nacitat mmcify- rekl bych hodne pomaly (Kolik to bylo procent casu 17?, urcite dost... nevim jestli bych 40K struktur nacet tak rychle.. spis ne)
-    # 50/75 percentile trvá 0.5 s, takze klidne 40 K sekund = 10 hodin... dlouho, i v dost vlaknech..
-    # budu to delat jednou per job teda..
-    # tohle je jeste s domain argama, nevadi
-    # asi ne.. rikal jsem, ze kazda domena muze byt jinak definovana.. zalezi podle druheho v paru..
-    # takze todo, zase pridat pair id?
-    #                - to pak ale zas neco budu muset upravit...
     for chain_domains in (c1_domains__residues, c2_domains__residues):
         for d1, d2 in itertools.combinations(chain_domains, 2):
             # key = (plocal.get_interdomain_surface.get_name(),) + (d1.get_full_id(), d2.get_full_id())
 
             pair_id = (c1_residues.get_full_id(), c2_residues.get_full_id())
-            # hack, chci tam i pair_id
+            # hack nepouzivam local fn run_analysis, chci tam i pair_id
             plocal.serializer_or_analysis_handler.handle('2DA', plocal.get_interdomain_surface, plocal.get_interdomain_surface(d1, d2),
                                                   d1, d2, pair_id)
-            # if key not in plocal.one_struct_analyses_done_set:
-                # plocal.one_struct_analyses_done_set[key] = 1
+
 
     for d_chain1, d_chain2 in zip(c1_domains__residues, c2_domains__residues):
         for a in plocal.comparators__domains__residues_param:
@@ -458,41 +336,14 @@ def compare_chains(chain1: Chain, chain2: Chain,
         # chain2DA2chain2DA nema stejny argumenty, asi v pohode, to je jenom pro level a moznost vybrat analyzu
         #   na danym levelu..
 
-#
-# def get_chain_by_chain_code(model: Model, paper_chain_code: str) -> Chain:
-#     if paper_chain_code == '_':
-#         # seems that this is the code when there's only a single chain (probably named A?)
-#         chain = next(iter(model))
-#
-#         if len(model) != 1 or chain.id != 'A':
-#             logging.warning(f'{model.get_parent().id} {paper_chain_code}, underscore is not what I thought. {chain.id}'
-#                             f', {len(model)}')
-#             long_chains = get_chains(model)
-#             if len(long_chains) > 1:
-#                 logging.warning(f'model contains {len(long_chains)} chains with 50+ aa')
-#             return long_chains[0]  # sometimes there is also chain B with ligands.
-#
-#         return chain
-#     return model[paper_chain_code]
 
-
-# todo je divny, ze se musi posilat ten Manager do kazdyho tasku a ne treba jen do toho ProcessPoolu
-#    - tady asi ok, task trva celkem dlouho
-
-# todo tohle uz normalne bezi (a pobezi) v jinym procesu, takze vsechny ty analyzery musim picklovat??
-#  - nestaci je jenom definovat v globalu? - Nektery mozna, ale ty, co budou mít Manager (pdbe API analyzery)
-#  - tak ty ne. Ty musim poslat, bohuzel, zejo
 def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chain_code: str,
                  lcs_result: LCSResult, compare_chains_fn=compare_chains):
-                 # , analyzers: List[List], get_domains, get_rmsd,
-                 # get_interdomain_surface, serializer, domains_info: list, one_struct_analyses_done_set: dict):
-    # assert len(analyzers) == 5
-
     logger.info(f'process_pair {s1_pdb_code}, {s2_pdb_code}')
 
     try:
-        apo_parsed = plocal.parse_mmcif(s1_pdb_code)
-        holo_parsed = plocal.parse_mmcif(s2_pdb_code)
+        apo_parsed = plocal.parse_mmcif(s1_pdb_code, allow_download=True)
+        holo_parsed = plocal.parse_mmcif(s2_pdb_code, allow_download=True)
 
         apo = apo_parsed.structure
         apo_residue_id_mappings = apo_parsed.bio_to_mmcif_mappings
@@ -501,27 +352,6 @@ def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chai
         holo = holo_parsed.structure
         holo_residue_id_mappings = holo_parsed.bio_to_mmcif_mappings
         holo_poly_seqs = holo_parsed.poly_seqs
-
-        # apo_parsed, apo_metadata = parse_mmcif(s1_pdb_code, with_extra=True, allow_download=False)
-        # holo_parsed, holo_metadata = parse_mmcif(s2_pdb_code, with_extra=True, allow_download=False)
-        #
-        # apo = apo_parsed.structure
-        # apo_residue_id_mappings = apo_parsed.bio_to_mmcif_mappings
-        # apo_poly_seqs = apo_parsed.poly_seqs
-        #
-        # holo = holo_parsed.structure
-        # holo_residue_id_mappings = holo_parsed.bio_to_mmcif_mappings
-        # holo_poly_seqs = holo_parsed.poly_seqs
-        #
-        # # todo delete this
-        # #  need to skip non-xray now (we still have old data unskipped in `filter_structures`)
-        # for mmcif_dict in (apo_metadata.mmcif_dict, holo_metadata.mmcif_dict):
-        #     if mmcif_dict['_exptl.method'][0] != 'X-RAY DIFFRACTION':
-        #         logger.info(f'skipping pair {(apo.id, holo.id)}: exp. method `{mmcif_dict["_exptl.method"]}` '
-        #                     f'is not X-RAY DIFFRACTION for {mmcif_dict["_entry.id"]}')
-        #         return
-        # del apo_metadata  # save memory
-        # del holo_metadata
 
         # get the first model (s[0]), (in x-ray structures there is probably a single model)
         apo, apo_residue_id_mappings = map(lambda s: s[0], (apo, apo_residue_id_mappings))
@@ -551,6 +381,7 @@ def process_pair(s1_pdb_code: str, s2_pdb_code: str, s1_chain_code: str, s2_chai
 
 # todo instance analýz, taky poslat cely dostany listy - ajaj, mám vubec ty instance v jinejch procesech?
 #  Ne, musi musim je tam proste poslat z master procesu...
+#   - later reply: stejné instance protože jsem chtěl mít to cachovaní, aby to fungovalo s tim manager.List atp.
 
 # MP initializer
 # https://stackoverflow.com/questions/10117073/how-to-use-initializer-to-set-up-my-multiprocess-pool
@@ -605,15 +436,6 @@ def run_analyses_multiprocess(pairs, process_pair_fn, num_workers, worker_initia
                 yield (row.pdb_code_apo, row.pdb_code_holo,
                        row.chain_id_apo, row.chain_id_holo,
                        row.lcs_result,)
-                # [p.comparators_of_apo_holo__residues_param,
-                # p.comparators_of_apo_holo__residue_ids_param,
-                # p.comparators_of_apo_holo_domains__residues_param,
-                # p.comparators_of_apo_holo_domains__residue_ids_param,
-                # p.comparators_of_apo_holo_2DA__residues_param,],
-                # p.get_domains,
-                # p.get_rmsd,
-                # p.get_interdomain_surface,
-                # serializer, domains_info, one_struct_analyses_done_set)
 
         fn = partial(fn_wrapper_unpack_args, process_pair_fn)
         futures = submit_tasks(executor, 40 * num_workers, fn, get_args())
@@ -636,22 +458,28 @@ def worker_initializer(analyzer_namespace, serializer_or_analysis_handler, domai
         setattr(plocal, attr_name, value)
 
 
+parser = get_argument_parser(description='Compares chains given the pairs.',
+                             epilog='Currently not extensible. Users can write their own script, '
+                                    'similar to this one, or redefine `configure_pipeline` function for smaller changes.')
+parser.add_argument('--workers', default=1, type=int, help='Workers to use. Now only 1 is supported. '
+                                                           'Currently, for "multiprocessing" just run the script '
+                                                           'multiple times with chunks of data. That is actually _the_ '
+                                                           'solution when run on a cluster with a job scheduler.')
+parser.add_argument('--opt_input_dir', type=Path, default=Path())
+# parser.add_argument('chains_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
+parser.add_argument('pairs_json', help='Output of ah-make-pairs, list of JSON objects with fields: '
+                                       'pdb_code_apo, pdb_code_holo, chain_id_apo, chain_id_holo, lcs_result, '
+                                       'where lcs_result is serialized `make_pairs_lcs.LCSResult`')
+
+
 def main():
-    # runs for all isoforms by default
-    # optionally specify a single isoform with --isoform
-    import argparse
-
-    parser = get_argument_parser()
-    # parser.add_argument('--limit_pairs_for_group', type=int, help='process only structures with main chain of that isoform')
-    parser.add_argument('--workers', default=4, type=int, help='process only structures with main chain of that isoform')
-    parser.add_argument('--opt_input_dir', type=Path, default=Path())
-    # parser.add_argument('chains_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
-    parser.add_argument('pairs_json', help='list of structures {pdb_code: , path: , isoform_id: , is_holo: bool, ?main_chain_id: }')
-
     args = parser.parse_args()
     project_logger.setLevel(args.loglevel)
     logger.setLevel(args.loglevel)
     logging.basicConfig()
+
+    assert args.workers == 1, 'todo: do multiprocessing differently (chunks) or use just one worker – ' \
+                              'thats even better when run on a cluster'
 
     potential_pairs = load_pairs_json(args.pairs_json)
     if potential_pairs.empty:
@@ -659,13 +487,12 @@ def main():
         sys.exit(0)
     pairs = pairs_without_mismatches(potential_pairs)
 
-    # don't run analyses for each isoform group separately, as creating a process pool carries an overhead
+    # don't run analyses for each uniprot group separately, as creating a process pool carries an overhead
     # median pairs per group is 6
     # but could reset the caches? No need, all are LRU..
     start_datetime = datetime.now()
     analyses_output_fpath = Path(f'output_apo_holo_{start_datetime.isoformat()}.json')
     domains_info_fpath = Path(f'output_domains_info_{start_datetime.isoformat()}.json')
-
 
     with Manager() as multiprocessing_manager:
         # get analyzers as configured
@@ -692,6 +519,7 @@ def main():
 #   - velky struktury viru treba 6v1z
 #   - maj hodne paru (totiz hodne stejnejch chainu..)
 #   - hlavne trvaj ty struktury desne dlouho nacist..
+
 
 if __name__ == '__main__':
     main()
