@@ -235,6 +235,7 @@ The metadata about the chains are added to the JSON file with the following fiel
 - (`resolution`, `_exptl.method`, and `path` to the file)
 
 Usage:
+
     ah-filter-structures.py -v chains.json filtered_chains.json                         
 ''')
 # todo more is_holo description in the docs/readme - copy from the thesis?

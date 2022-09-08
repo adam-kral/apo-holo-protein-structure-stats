@@ -42,8 +42,9 @@ Files will be downloaded to the Settings.STRUCTURE_STORAGE_DIRECTORY.
 Other scripts will automatically use this directory for loading the structures.
 
 Usage:
+
     ah-download-structures -v --workers 10 chains.json  
-     ah-download-structures -v -i pdb_codes 1abc,2abc                                             
+    ah-download-structures -v -i pdb_codes 1abc,2abc                                             
 ''')
 parser.add_argument('--threads', type=int, default=1, help='Number of download threads.')
 parser.add_argument('-i', '--input_type', default='json', choices=['json', 'pdb_codes'], help='Set `pdb_codes` if the input is a csv list of PDB codes.')

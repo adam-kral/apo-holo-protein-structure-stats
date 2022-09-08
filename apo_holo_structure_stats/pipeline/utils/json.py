@@ -2,7 +2,7 @@ import logging
 import sys
 import json
 from pathlib import Path
-import glob
+from typing import Iterable
 
 import pandas as pd
 
@@ -53,5 +53,12 @@ def read_jsons_to_df(filepaths, quiet=False, read_method=pd.read_json) -> pd.Dat
     return df
 
 
-def read_jsons_with_seqs(filepaths, quiet=False):
+def read_jsons_with_seqs(filepaths: Iterable, quiet=False) -> pd.DataFrame:
+    """ Read multiple json files into a single DataFrame. sys.intern sequence codes.
+
+    To save memory intern sequence codes, i.e. each amino acid 3letter code is saved only in one python object.
+    Show progress (for loading multiple files) is quiet=False.
+    Sequences are expected to be at JSON object key (possibly nested in the hierarchy) named `sequence`.
+    """
+
     return read_jsons_to_df(filepaths, quiet, read_method=read_json_with_seqs)

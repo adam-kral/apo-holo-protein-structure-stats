@@ -49,6 +49,7 @@ Output fields are: pdb_code, chain_id, uniprotkb_id, uniprot_group_size
 Data are obtained from SIFTS' uniprot_segments_observed.csv file.
 
 Usage:
+
     ah-chains-uniprot chains.json
     ah-chains-uniprot --chains <chains_without_uniprot>.json chains.json
     ah-chains-uniprot --uniprot_ids P12345,P12346 chains.json

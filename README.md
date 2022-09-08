@@ -4,12 +4,15 @@ The purpose of this project is to provide a framework for the comparison of prot
 of a protein chain.
 
 Apo and holo forms of a protein are the protein in the absence and presence of a ligand, respectively. The ligand is
-usually a small molecule that binds to the protein and can be a drug, a cofactor, or a substrate. It stabilizes the 
+usually a small molecule that binds to the protein and can be a drug, a cofactor, or a substrate. It stabilizes the
 protein in a particular structure (conformation), which can alter the protein's activity.
 
 The pipeline downloads the protein structures, filters them (by the resolution for example), detects ligand presence
 pairs apo and holo chains with identical sequence, and finally runs analyses such as the RMSD between apo and holo forms,
 secondary structure identity, or measures the domain motions.
+
+It is inspired by the work of [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510), and verified against
+their results. This project is open source and can be run on the current version of PDB.
 
 ## Table of contents
 - [Installation](#installation)
@@ -68,6 +71,7 @@ Output fields are: pdb_code, chain_id, uniprotkb_id, uniprot_group_size
 Data are obtained from SIFTS' uniprot_segments_observed.csv file.
 
 Usage:
+
     ah-chains-uniprot chains.json
     ah-chains-uniprot --chains <chains_without_uniprot>.json chains.json
     ah-chains-uniprot --uniprot_ids P12345,P12346 chains.json
@@ -86,8 +90,9 @@ Files will be downloaded to the Settings.STRUCTURE_STORAGE_DIRECTORY.
 Other scripts will automatically use this directory for loading the structures.
 
 Usage:
+
     ah-download-structures -v --workers 10 chains.json  
-     ah-download-structures -v -i pdb_codes 1abc,2abc                                             
+    ah-download-structures -v -i pdb_codes 1abc,2abc                                             
 
 
 
@@ -117,6 +122,7 @@ The metadata about the chains are added to the JSON file with the following fiel
 - (`resolution`, `_exptl.method`, and `path` to the file)
 
 Usage:
+
     ah-filter-structures.py -v chains.json filtered_chains.json                         
 
 
@@ -179,12 +185,10 @@ ah-run-analyses -v pairs.json
 
 
 ## Results
-- reproducing the paper + citation (also into)
-- verifying (notebook link)
-- results on whole pdb gzip json link
-- notebook link whole pdb + todo refactor
+First, we reproduced the results of [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510), <sup>[pdf](http://cssb.biology.gatech.edu/skolnick/publications/pdffiles/273.pdf)</sup>. Next, we obtained the results for the up-to-date PDB (in April 2022).
 
-[verifying](apo_holo_structure_stats/paper_repl/paper_plots.ipynb) of reproducing [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510)
-First, we reproduced the results of [Brylinski and Skolnick (2008)](https://doi.org/10.1002/prot.21510), <sup>[pdf](http://cssb.biology.gatech.edu/skolnick/publications/pdffiles/273.pdf)</sup>. Next, we obtained the results for the up-to-date PDB.
+- reproduction of the plots and the table in the paper: [paper_plots.ipynb](paper_repl/paper_plots.ipynb) (just the plots, ignore code and text)
+- notebook processing the whole-PDB results with the plots [results.ipynb](results/results.ipynb) (you can use code as an example how to process the results)
+- raw JSON results on the whole PDB, gzipped [output](https://drive.google.com/file/d/1SdLzt19PNJAHwhcrfQ_PfogQ51AZ8axQ/view?usp=sharing)
 
-todo detailed - what is measured, ligand definition etc. (copy from thesis? Add link to a pdf with this info?)
+Results JSON format - can be seen in [results.ipynb#JSON structure](results/results.ipynb#JSON-structure)
