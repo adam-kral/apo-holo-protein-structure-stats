@@ -91,7 +91,7 @@ Other scripts will automatically use this directory for loading the structures.
 
 Usage:
 
-    ah-download-structures -v --workers 10 chains.json  
+    ah-download-structures -v --threads 10 chains.json  
     ah-download-structures -v -i pdb_codes 1abc,2abc                                             
 
 
@@ -99,9 +99,7 @@ Usage:
 #### ah-filter-structures
 
 
-  Filters structures and extracts metadata using the parsed mmcif structures.
-
-To modify the script functionality, you can inherit class StructureProcessor. 
+ Filters structures and extracts metadata using the parsed mmcif structures. 
 
 
 

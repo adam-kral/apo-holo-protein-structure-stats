@@ -1,6 +1,6 @@
-"""  Filters structures and extracts metadata using the parsed mmcif structures.
+""" Filters structures and extracts metadata using the parsed mmcif structures. """
 
-To modify the script functionality, you can inherit class StructureProcessor. """
+""" To modify the script functionality, you can inherit class StructureProcessor. """
 import argparse
 import concurrent
 import itertools
