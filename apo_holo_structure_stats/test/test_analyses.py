@@ -9,22 +9,22 @@ from scipy.spatial.transform.rotation import Rotation
 from apo_holo_structure_stats.core.analyses import GetSASAForStructure, GetInterfaceBuriedArea, GetRMSD, \
     GetCenteredCAlphaCoords, GetCAlphaCoords, GetCentroid, GetRotationMatrix, GetHingeAngle
 from apo_holo_structure_stats.core.biopython_to_mmcif import BiopythonToMmcifResidueIds
-from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping, DomainResidues
-
-
+from apo_holo_structure_stats.core.dataclasses import ChainResidues, DomainResidueMapping, DomainResidues, SetOfResidues
 
 # debug aligner for preliminary sequence analysis (apo-holo/holo-holo), to see how they differ, if they differ
 from Bio import Align
+
+from input.download import parse_mmcif
+
 aligner = Align.PairwiseAligner(mode='global',
                                 open_gap_score=-0.5,
                                 extend_gap_score=-0.1,
                                 end_gap_score=0,)  # match by default 1 and mismatch 0
 
 
-
-def sequences_same(ch1, ch2):
-    pp1, pp2 = map(chain_to_polypeptide, (ch1, ch2))
-    seq1, seq2 = map(lambda pp: pp.get_sequence(), (pp1, pp2))
+def sequences_same(rs1: SetOfResidues, rs2: SetOfResidues) -> bool:
+    seq1 = [r.resname for r in rs1]
+    seq2 = [r.resname for r in rs2]
 
     if seq1 != seq2:
         # debug print to see how seqs differ
@@ -42,7 +42,8 @@ class TestAnalyses(TestCase):
 
     def setUp(self) -> None:
         parser = MMCIFParser()
-        self.structure, self.residue_id_mapping = self.load_test_structure('2gdu')
+        self.structure_parse_result = self.load_test_structure('2gdu')
+        self.structure = self.structure_parse_result.structure
         self.counter = 0
 
     def get_test_structure(self):
@@ -52,15 +53,16 @@ class TestAnalyses(TestCase):
         return s
 
     def load_test_structure(self, pdb_code):
-        mmcif_parser = MMCIFParser(QUIET=True)
-        structure = mmcif_parser.get_structure(pdb_code, self.TEST_STRUCTURE_DIR / f'{pdb_code}.cif')
-
-        return structure, BiopythonToMmcifResidueIds.create(mmcif_parser._mmcif_dict)  # reuse already parsed
-        # mmcifdict (albeit undocumented)
+        return parse_mmcif(pdb_code, self.TEST_STRUCTURE_DIR / f'{pdb_code}.cif', allow_download=False)
 
     def test_interdomain_surface_paper(self):
-        s1, (s1_mapping, s1_entity_poly_seqs) = self.load_test_structure('1vr6')
-        s2, (s2_mapping, s2_entity_poly_seqs)= self.load_test_structure('1rzm')
+        s1_parse_result = self.load_test_structure('1vr6')
+        s2_parse_result = self.load_test_structure('1rzm')
+
+        s1 = s1_parse_result.structure
+        s2 = s2_parse_result.structure
+        s1_mapping = s1_parse_result.bio_to_mmcif_mappings
+        s2_mapping = s2_parse_result.bio_to_mmcif_mappings
 
         # analyze just A chain (like in the paper)
         s1_chain_a = s1[0]['A']
@@ -73,14 +75,17 @@ class TestAnalyses(TestCase):
         # todo check that label_seq_ids do correspond to those (changed it now) NO they dont, use bio residue mapping
 
         # todo s1d1, ....
-        d1 = DomainResidueMapping('D1', 'A', [1], [64])  # can reuse the domain for both structures (here for testing purposes)
-        d2 = DomainResidueMapping('D2', 'A', [65], [338])
+        s1d1 = DomainResidueMapping('D1', 'A', [13], [13 - 1 + 64])  # can reuse the domain for both structures (here for testing purposes)
+        s2d1 = DomainResidueMapping('D1', 'A', [1], [64])  # can reuse the domain for both structures (here for testing purposes)
 
-        s1d1 = DomainResidues.from_domain(d1, s1[0], c1_mapping)
-        s1d2 = DomainResidues.from_domain(d2, s1[0], c1_mapping)
+        s1d2 = DomainResidueMapping('D2', 'A', [13 - 1 + 65], [13 - 1 + 338])
+        s2d2 = DomainResidueMapping('D2', 'A', [65], [338])
 
-        s2d1 = DomainResidues.from_domain(d1, s2[0], c2_mapping)
-        s2d2 = DomainResidues.from_domain(d2, s2[0], c2_mapping)
+        s1d1 = DomainResidues.from_domain(s1d1, s1[0], c1_mapping)
+        s1d2 = DomainResidues.from_domain(s1d2, s1[0], c1_mapping)
+
+        s2d1 = DomainResidues.from_domain(s2d1, s2[0], c2_mapping)
+        s2d2 = DomainResidues.from_domain(s2d2, s2[0], c2_mapping)
 
         interdomain_surface_computer = GetInterfaceBuriedArea((GetSASAForStructure(),))
         apo__domain_interface_area = interdomain_surface_computer(s1d1, s1d2)
@@ -114,10 +119,9 @@ class TestAnalyses(TestCase):
         self.assertGreater(chain_b_sasa, 1)
 
     def test_get_sasa_for_structure_with_hydrogens(self):
-        s, _ = self.load_test_structure('7amj')
+        parse_result = self.load_test_structure('7amj')
 
-        chain = s[0]['A']
-        residues = ChainResidues(list(chain), s.id, 'A')
+        residues = ChainResidues.from_chain(parse_result.structure[0]['A'], parse_result.bio_to_mmcif_mappings[0]['A'])
 
         sasa_computer = GetSASAForStructure()
         chain_b_sasa = sasa_computer(residues)
@@ -125,19 +129,23 @@ class TestAnalyses(TestCase):
         self.assertGreater(chain_b_sasa, 1)
 
     def test_rmsd_guanylate_kinase_paper(self):
-        apo = self.load_test_structure('1ex6')
-        holo = self.load_test_structure('1ex7')
+        apo_parse_result = self.load_test_structure('1ex6')
+        holo_parse_result = self.load_test_structure('1ex7')
+
+        apo = apo_parse_result.structure
+        holo = holo_parse_result.structure
 
         apo_chain = apo[0]['B']  # note that different chain (as by dyndom), why?
         holo_chain = holo[0]['A']
-
-        logging.root.setLevel(logging.INFO)
-        self.assertTrue(sequences_same(apo_chain, holo_chain))
+        apo_mapping = apo_parse_result.bio_to_mmcif_mappings[0]['B']
+        holo_mapping = holo_parse_result.bio_to_mmcif_mappings[0]['A']
 
         # analyze just A chain (like in the paper)
-        apo_residues = ChainResidues.from_bio_chain(apo_chain)
-        holo_residues = ChainResidues.from_bio_chain(holo_chain)
+        apo_residues = ChainResidues.from_chain(apo_chain, apo_mapping)
+        holo_residues = ChainResidues.from_chain(holo_chain, holo_mapping)
 
+        logging.root.setLevel(logging.INFO)
+        self.assertTrue(sequences_same(apo_residues, holo_residues))
 
         get_c_alpha_coords = GetCAlphaCoords()
         get_centroid = GetCentroid((get_c_alpha_coords,))
@@ -148,22 +156,26 @@ class TestAnalyses(TestCase):
         self.assertAlmostEqual(4.4, rmsd, delta=0.1)  # 4.37 (vs 4.4 Å in the paper)
 
     def test_hinge_guanylate_kinase_paper(self):
-        apo = self.load_test_structure('1ex6')
-        holo = self.load_test_structure('1ex7')
+        apo_parse_result = self.load_test_structure('1ex6')
+        holo_parse_result = self.load_test_structure('1ex7')
+        apo = apo_parse_result.structure[0]
+        holo = holo_parse_result.structure[0]
 
-        apo_chain = apo[0]['B']  # note that different chain (as by dyndom), why?
-        holo_chain = holo[0]['A']
+        apo_chain = apo['B']  # note that different chain (as by dyndom), why?
+        holo_chain = holo['A']
+        apo_mapping = apo_parse_result.bio_to_mmcif_mappings[0]['B']
+        holo_mapping = holo_parse_result.bio_to_mmcif_mappings[0]['A']
 
-        logging.root.setLevel(logging.INFO)
-        self.assertTrue(sequences_same(apo_chain, holo_chain))
-
-        apo_d1 = DomainResidues.from_domain(DomainResidueMapping('D1', 'B', [200 + 1, 200 + 84], [200 + 32, 200 + 186]), apo)
-        apo_d2 = DomainResidues.from_domain(DomainResidueMapping('D2', 'B', [200 + 33], [200 + 83]), apo)
+        apo_d1 = DomainResidues.from_domain(DomainResidueMapping('D1', 'B', [1, 84], [32, 186]), apo, apo_mapping)
+        apo_d2 = DomainResidues.from_domain(DomainResidueMapping('D2', 'B', [33], [83]), apo, apo_mapping)
 
         # zmena chainu preci nepomahala, tak kde je zakopany pes?
 
-        holo_d1 = DomainResidues.from_domain(DomainResidueMapping('D1', 'A', [1, 84], [32, 186]), holo)
-        holo_d2 = DomainResidues.from_domain(DomainResidueMapping('D2', 'A', [33], [83]), holo)
+        holo_d1 = DomainResidues.from_domain(DomainResidueMapping('D1', 'A', [1, 84], [32, 186]), holo, holo_mapping)
+        holo_d2 = DomainResidues.from_domain(DomainResidueMapping('D2', 'A', [33], [83]), holo, holo_mapping)
+
+        logging.root.setLevel(logging.INFO)
+        self.assertTrue(sequences_same(apo_d1 + apo_d2, holo_d1 + holo_d2))
 
         get_c_alpha_coords = GetCAlphaCoords()
         get_centroid = GetCentroid((get_c_alpha_coords,))
@@ -175,23 +187,26 @@ class TestAnalyses(TestCase):
         self.assertAlmostEqual(47, 180/np.pi*screw_motion.angle, delta=0.2)  # in paper: dyndom: 47°, their principal axes 43.9
 
     def test_rmsd_pheromone_binding_protein_paper(self):
-        apo = self.load_test_structure('2fjy')
-        holo = self.load_test_structure('1dqe')
+        apo_parse_result = self.load_test_structure('2fjy')
+        holo_parse_result = self.load_test_structure('1dqe')
 
+        # analyze just A chain (like in the paper)
+        apo = apo_parse_result.structure
+        holo = holo_parse_result.structure
         apo_chain = apo[0]['A']
         holo_chain = holo[0]['A']
+        apo_mapping = apo_parse_result.bio_to_mmcif_mappings[0]['A']
+        holo_mapping = holo_parse_result.bio_to_mmcif_mappings[0]['A']
 
         # # logging.root.setLevel(logging.INFO)
         # self.assertTrue(sequences_same(apo_chain, holo_chain))
 
+        apo_residues = ChainResidues.from_chain(apo_chain, apo_mapping)
+        holo_residues = ChainResidues.from_chain(holo_chain, holo_mapping)
+
         # chains also have leading and trailing residues not present in the other, remove them
-
-        apo_pp = chain_to_polypeptide(apo_chain)[:-5]
-        holo_pp = chain_to_polypeptide(holo_chain)[6:]
-
-        # analyze just A chain (like in the paper)
-        apo_residues = ChainResidues(list(apo_pp), apo.id, apo_chain.id)
-        holo_residues = ChainResidues(list(holo_pp), holo.id, holo_chain.id)
+        apo_residues = ChainResidues(apo_residues.data[:-5], apo.id, apo_chain.id)
+        holo_residues = ChainResidues(holo_residues.data[6:], holo.id, holo_chain.id)
 
         get_c_alpha_coords = GetCAlphaCoords()
         get_centroid = GetCentroid((get_c_alpha_coords,))
@@ -247,9 +262,11 @@ class TestAnalyses(TestCase):
         for atom, new_coord in zip(atoms, rotation.apply(coords) + TRANSLATION):
             atom.set_coord(new_coord)
 
+        chain_a_mapping = self.structure_parse_result.bio_to_mmcif_mappings[0]['A']
+
         # test rmsd is still 0
-        chain_a = ChainResidues.from_bio_chain(s1[0]['A'])
-        chain_a_rotated = ChainResidues.from_bio_chain(s2[0]['A'])
+        chain_a = ChainResidues.from_chain(s1[0]['A'], chain_a_mapping)
+        chain_a_rotated = ChainResidues.from_chain(s2[0]['A'], chain_a_mapping)
 
         get_c_alpha_coords = GetCAlphaCoords()
         get_centroid = GetCentroid((get_c_alpha_coords,))
@@ -265,10 +282,13 @@ class TestAnalyses(TestCase):
 
         s2.id = f'{s1.id}_with_rotated_chain'
 
-        s1d1 = ChainResidues.from_bio_chain(s1[0]['A'])
-        s1d2 = ChainResidues.from_bio_chain(s1[0]['B'])
-        s2d1 = ChainResidues.from_bio_chain(s2[0]['A'])
-        s2d2 = ChainResidues.from_bio_chain(s2[0]['B'])
+        chain_a_mapping = self.structure_parse_result.bio_to_mmcif_mappings[0]['A']
+        chain_b_mapping = self.structure_parse_result.bio_to_mmcif_mappings[0]['B']
+        # usually the domains are from the same chain, but this is just a test..
+        s1d1 = ChainResidues.from_chain(s1[0]['A'], chain_a_mapping)
+        s1d2 = ChainResidues.from_chain(s1[0]['B'], chain_b_mapping)
+        s2d1 = ChainResidues.from_chain(s2[0]['A'], chain_a_mapping)
+        s2d2 = ChainResidues.from_chain(s2[0]['B'], chain_b_mapping)
 
         # rotate second domain over a defined screw axis, then check if GetHingeAngle indeed computes the correct parameters (angle, translation)
 
@@ -316,10 +336,13 @@ class TestAnalyses(TestCase):
         for atom in s2.get_atoms():
             atom.set_coord(rotation.apply(atom.get_coord()) + [6, 6, 6])
 
-        s1d1 = ChainResidues.from_bio_chain(s1[0]['A'])
-        s1d2 = ChainResidues.from_bio_chain(s1[0]['B'])
-        s2d1 = ChainResidues.from_bio_chain(s2[0]['A'])
-        s2d2 = ChainResidues.from_bio_chain(s2[0]['B'])
+        chain_a_mapping = self.structure_parse_result.bio_to_mmcif_mappings[0]['A']
+        chain_b_mapping = self.structure_parse_result.bio_to_mmcif_mappings[0]['B']
+        # usually the domains are from the same chain, but this is just a test..
+        s1d1 = ChainResidues.from_chain(s1[0]['A'], chain_a_mapping)
+        s1d2 = ChainResidues.from_chain(s1[0]['B'], chain_b_mapping)
+        s2d1 = ChainResidues.from_chain(s2[0]['A'], chain_a_mapping)
+        s2d2 = ChainResidues.from_chain(s2[0]['B'], chain_b_mapping)
 
         # rotate second domain over a defined screw axis, then check if GetHingeAngle indeed computes the correct parameters (angle, translation)
 

@@ -12,12 +12,15 @@ Running this module directly (as __main__) prints (the attributes of) Settings c
 The yaml is required to specify _all_ the attributes of the Settings class.
 """
 import importlib
+import logging
 import sys
 from pathlib import Path
 import os
 from typing import Callable
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 # 1) define Settings with defaults
 
@@ -132,11 +135,6 @@ def load_class_from_str(class_location: str):
     return getattr(module, class_name)
 
 
-# run this module directly to print the default settings
-if __name__ == '__main__':
-    print(yaml.safe_dump(to_nested_dict(Settings), sort_keys=False))
-
-
 # get the settings class (default is the above Settings, but can be its descendant,
 #   should be directly in a module and not inside any other class namespace)
 settings_class_location = os.environ.get('AH_SETTINGS_CLASS', f'{__name__}.Settings')
@@ -145,6 +143,12 @@ try:
 except ValueError:
     sys.stderr.write(f'AH_SETTINGS_CLASS should be in format `[packages.]module.Class`. Received `{settings_class_location}`')
     sys.exit(1)
+
+
+# run this module directly to print the default settings
+if __name__ == '__main__':
+    print(yaml.safe_dump(to_nested_dict(settings_class), sort_keys=False))
+
 
 # load run-specific settings, if supplied
 yaml_settings = os.environ.get('AH_SETTINGS_FILE')
@@ -157,8 +161,8 @@ if yaml_settings:
         sys.stderr.write(f'You specified yaml settings in `AH_SETTINGS_FILE` environment variable '
                          f'but the settings file `{yaml_settings}` was not found.')
         sys.exit(1)
-    print(settings_dict)
     from_nested_dict(settings_class, settings_dict)
+    logger.info(f'Loaded settings from {yaml_settings}.')
 
 # 3) some settings are loaded directly from envvars
 # replace `STRUCTURE_STORAGE_DIRECTORY` setting if explicitly in envvar
